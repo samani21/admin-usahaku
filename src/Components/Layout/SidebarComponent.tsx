@@ -52,7 +52,7 @@ const SidebarComponent = ({ isSidebarOpen, setIsSidebarOpen, setLoading }: Props
                             <div className='h-[100%] overflow-auto no-scrollbar'>
                                 {
                                     menuSidebar?.map((ms, i) => {
-                                        const isOpen = pathNameParent === `/admin${ms?.href}`
+                                        const isOpen = pathNameParent === `${ms?.href}`
                                         return (
                                             ms?.child ?
                                                 <NavItem

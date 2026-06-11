@@ -20,7 +20,7 @@ export const menuSidebar: menuSide[] = [
     {
         Icon: LayoutDashboard,
         label: "Dashboard",
-        href: '/dashboard'
+        href: '/'
     },
 
     {

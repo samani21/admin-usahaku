@@ -1,6 +1,4 @@
-import { useEditor } from '@tiptap/react';
 import { ChevronDown } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 
@@ -22,7 +20,7 @@ const NavItem = ({ icon: Icon, label, active, children, parent, pathNameChild, s
         if (hasChildren) {
             setIsOpen(!isOpen);
         } else {
-            route.push(`/admin/${parent}`);
+            route.push(`${parent}`);
             setLoading(!active)
         }
     };
@@ -53,10 +51,10 @@ const NavItem = ({ icon: Icon, label, active, children, parent, pathNameChild, s
                 <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
                     <div className="ml-9 flex flex-col gap-1 border-l-2 border-emerald-100 pl-4 py-1">
                         {children?.map((child: any, idx: number) => {
-                            const isActive = pathNameChild === `/admin${parent}${child?.href}`;
+                            const isActive = pathNameChild === `${parent}${child?.href}`;
                             return <button
                                 onClick={() => {
-                                    route.push(`/admin${parent}/${child?.href}`);
+                                    route.push(`${parent}/${child?.href}`);
                                     setLoading(!isActive);
                                 }}
                                 key={idx}
