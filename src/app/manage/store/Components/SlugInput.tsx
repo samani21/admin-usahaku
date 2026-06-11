@@ -1,5 +1,6 @@
 "use client";
 
+import { Get } from "@/utils/Get";
 import React, { useEffect, useState } from "react";
 
 type Props = {
@@ -11,7 +12,7 @@ export default function SlugInput({ form, onChange }: Props) {
 
     const [loading, setLoading] = useState(false);
     const [slugStatus, setSlugStatus] = useState<null | "used" | "available">(null);
-
+    const [textStatusSlug, setTextStatusSlug] = useState<string>('');
     const handleChange = (value: string) => {
         // ubah jadi slug format
         const slug = value
@@ -34,19 +35,16 @@ export default function SlugInput({ form, onChange }: Props) {
 
             console.log("Checking slug:", form);
 
-            // try {
-            //     // contoh API cek slug
-            //     const res = await fetch(`/api/check-slug?slug=${form}`);
-            //     const data = await res.json();
-
-            //     if (data.exists) {
-            //         setSlugStatus("used");
-            //     } else {
-            //         setSlugStatus("available");
-            //     }
-            // } catch (error) {
-            //     console.error(error);
-            // }
+            try {
+                // contoh API cek slug
+                const res = await Get<{ success: boolean, message: string }>(`/check-slug?slug=${form}`);
+                if (res?.success) {
+                    setTextStatusSlug(res?.message)
+                    setSlugStatus('available');
+                }
+            } catch (error) {
+                setSlugStatus("used");
+            }
 
             setLoading(false);
         }, 1500);
@@ -56,9 +54,6 @@ export default function SlugInput({ form, onChange }: Props) {
 
     return (
         <div className="space-y-2">
-            <label className="text-[11px] md:text-[12px] font-bold text-slate-400 uppercase tracking-widest px-1">
-                Slug URL
-            </label>
 
             <div className="flex group">
                 <div className="flex items-center px-4 rounded-l-2xl border border-r-0 border-slate-200 bg-slate-100 text-slate-400 font-bold text-sm">
@@ -70,7 +65,7 @@ export default function SlugInput({ form, onChange }: Props) {
                     name="slug"
                     value={form}
                     onChange={(e) => handleChange(e.target.value)}
-                    className="flex-1 px-4 py-3 rounded-r-2xl border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all text-sm md:text-base w-full"
+                    className="flex-1 px-4 py-3 rounded-r-2xl border border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all text-sm md:text-base w-full"
                     placeholder="contoh-slug-url"
                 />
             </div>
@@ -78,8 +73,8 @@ export default function SlugInput({ form, onChange }: Props) {
             {/* status */}
             <div className="min-h-[20px] px-1">
                 {loading && (
-                    <div className="flex items-center gap-2 text-xs text-indigo-500 font-medium animate-pulse">
-                        <span className="h-2 w-2 rounded-full bg-indigo-500"></span>
+                    <div className="flex items-center gap-2 text-xs text-emerald-500 font-medium animate-pulse">
+                        <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
                         Mengecek slug...
                     </div>
                 )}
@@ -94,7 +89,7 @@ export default function SlugInput({ form, onChange }: Props) {
                 {!loading && slugStatus === "available" && (
                     <div className="flex items-center gap-2 text-xs text-green-500 font-medium">
                         <span className="h-2 w-2 rounded-full bg-green-500"></span>
-                        Slug bisa digunakan
+                        {textStatusSlug}
                     </div>
                 )}
             </div>

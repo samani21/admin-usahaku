@@ -4,8 +4,8 @@ import React, { Dispatch, SetStateAction, useState, useEffect } from 'react'
 import GlassCard from './GlassCard';
 import { usePathname } from 'next/navigation';
 import { menuSidebar } from '@/lib/MenuSidebar';
-import { getUserInfo } from '@/utils/loclstorange';
 import { Get } from '@/utils/Get';
+import ModalSubscription from './ModalSubscription';
 
 type Props = {
   setIsSidebarOpen: Dispatch<SetStateAction<boolean>>;
@@ -43,6 +43,8 @@ const Header = ({ setIsSidebarOpen, isSidebarOpen, setIsMobileActionMenuOpen, ha
   // State Loading & Subscription
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [subscriptionStatus, setSubscriptionStatus] = useState<'trial' | 'premium'>('trial');
+  const [user, setUser] = useState<any>();
+  const [business, setBusiness] = useState<any>();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -58,7 +60,6 @@ const Header = ({ setIsSidebarOpen, isSidebarOpen, setIsMobileActionMenuOpen, ha
   ];
 
   const pathname = usePathname();
-  const user = getUserInfo();
   const segments = pathname.split("/").filter(Boolean);
   const breadcrumb = segments.map((seg, index) => {
     if (index === 0) return "Home";
@@ -70,10 +71,12 @@ const Header = ({ setIsSidebarOpen, isSidebarOpen, setIsMobileActionMenuOpen, ha
   const getProfile = async () => {
     setIsLoading(true)
     try {
-      // const res = await Get<any>('auth/profile');
-      // if (res?.user) {
-      //   setSubscriptionStatus(res?.user?.is_active ? "premium" : 'trial')
-      // }
+      const res = await Get<any>('business/profile');
+      if (res?.data) {
+        setSubscriptionStatus(res?.data?.business?.plan);
+        setUser(res?.data?.user)
+        setBusiness(res?.data?.business)
+      }
     } catch (e: any) {
 
     } finally {
@@ -168,7 +171,7 @@ const Header = ({ setIsSidebarOpen, isSidebarOpen, setIsMobileActionMenuOpen, ha
             >
               <div className="text-right hidden sm:block">
                 <p className="text-xs font-bold text-slate-800 group-hover:text-emerald-600 transition-colors flex items-center justify-end gap-1">
-                  Admin <ChevronDown size={12} className={`text-slate-400 group-hover:text-emerald-500 transition-transform duration-300 ${profileOpen ? 'rotate-180' : ''}`} />
+                  {user?.name} <ChevronDown size={12} className={`text-slate-400 group-hover:text-emerald-500 transition-transform duration-300 ${profileOpen ? 'rotate-180' : ''}`} />
                 </p>
                 <div className="mt-1">
                   {subscriptionStatus === 'trial' ? (
@@ -196,7 +199,8 @@ const Header = ({ setIsSidebarOpen, isSidebarOpen, setIsMobileActionMenuOpen, ha
                 ? 'bg-gradient-to-tr from-slate-900 via-slate-800 to-slate-950 text-amber-400 shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-slate-700/60'
                 : 'bg-gradient-to-tr from-emerald-500 to-teal-600 text-white shadow-[0_4px_12px_rgba(16,185,129,0.15)] group-hover:shadow-[0_4px_16px_rgba(16,185,129,0.3)]'
                 }`}>
-                <span className="relative z-10 text-xs tracking-wider">AG</span>
+                {/* <span className="relative z-10 text-xs tracking-wider">AG</span> */}
+                <img src={business?.logo_url} className='rounded-2xl' />
                 {subscriptionStatus === 'premium' && (
                   <span className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full flex items-center justify-center text-[7px] text-slate-950 border border-slate-900 font-black shadow-sm">★</span>
                 )}
@@ -229,101 +233,7 @@ const Header = ({ setIsSidebarOpen, isSidebarOpen, setIsMobileActionMenuOpen, ha
 
       {/* ULTRA LUXURY SUBSCRIPTION MODAL (DARK CINEMATIC DESIGN) */}
       {isSubscriptionModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-xl flex items-center justify-center z-[100] p-4 transition-all duration-500">
-          <div className="bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950 text-slate-200 rounded-[2.5rem] shadow-[0_25px_70px_-15px_rgba(0,0,0,0.8)] w-full max-w-md overflow-hidden transform transition-all border border-slate-800/80 relative">
-
-            {/* Ambient Aurora Glow in Background */}
-            <div className="absolute top-[-20%] left-[20%] w-[60%] h-[40%] bg-gradient-to-br from-emerald-500/10 to-amber-500/10 rounded-full blur-[60px] pointer-events-none"></div>
-
-            {/* Modal Header */}
-            <div className="relative p-6 pt-10 pb-2 text-center">
-              <button
-                onClick={() => setIsSubscriptionModalOpen(false)}
-                className="absolute top-5 right-5 p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800/60 transition-all active:scale-95"
-              >
-                <X size={15} />
-              </button>
-
-              {/* Crown Badge */}
-              <div className="mx-auto w-14 h-14 bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-700/80 rounded-2xl flex items-center justify-center mb-4 shadow-[0_10px_20px_rgba(0,0,0,0.3)] group">
-                <Crown className="w-7 h-7 text-amber-400 group-hover:scale-110 transition-transform" />
-              </div>
-
-              <h3 className="text-2xl font-black text-white tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
-                Akses Eksklusif Pro Premium
-              </h3>
-              <p className="text-xs text-slate-400 mt-2 max-w-[85%] mx-auto leading-relaxed">
-                Tinggalkan batasan dasar. Rasakan fleksibilitas penuh sistem cerdas analitik finansial kami.
-              </p>
-            </div>
-
-            {/* Modal Body / Feature List */}
-            <div className="p-6 space-y-4 relative z-10">
-              <div className="bg-slate-900/40 backdrop-blur-sm rounded-2xl p-4 border border-slate-800/50 space-y-3.5">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-5 h-5 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
-                    <Check size={12} strokeWidth={3} />
-                  </div>
-                  <span className="text-xs font-medium text-slate-300">Akses Visualisasi Grafik & Khazanah Data Real-Time</span>
-                </div>
-                <div className="flex items-center gap-3.5">
-                  <div className="w-5 h-5 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
-                    <Check size={12} strokeWidth={3} />
-                  </div>
-                  <span className="text-xs font-medium text-slate-300">Ekspor Otomatis Laporan Mutasi (PDF / XLSX Spreadsheet)</span>
-                </div>
-                <div className="flex items-center gap-3.5">
-                  <div className="w-5 h-5 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
-                    <Check size={12} strokeWidth={3} />
-                  </div>
-                  <span className="text-xs font-medium text-slate-300">Prioritas Jaringan Server Dedicated (Respon 2x Lebih Cepat)</span>
-                </div>
-              </div>
-
-              {/* Float Metallic Pricing Box */}
-              <div className="relative p-5 bg-gradient-to-r from-slate-900 via-slate-800/80 to-slate-900 rounded-2xl border border-slate-700/70 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] overflow-hidden group">
-                <div className="absolute top-0 right-0 bg-amber-400 text-slate-950 text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl flex items-center gap-1 shadow-sm">
-                  <Sparkles size={8} className="fill-current" /> Rekomendasi
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <div>
-                    <span className="block font-bold text-white text-sm">Paket Profesional</span>
-                    <span className="text-[10px] text-slate-400 flex items-center gap-1 mt-1">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> Jaminan enkripsi aman
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <div className="flex items-baseline justify-end gap-1">
-                      <span className="text-2xl font-black text-amber-400 tracking-tight drop-shadow-[0_2px_10px_rgba(245,158,11,0.2)]">Rp 99.000</span>
-                    </div>
-                    <span className="text-[10px] text-slate-400 block mt-0.5">Siklus tagihan bulanan</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-6 pt-2 pb-8 bg-slate-950/80 border-t border-slate-900/60 flex flex-col gap-2.5">
-              <button
-                onClick={() => {
-                  setSubscriptionStatus('premium');
-                  setIsSubscriptionModalOpen(false);
-                }}
-                className="w-full px-5 py-3.5 text-xs font-bold text-slate-950 bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-600 rounded-xl shadow-[0_4px_25px_rgba(245,158,11,0.3)] hover:shadow-[0_4px_35px_rgba(245,158,11,0.5)] active:scale-[0.99] active:brightness-95 transition-all duration-300 text-center tracking-wide uppercase"
-              >
-                Mulai Berlangganan Sekarang 🚀
-              </button>
-
-              <button
-                onClick={() => setIsSubscriptionModalOpen(false)}
-                className="w-full px-4 py-2 text-[11px] font-semibold text-slate-500 hover:text-slate-300 bg-transparent transition-colors text-center"
-              >
-                Kembali ke Dashboard Dasar
-              </button>
-            </div>
-          </div>
-        </div>
+        <ModalSubscription onClose={() => setIsSubscriptionModalOpen(false)} />
       )}
     </div>
   )
