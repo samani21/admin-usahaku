@@ -25,7 +25,8 @@ import {
     Crown,
     Zap,
     CreditCard,
-    Sparkles
+    Sparkles,
+    AlertCircle
 } from 'lucide-react';
 import {
     LineChart,
@@ -37,6 +38,7 @@ import {
     ResponsiveContainer
 } from 'recharts';
 import MainLayout from '@/Components/Layout/MainLayout';
+import { Get } from '@/utils/Get'; // Pastikan import ini ada
 
 // Simulasi data untuk sidebar
 const navigation = [
@@ -70,6 +72,56 @@ const navigation = [
 
 // Komponen Dashboard (Konten Utama)
 const Dashboard = () => {
+    // --- STATE SUBSCRIPTION ---
+    const [isLoading, setIsLoading] = useState(true);
+    const [planType, setPlanType] = useState<'trial' | 'premium'>('trial');
+    const [planStatus, setPlanStatus] = useState<'active' | 'expired' | 'canceled'>('active');
+    const [endTime, setEndTime] = useState<string | null>(null);
+    const [daysRemaining, setDaysRemaining] = useState<number>(0);
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            setIsLoading(true);
+            try {
+                const res = await Get<any>('business/profile');
+                if (res?.data?.business) {
+                    const businessData = res.data.business;
+                    setPlanType(businessData.plan || 'trial');
+                    setPlanStatus(businessData.subscription_status || 'active');
+                    setEndTime(businessData.end_time);
+
+                    // Kalkulasi sisa hari jika status belum habis
+                    if (businessData.end_time) {
+                        const endDate = new Date(businessData.end_time);
+                        const now = new Date();
+                        const diffTime = endDate.getTime() - now.getTime();
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        setDaysRemaining(diffDays > 0 ? diffDays : 0);
+                    }
+                }
+            } catch (error) {
+                console.error("Gagal memuat profil:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchProfile();
+    }, []);
+
+    // Format tanggal untuk tampilan (contoh: 12 Jun 2026, 14:30)
+    const formatDateTime = (dateString: string | null) => {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        return new Intl.DateTimeFormat('id-ID', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+        }).format(date);
+    };
+
     const stats = [
         { name: 'Total Penjualan', value: 'Rp 15.000.000', icon: Wallet, trend: '+12.5%', isUp: true },
         { name: 'Total Order', value: '150', icon: ScrollText, trend: '+5.2%', isUp: true },
@@ -112,7 +164,86 @@ const Dashboard = () => {
             default: return 'bg-gray-100 text-gray-700';
         }
     };
-    const isPro = false;
+
+    // --- RENDER BANNER ---
+    const renderSubscriptionBanner = () => {
+        if (isLoading) {
+            return <div className="w-full xl:w-96 h-24 bg-white/50 animate-pulse rounded-3xl"></div>;
+        }
+
+        // KONDISI 1: HABIS (EXPIRED/CANCELED)
+        if (planStatus === 'expired' || planStatus === 'canceled') {
+            return (
+                <div className="relative flex flex-col sm:flex-row items-center gap-5 p-4 sm:pr-5 bg-white/60 backdrop-blur-xl border border-rose-200 rounded-3xl shadow-sm">
+                    <div className="p-3 rounded-2xl shadow-lg bg-gradient-to-br from-rose-500 to-red-600 shadow-rose-500/30">
+                        <AlertCircle className="w-7 h-7 text-white" />
+                    </div>
+                    <div className="text-center sm:text-left flex-1">
+                        <h3 className="font-extrabold text-gray-800 flex items-center justify-center sm:justify-start text-lg tracking-tight">
+                            {planType === 'premium' ? 'Premium Habis' : 'Trial Habis'}
+                        </h3>
+                        <p className="text-xs text-rose-600 font-bold mt-0.5">
+                            Telah berakhir pada {formatDateTime(endTime)}
+                        </p>
+                    </div>
+                    <button className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-rose-600 to-red-500 hover:from-rose-700 hover:to-red-600 text-white text-sm font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center">
+                        <CreditCard className="w-4 h-4 mr-2" /> Perpanjang
+                    </button>
+                </div>
+            );
+        }
+
+        // KONDISI 2: PREMIUM AKTIF (Tema Gelap Mewah)
+        if (planType === 'premium') {
+            return (
+                <div className="relative group">
+                    <div className="absolute inset-0 rounded-3xl blur-lg bg-gradient-to-r from-amber-400 to-amber-600 opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
+                    <div className="relative flex flex-col sm:flex-row items-center gap-5 p-4 sm:pr-5 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 border border-slate-700/60 rounded-3xl shadow-xl">
+                        <div className="p-3 rounded-2xl bg-slate-800/50 border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+                            <Crown className="w-7 h-7 text-amber-400" />
+                        </div>
+                        <div className="text-center sm:text-left flex-1">
+                            <h3 className="font-extrabold text-white flex items-center justify-center sm:justify-start text-lg tracking-tight">
+                                Paket Premium <CheckCircle2 className="w-5 h-5 ml-1.5 text-amber-400" />
+                            </h3>
+                            <p className="text-xs text-slate-300 font-medium mt-0.5 flex items-center justify-center sm:justify-start">
+                                <Clock className="w-3 h-3 mr-1 text-slate-400" />
+                                Sisa {daysRemaining} hari (Habis: {formatDateTime(endTime)})
+                            </p>
+                        </div>
+                        <button className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-sm font-bold rounded-xl shadow-[0_4px_14px_0_rgba(245,158,11,0.39)] hover:shadow-[0_6px_20px_rgba(245,158,11,0.23)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center">
+                            <Wallet className="w-4 h-4 mr-2" /> Kelola
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        // KONDISI 3: TRIAL AKTIF (Tema Amber Standard)
+        return (
+            <div className="relative group">
+                <div className="absolute inset-0 rounded-3xl blur-lg bg-gradient-to-r from-amber-400 to-orange-500 opacity-30 group-hover:opacity-50 transition-opacity duration-500"></div>
+                <div className="relative flex flex-col sm:flex-row items-center gap-5 p-4 sm:pr-5 bg-white/60 backdrop-blur-xl border border-white/80 rounded-3xl shadow-sm hover:bg-white/80 transition-all duration-300">
+                    <div className="p-3 rounded-2xl shadow-lg bg-gradient-to-br from-amber-400 to-orange-500 shadow-amber-500/30">
+                        <Zap className="w-7 h-7 text-white" />
+                    </div>
+                    <div className="text-center sm:text-left flex-1">
+                        <h3 className="font-extrabold text-gray-800 flex items-center justify-center sm:justify-start text-lg tracking-tight">
+                            Masa Trial <Sparkles className="w-4 h-4 ml-1.5 text-amber-500" />
+                        </h3>
+                        <p className="text-xs text-gray-600 font-medium mt-0.5 flex items-center justify-center sm:justify-start">
+                            <Clock className="w-3 h-3 mr-1 text-gray-400" />
+                            Sisa {daysRemaining} hari (Habis: {formatDateTime(endTime)})
+                        </p>
+                    </div>
+                    <button className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-gray-900 to-gray-800 hover:from-black hover:to-gray-900 text-white text-sm font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center border border-gray-700">
+                        <CreditCard className="w-4 h-4 mr-2" /> Upgrade
+                    </button>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <MainLayout>
             <main className="p-2 sm:p-6 animate-fade-in">
@@ -125,51 +256,9 @@ const Dashboard = () => {
                         <p className="text-gray-500 mt-2 font-medium">Berikut adalah ringkasan performa toko Anda hari ini.</p>
                     </div>
 
-                    {/* Subscription Banner */}
-                    <div className="w-full xl:w-auto relative group">
-                        {/* Efek Glow di belakang kartu - Warnanya menyesuaikan state Trial/Pro */}
-                        <div className={`absolute inset-0 rounded-3xl blur-lg transition-opacity duration-500 ${isPro
-                            ? 'bg-gradient-to-r from-emerald-400 to-teal-500 opacity-20 group-hover:opacity-40'
-                            : 'bg-gradient-to-r from-amber-400 to-orange-500 opacity-30 group-hover:opacity-50'
-                            }`}></div>
-
-                        <div className="relative flex flex-col sm:flex-row items-center gap-5 p-4 sm:pr-5 bg-white/60 backdrop-blur-xl border border-white/80 rounded-3xl shadow-sm hover:bg-white/80 transition-all duration-300">
-
-                            {/* Ikon Mahkota */}
-                            <div className={`p-3 rounded-2xl shadow-lg ${isPro
-                                ? 'bg-gradient-to-br from-emerald-500 to-teal-500 shadow-emerald-500/30'
-                                : 'bg-gradient-to-br from-amber-400 to-orange-500 shadow-amber-500/30'
-                                }`}>
-                                <Crown className="w-7 h-7 text-white" />
-                            </div>
-
-                            {/* Teks Status */}
-                            <div className="text-center sm:text-left flex-1">
-                                <h3 className="font-extrabold text-gray-800 flex items-center justify-center sm:justify-start text-lg tracking-tight">
-                                    {isPro ? (
-                                        <>Paket Pro Aktif <CheckCircle2 className="w-5 h-5 ml-1.5 text-emerald-500" /></>
-                                    ) : (
-                                        <>Trial Berakhir: 7 Hari <Sparkles className="w-4 h-4 ml-1.5 text-amber-500" /></>
-                                    )}
-                                </h3>
-                                <p className="text-xs text-gray-600 font-medium mt-0.5">
-                                    {isPro
-                                        ? 'Seluruh fitur eksklusif telah terbuka.'
-                                        : 'Upgrade ke Pro untuk fitur premium.'}
-                                </p>
-                            </div>
-
-                            {/* Tombol Aksi */}
-                            {isPro ? (
-                                <button className="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-800 text-sm font-bold rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center border border-gray-200">
-                                    <Wallet className="w-4 h-4 mr-2" /> Kelola Paket
-                                </button>
-                            ) : (
-                                <button className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-gray-900 to-gray-800 hover:from-black hover:to-gray-900 text-white text-sm font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center border border-gray-700">
-                                    <CreditCard className="w-4 h-4 mr-2" /> Upgrade
-                                </button>
-                            )}
-                        </div>
+                    {/* Subscription Banner Ditarik dari Render Function */}
+                    <div className="w-full xl:w-auto">
+                        {renderSubscriptionBanner()}
                     </div>
                 </div>
 
@@ -337,7 +426,6 @@ const Dashboard = () => {
 export default function App() {
     return (
         <div className="flex h-screen bg-gradient-to-br from-[#e0f2f1] via-[#e0f7fa] to-[#f3e5f5] font-sans selection:bg-emerald-200 selection:text-emerald-900">
-
             <main className="flex-1 overflow-x-hidden overflow-y-auto bg-transparent relative z-10">
                 <Dashboard />
             </main>

@@ -1,4 +1,4 @@
-import { Check, Crown, ShieldCheck, Sparkles, X, Loader2, Copy, Building2 } from 'lucide-react';
+import { Check, Crown, ShieldCheck, Sparkles, X, Loader2, Copy, Building2, AlertCircle } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Get } from '@/utils/Get';
 import { formatIDR } from '@/types/FormtRupiah';
@@ -11,7 +11,8 @@ type Props = {
 const ModalSubscription = ({ onClose }: Props) => {
     // State Management
     const [isFetching, setIsFetching] = useState(true); // Loading untuk fetch data awal
-    const [isLoading, setIsLoading] = useState(false);  // Loading untuk proses bayar
+    const [isLoading, setIsLoading] = useState(false);  // Loading untuk proses bayar / generate VA
+    const [isChecking, setIsChecking] = useState(false); // Loading untuk cek status "Saya Sudah Bayar"
     const [selectedBank, setSelectedBank] = useState('bca');
     const [vaData, setVaData] = useState<any>(null);
     const [errorMsg, setErrorMsg] = useState('');
@@ -32,12 +33,13 @@ const ModalSubscription = ({ onClose }: Props) => {
         getSubscription();
     }, []);
 
+    // Fetch data awal saat modal dibuka
     const getSubscription = async () => {
         setIsFetching(true);
         try {
             const res = await Get<{ success: boolean, data: any }>('subscription/show-subscription');
             if (res?.success) {
-                if (res?.data?.is_payment) {
+                if (res?.data?.is_payment && res?.data?.subscription_status) {
                     window.location.reload()
                 }
                 setData(res?.data);
@@ -52,6 +54,7 @@ const ModalSubscription = ({ onClose }: Props) => {
         }
     };
 
+    // Fungsi Generate VA Baru
     const handlePayment = async () => {
         setIsLoading(true);
         setErrorMsg('');
@@ -68,6 +71,29 @@ const ModalSubscription = ({ onClose }: Props) => {
             setErrorMsg(error.response?.data?.message || 'Gagal terhubung ke server pembayaran.');
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    // Fungsi Cek Status Pembayaran (Saat tombol "Saya Sudah Bayar" diklik)
+    const handleCheckPayment = async () => {
+        setIsChecking(true);
+        setErrorMsg(''); // Reset pesan error sebelumnya
+        try {
+            const res = await Get<{ success: boolean, data: any }>('subscription/show-subscription');
+            if (res?.success) {
+                // Jika sukses bayar, backend is_payment bernilai true
+                if (res?.data?.is_payment && res?.data?.subscription_status) {
+                    window.location.reload();
+                } else {
+                    // Jika belum bayar, tampilkan pesan peringatan
+                    setErrorMsg('Pembayaran belum terdeteksi. Silakan selesaikan pembayaran terlebih dahulu.');
+                }
+            }
+        } catch (e: any) {
+            console.error("Error checking payment:", e);
+            setErrorMsg('Gagal mengecek status pembayaran. Silakan coba lagi.');
+        } finally {
+            setIsChecking(false);
         }
     };
 
@@ -118,11 +144,35 @@ const ModalSubscription = ({ onClose }: Props) => {
                             <p className="text-lg font-bold text-white">Rp {parseInt(vaData.nominal).toLocaleString('id-ID')}</p>
                         </div>
 
+                        {/* Pesan Error Jika Cek Pembayaran Gagal/Belum Dibayar */}
+                        {errorMsg && (
+                            <div className="w-full mb-4 bg-red-500/10 border border-red-500/20 rounded-xl p-3 flex items-start gap-2 text-left animate-in fade-in zoom-in duration-300">
+                                <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                                <p className="text-xs text-red-400 font-medium leading-relaxed">{errorMsg}</p>
+                            </div>
+                        )}
+
+                        {/* Tombol Cek Pembayaran */}
                         <button
-                            onClick={getSubscription}
-                            className="w-full px-5 py-3.5 text-xs font-bold text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition-all duration-300 text-center tracking-wide"
+                            onClick={handleCheckPayment}
+                            disabled={isChecking}
+                            className="w-full px-5 py-3.5 mb-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-all duration-300 text-center tracking-wide flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20 disabled:opacity-70 disabled:cursor-not-allowed"
                         >
-                            Saya Sudah Bayar / Tutup
+                            {isChecking ? (
+                                <>
+                                    <Loader2 size={16} className="animate-spin" /> Mengecek Status...
+                                </>
+                            ) : (
+                                'Saya Sudah Bayar'
+                            )}
+                        </button>
+
+                        {/* Tombol Tutup Alternatif */}
+                        <button
+                            onClick={onClose}
+                            className="text-[11px] font-semibold text-slate-500 hover:text-slate-300 transition-colors"
+                        >
+                            Bayar Nanti / Tutup Layar
                         </button>
                     </div>
                 ) : (
@@ -217,7 +267,10 @@ const ModalSubscription = ({ onClose }: Props) => {
                             </div>
 
                             {errorMsg && (
-                                <p className="text-xs text-red-400 text-center mt-2 bg-red-400/10 py-2 rounded-lg border border-red-500/20">{errorMsg}</p>
+                                <div className="flex items-center gap-2 bg-red-400/10 border border-red-500/20 p-2.5 rounded-lg mt-2">
+                                    <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+                                    <p className="text-xs text-red-400">{errorMsg}</p>
+                                </div>
                             )}
                         </div>
 

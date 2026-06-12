@@ -39,8 +39,11 @@ export default function BusinessProfile() {
     const [loading, setLoading] = useState<boolean>(true);
     const [isBusiness, setIsBusiness] = useState<boolean>(false);
     const [outlets, setOutlets] = useState<OutletsType[]>([]);
-    const [planStatus, setPlanStatus] = useState<'trial' | 'premium' | 'expired'>('premium');
 
+    // STATE DIPISAH SESUAI STRUKTUR DATABASE BARU
+    const [planType, setPlanType] = useState<'trial' | 'premium'>('trial');
+    const [planStatus, setPlanStatus] = useState<'active' | 'expired' | 'canceled'>('active');
+    const [daysRemaining, setDaysRemaining] = useState<number>(0);
     const handleChange = (key: any, value: string) => setForm((s) => ({ ...s, [key]: value }));
 
     useEffect(() => {
@@ -97,7 +100,7 @@ export default function BusinessProfile() {
 
     const getBusiness = async () => {
         try {
-            const data = await Get<{ success: boolean; data: BusinessType }>("/business/show");
+            const data = await Get<{ success: boolean; data: any }>("/business/show");
             if (data?.success) {
                 const business = {
                     name: data?.data?.name,
@@ -110,9 +113,16 @@ export default function BusinessProfile() {
                 setForm(business)
                 setIsBusiness(true)
                 setLogoPreview(data?.data?.logo_url)
-                setPlanStatus(data?.data?.plan as "trial" | "premium" | "expired")
-                // Set plan status if available from API
-                // if(data?.data?.plan) setPlanStatus(data.data.plan);
+                if (data?.data?.end_time) {
+                    const endDate = new Date(data?.data?.end_time);
+                    const now = new Date();
+                    const diffTime = endDate.getTime() - now.getTime();
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    setDaysRemaining(diffDays > 0 ? diffDays : 0);
+                }
+                // MENGAMBIL DUA DATA TERPISAH DARI API
+                setPlanType(data?.data?.plan || 'trial');
+                setPlanStatus(data?.data?.subscription_status || 'active');
             }
         } catch (err: any) {
             console.log(err.message || "Gagal mengambil data");
@@ -142,6 +152,11 @@ export default function BusinessProfile() {
         return <Loading />
     }
 
+    // Variabel Pembantu Logika Tampilan
+    const isExpired = planStatus === 'expired' || planStatus === 'canceled';
+    const isPremium = planStatus === 'active' && planType === 'premium';
+    const isTrial = planStatus === 'active' && planType === 'trial';
+
     return (
         <div className="mt-8  mx-auto lg:px-8 bg-slate-50 min-h-screen">
             <motion.div
@@ -154,21 +169,28 @@ export default function BusinessProfile() {
                 <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden mb-8 relative">
                     {/* Banner Latar Belakang - Berubah berdasarkan Status Paket */}
                     <div className={`h-36 md:h-48 w-full relative transition-colors duration-500 
-                        ${planStatus === 'premium' ? 'bg-gradient-to-r from-slate-800 to-slate-900'
-                            : planStatus === 'expired' ? 'bg-gradient-to-r from-red-900 to-slate-900 grayscale-[20%]'
-                                : 'bg-gradient-to-r from-slate-800 to-slate-900'}`}>
+                        ${isPremium ? 'bg-gradient-to-r from-slate-800 to-slate-900'
+                            : isExpired ? 'bg-gradient-to-r from-red-900 to-slate-900 grayscale-[20%]'
+                                : 'bg-gradient-to-r from-amber-500 to-orange-500'}`}>
                         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
 
-                        {planStatus === 'premium' && (
+                        {/* Banner Badges */}
+                        {isPremium && (
                             <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-md border border-white/40 text-white px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-bold shadow-lg text-yellow-400">
                                 <Crown size={16} className="fill-amber-100 " />
                                 Premium Active
                             </div>
                         )}
-                        {planStatus === 'expired' && (
+                        {isExpired && (
                             <div className="absolute top-4 right-4 bg-red-500/20 backdrop-blur-md border border-red-500/40 text-white px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-bold shadow-lg">
                                 <AlertTriangle size={16} className="text-red-200" />
-                                Paket Kedaluwarsa
+                                {planType === 'premium' ? 'Premium Kedaluwarsa' : 'Trial Habis'}
+                            </div>
+                        )}
+                        {isTrial && (
+                            <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-md border border-white/40 text-white px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-bold shadow-lg">
+                                <Zap size={16} className="fill-amber-100" />
+                                Masa Trial
                             </div>
                         )}
                     </div>
@@ -178,13 +200,13 @@ export default function BusinessProfile() {
 
                             {/* Avatar / Logo */}
                             <div className="relative group -mt-20 md:-mt-24 z-10">
-                                <div className={`w-32 h-32 md:w-40 md:h-40 rounded-[2rem] bg-white p-2 shadow-xl transition-transform duration-300 group-hover:scale-105 ${planStatus === 'expired' ? 'border-2 border-red-100' : 'border border-slate-100'}`}>
+                                <div className={`w-32 h-32 md:w-40 md:h-40 rounded-[2rem] bg-white p-2 shadow-xl transition-transform duration-300 group-hover:scale-105 ${isExpired ? 'border-2 border-red-100' : 'border border-slate-100'}`}>
                                     <div className="w-full h-full rounded-[1.5rem] bg-slate-100 flex items-center justify-center overflow-hidden relative">
                                         {logoPreview ? (
                                             <img
                                                 src={logoPreview}
                                                 alt="Logo Toko"
-                                                className={`w-full h-full object-cover ${planStatus === 'expired' ? 'grayscale-[40%]' : ''}`}
+                                                className={`w-full h-full object-cover ${isExpired ? 'grayscale-[40%]' : ''}`}
                                             />
                                         ) : (
                                             <Store size={48} className="text-slate-300" />
@@ -208,16 +230,16 @@ export default function BusinessProfile() {
                                     </h1>
 
                                     {/* Indikator Verifikasi */}
-                                    {isBusiness && form.verified == 2 ? <Verified size={24} className="text-blue-500 fill-blue-50" /> :
+                                    {isBusiness && form.verified == 2 ? <Verified size={24} className="text-blue-50 fill-blue-500" /> :
                                         isBusiness && form.verified == 1 ? <Clock size={22} className="text-amber-500" /> :
                                             isBusiness && <BanIcon size={22} className="text-red-500" />}
 
                                     {/* Badge Status Paket */}
-                                    {planStatus === 'trial' ? (
+                                    {isTrial ? (
                                         <span className="bg-slate-100 border border-slate-200 text-slate-600 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5">
-                                            <Zap size={14} className="fill-slate-400" /> Trial 14 Hari
+                                            <Zap size={14} className="fill-slate-400" /> Trial Mode
                                         </span>
-                                    ) : planStatus === 'premium' ? (
+                                    ) : isPremium ? (
                                         <span className="bg-gradient-to-r from-amber-100 to-yellow-100 border border-amber-300 text-amber-800 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
                                             <Crown size={14} className="fill-amber-500" /> Premium
                                         </span>
@@ -316,7 +338,7 @@ export default function BusinessProfile() {
                                             <Tag className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
                                             <select
                                                 name="category"
-                                                value={form.category}
+                                                value={form.category ?? 'Lainnya'}
                                                 onChange={(e) => handleChange("category", e.target.value)}
                                                 className="w-full pl-11 pr-10 py-3.5 bg-white rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none appearance-none cursor-pointer text-sm font-semibold text-slate-700 transition-all shadow-sm"
                                             >
@@ -362,13 +384,13 @@ export default function BusinessProfile() {
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.5, delay: 0.2 }}
-                            className={`rounded-[2rem] border overflow-hidden relative shadow-lg ${planStatus === 'premium' ? 'bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700'
-                                : planStatus === 'expired' ? 'bg-white border-red-200'
+                            className={`rounded-[2rem] border overflow-hidden relative shadow-lg ${isPremium ? 'bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700'
+                                : isExpired ? 'bg-white border-red-200'
                                     : 'bg-white border-slate-200'
                                 }`}
                         >
-                            {/* Dekorasi Khusus */}
-                            {planStatus === 'premium' && (
+                            {/* Dekorasi Khusus Premium */}
+                            {isPremium && (
                                 <div className="absolute -top-12 -right-12 opacity-20 rotate-12">
                                     <Crown size={150} className="text-amber-400" />
                                 </div>
@@ -376,12 +398,12 @@ export default function BusinessProfile() {
 
                             <div className="p-6 relative z-10">
                                 <div className="flex items-center gap-2 mb-4">
-                                    {planStatus === 'premium' ? (
+                                    {isPremium ? (
                                         <>
                                             <Crown size={20} className="text-amber-400 fill-amber-400/20" />
                                             <h3 className="font-bold text-white text-lg tracking-wide">Premium Plan</h3>
                                         </>
-                                    ) : planStatus === 'expired' ? (
+                                    ) : isExpired ? (
                                         <>
                                             <AlertCircle size={20} className="text-red-500" />
                                             <h3 className="font-bold text-slate-800 text-lg">Perhatian</h3>
@@ -395,7 +417,7 @@ export default function BusinessProfile() {
                                 </div>
 
                                 {/* KONDISI: EXPIRED (Habis Masa Aktif) */}
-                                {planStatus === 'expired' ? (
+                                {isExpired ? (
                                     <div className="space-y-4">
                                         <div className="bg-red-50 border border-red-100 rounded-xl p-4 flex items-start gap-3">
                                             <AlertTriangle size={24} className="text-red-500 shrink-0 mt-0.5" />
@@ -413,13 +435,13 @@ export default function BusinessProfile() {
                                             <Zap size={18} className="fill-white" /> Perpanjang Paket Sekarang
                                         </button>
                                     </div>
-                                ) : planStatus === 'trial' ? (
+                                ) : isTrial ? (
                                     // KONDISI: TRIAL
                                     <div className="space-y-4">
                                         <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
                                             <p className="text-sm text-slate-600 mb-2">Masa aktif trial Anda tersisa:</p>
                                             <div className="flex items-end gap-1 text-emerald-600">
-                                                <span className="text-3xl font-black leading-none">14</span>
+                                                <span className="text-3xl font-black leading-none">{daysRemaining}</span>
                                                 <span className="font-bold text-sm mb-1">Hari Lagi</span>
                                             </div>
                                         </div>
@@ -467,9 +489,9 @@ export default function BusinessProfile() {
                                     </div>
                                 </div>
 
-                                <div className={`relative rounded-2xl overflow-hidden border bg-slate-50 mb-5 shadow-inner ${planStatus === 'expired' ? 'border-red-100' : 'border-slate-200'}`}>
+                                <div className={`relative rounded-2xl overflow-hidden border bg-slate-50 mb-5 shadow-inner ${isExpired ? 'border-red-100' : 'border-slate-200'}`}>
                                     {/* Overlay Blur jika Expired */}
-                                    {planStatus === 'expired' && (
+                                    {isExpired && (
                                         <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center">
                                             <div className="bg-white px-4 py-2 rounded-full shadow border border-slate-100 flex items-center gap-2 text-sm font-bold text-slate-600">
                                                 <Ban size={16} className="text-red-500" /> Terkunci
@@ -494,7 +516,7 @@ export default function BusinessProfile() {
                                 {outlets && outlets.length > 0 && (
                                     <div className="space-y-3 mb-5 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
                                         {outlets.map((o, i) => (
-                                            <div key={i} className={`p-4 rounded-2xl border transition-all ${planStatus === 'expired' ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-slate-50 border-slate-200 hover:border-emerald-300 hover:shadow-md'}`}>
+                                            <div key={i} className={`p-4 rounded-2xl border transition-all ${isExpired ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-slate-50 border-slate-200 hover:border-emerald-300 hover:shadow-md'}`}>
                                                 <p className="text-sm text-slate-800 mb-3"><span className="font-extrabold text-emerald-600">{o?.name}</span> • <span className="text-slate-500">{o?.address}</span></p>
                                                 <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
                                                     <div className="w-1/2">
@@ -513,14 +535,14 @@ export default function BusinessProfile() {
                                 )}
 
                                 <Link
-                                    href={planStatus === 'expired' ? '#' : 'outlets'}
-                                    className={`w-full flex items-center justify-center gap-2 px-4 py-3.5 text-sm font-bold border-2 rounded-xl transition-all group ${planStatus === 'expired'
+                                    href={isExpired ? '#' : 'outlets'}
+                                    className={`w-full flex items-center justify-center gap-2 px-4 py-3.5 text-sm font-bold border-2 rounded-xl transition-all group ${isExpired
                                         ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
                                         : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300 hover:text-emerald-600'
                                         }`}
                                 >
-                                    {planStatus === 'expired' ? 'Fitur Terkunci' : 'Kelola Lokasi Cabang'}
-                                    {planStatus !== 'expired' && <ChevronRight size={16} className="text-slate-400 group-hover:translate-x-1 group-hover:text-emerald-600 transition-all" />}
+                                    {isExpired ? 'Fitur Terkunci' : 'Kelola Lokasi Cabang'}
+                                    {!isExpired && <ChevronRight size={16} className="text-slate-400 group-hover:translate-x-1 group-hover:text-emerald-600 transition-all" />}
                                 </Link>
                             </div>
                         </motion.div>
