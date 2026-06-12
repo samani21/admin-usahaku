@@ -9,7 +9,7 @@ const Loading = ({ title = "Memuat Halaman..." }: Props) => {
     return (
         <div
             // Memperbaiki z-index dan memperhalus efek blur
-            className="fixed inset-0 bg-white/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center transition-all"
+            className="fixed inset-0 bg-white/50 backdrop-blur-sm z-102 flex flex-col items-center justify-center transition-all"
             role="status"
             aria-label="Loading"
         >

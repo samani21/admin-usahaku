@@ -102,7 +102,7 @@ const ModalSubscription = ({ onClose }: Props) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-xl flex items-center justify-center z-[100] p-4 transition-all duration-500">
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-xl flex items-center justify-center z-100 p-4 transition-all duration-500">
             <div className="bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950 text-slate-200 rounded-[2.5rem] shadow-[0_25px_70px_-15px_rgba(0,0,0,0.8)] w-full max-w-md overflow-hidden transform transition-all border border-slate-800/80 relative">
 
                 {/* Ambient Aurora Glow in Background */}
