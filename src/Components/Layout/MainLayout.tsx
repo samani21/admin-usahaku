@@ -5,6 +5,7 @@ import SidebarComponent from './SidebarComponent';
 import Header from './Header';
 import { getToken } from '@/utils/loclstorange';
 import Loading from '../Loading';
+import { Get } from '@/utils/Get';
 
 type Props = {
     children: React.ReactNode
@@ -19,6 +20,8 @@ const MainLayout = ({ children }: Props) => {
     const [loading, setLoading] = useState<boolean>(false);
     const segments = pathname.split("/").filter(Boolean);
     const lastOne = segments.slice(-1);
+    const [user, setUser] = useState<any>();
+    const [business, setBusiness] = useState<any>();
     const breadcrumb = segments.map((seg, index) => {
         if (index === 0) return "Home";
         return seg.charAt(0).toUpperCase() + seg.slice(1);
@@ -81,6 +84,24 @@ const MainLayout = ({ children }: Props) => {
         localStorage?.removeItem('user');
         router?.push('/auth/login')
     }
+    useEffect(() => {
+        getProfile()
+    }, [])
+
+    const getProfile = async () => {
+        setLoading(true)
+        try {
+            const res = await Get<any>('business/profile');
+            if (res?.data) {
+                setUser(res?.data?.user)
+                setBusiness(res?.data?.business)
+            }
+        } catch (e: any) {
+            console.error(e);
+        } finally {
+            setLoading(false)
+        }
+    }
     return (
         <div className="min-h-screen bg-[#f0f9f6]  font-sans text-slate-800">
             {isSidebarOpen && (
@@ -95,6 +116,8 @@ const MainLayout = ({ children }: Props) => {
                     isSidebarOpen={isSidebarOpen}
                     setIsSidebarOpen={setIsSidebarOpen}
                     setLoading={setLoading}
+                    user={user}
+                    business={business}
                 />
                 <main className="relative h-screen flex-1 flex flex-col lg:pr-4">
                     <Header
@@ -107,6 +130,8 @@ const MainLayout = ({ children }: Props) => {
                         handleProfileClick={handleProfileClick}
                         title={pathname}
                         handleLogout={handleLogout}
+                        user={user}
+                        business={business}
                     />
                     <div className='overflow-auto no-scrollbar mt-18 lg:mt-20 px-4 lg:px-0'>
                         <div className='mt-4'>

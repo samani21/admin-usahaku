@@ -11,13 +11,16 @@ type Props = {
     isSidebarOpen: boolean;
     setIsSidebarOpen: Dispatch<SetStateAction<boolean>>;
     setLoading: Dispatch<SetStateAction<boolean>>;
+    user: any;
+    business: any;
 }
 
 
-const SidebarComponent = ({ isSidebarOpen, setIsSidebarOpen, setLoading }: Props) => {
+const SidebarComponent = ({ isSidebarOpen, setIsSidebarOpen, setLoading, user, business }: Props) => {
     const pathname = usePathname();
     const [pathNameParent, setPathNameParent] = useState<string>('');
     const [pathNameChild, setPathNameChild] = useState<string>('');
+
     useEffect(() => {
         if (pathname) {
             const parts = pathname.split("/");
@@ -27,6 +30,7 @@ const SidebarComponent = ({ isSidebarOpen, setIsSidebarOpen, setLoading }: Props
             setPathNameChild(childbasePath)
         }
     }, [pathname]);
+
     return (
         <aside className={`
           fixed sm:inset-y-4 sm:left-4 z-60 w-72 h-screen py-4 pl-4 transform transition-transform duration-300 ease-in-out lg:relative lg:inset-0 lg:translate-x-0
@@ -46,13 +50,20 @@ const SidebarComponent = ({ isSidebarOpen, setIsSidebarOpen, setLoading }: Props
                         <div className='w-32 h-32'>
                             <img src="/logo.png" alt="" />
                         </div>
-                        {/* <h1 className="text-xl font-black tracking-tight text-emerald-950">Usaha<span className="text-emerald-500">Ku</span></h1> */}
 
                         <nav className="w-full overflow-hidden  space-y-2">
                             <div className='h-[100%] overflow-auto no-scrollbar'>
                                 {
                                     menuSidebar?.map((ms, i) => {
-                                        const isOpen = pathNameParent === `${ms?.href}`
+                                        const isOpen = pathNameParent === `${ms?.href}`;
+
+                                        // LOGIKA KUNCI MENU: Jika Menu Transaksi & (Belum Verif ATAU Expired ATAU Canceled)
+                                        const isLocked = ms?.label?.toLowerCase() === 'transaksi' && (
+                                            business?.verified_status == 0 ||
+                                            business?.subscription_status === 'expired' ||
+                                            business?.subscription_status === 'canceled'
+                                        );
+
                                         return (
                                             ms?.child ?
                                                 <NavItem
@@ -64,6 +75,7 @@ const SidebarComponent = ({ isSidebarOpen, setIsSidebarOpen, setLoading }: Props
                                                     parent={ms?.href}
                                                     setLoading={setLoading}
                                                     pathNameChild={pathNameChild}
+                                                    isLocked={isLocked} // <-- Lempar props isLocked ke NavItem
                                                 /> :
                                                 <NavItem
                                                     icon={ms?.Icon}
@@ -72,19 +84,17 @@ const SidebarComponent = ({ isSidebarOpen, setIsSidebarOpen, setLoading }: Props
                                                     setLoading={setLoading}
                                                     active={isOpen}
                                                     parent={ms?.href}
+                                                    isLocked={isLocked} // <-- Lempar props isLocked ke NavItem
                                                 />
                                         )
                                     })
                                 }
                             </div>
                         </nav>
-
-
                     </GlassCard>
                 </div>
             </div>
         </aside>
-
     )
 }
 

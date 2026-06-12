@@ -3,7 +3,8 @@ import React, { useEffect, useState } from "react";
 
 import {
     MapPin, Save, Camera, Verified, Globe, Eye,
-    Briefcase, Tag, ChevronRight, Clock, BanIcon, Store, Crown, Zap, Sparkles, CheckCircle2, AlertCircle, AlertTriangle, Ban
+    Briefcase, Tag, ChevronRight, Clock, BanIcon, Store, Crown, Zap, Sparkles, CheckCircle2, AlertCircle, AlertTriangle, Ban,
+    Wallet
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Get } from "@/utils/Get";
@@ -18,6 +19,7 @@ import Loading from "@/Components/Loading";
 import MapPreview from "@/Components/Maps/MapPreview";
 import { CardContent } from "@/Components/ui/Outlite";
 import Alert from "@/Components/Alert";
+import ModalSubscription from "@/Components/Layout/ModalSubscription";
 
 export default function BusinessProfile() {
     const [loadingButton, setLoadingButton] = useState<boolean>(false);
@@ -44,6 +46,7 @@ export default function BusinessProfile() {
     const [planType, setPlanType] = useState<'trial' | 'premium'>('trial');
     const [planStatus, setPlanStatus] = useState<'active' | 'expired' | 'canceled'>('active');
     const [daysRemaining, setDaysRemaining] = useState<number>(0);
+    const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
     const handleChange = (key: any, value: string) => setForm((s) => ({ ...s, [key]: value }));
 
     useEffect(() => {
@@ -230,9 +233,9 @@ export default function BusinessProfile() {
                                     </h1>
 
                                     {/* Indikator Verifikasi */}
-                                    {isBusiness && form.verified == 2 ? <Verified size={24} className="text-blue-50 fill-blue-500" /> :
+                                    {isBusiness && form.verified == 2 && planType == 'premium' ? <Verified size={24} className="text-blue-50 fill-blue-500" /> :
                                         isBusiness && form.verified == 1 ? <Clock size={22} className="text-amber-500" /> :
-                                            isBusiness && <BanIcon size={22} className="text-red-500" />}
+                                            isBusiness && form.verified == 0 ? <BanIcon size={22} className="text-red-500" /> : ''}
 
                                     {/* Badge Status Paket */}
                                     {isTrial ? (
@@ -367,7 +370,7 @@ export default function BusinessProfile() {
                                         ) : (
                                             <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-red-50 border border-red-100 shadow-sm">
                                                 <BanIcon size={20} className="text-red-500" />
-                                                <span className="text-red-800 font-bold text-sm">Data Ditolak</span>
+                                                <span className="text-red-800 font-bold text-sm">Langganan Habis</span>
                                             </div>
                                         )}
                                     </div>
@@ -426,12 +429,12 @@ export default function BusinessProfile() {
                                                 <p className="text-xs text-red-600 leading-relaxed">Masa berlangganan Anda telah habis. Beberapa fitur unggulan toko kini dibatasi.</p>
                                             </div>
                                         </div>
-                                        <ul className="space-y-2 text-sm text-slate-400 font-medium opacity-80 pl-1">
+                                        {/* <ul className="space-y-2 text-sm text-slate-400 font-medium opacity-80 pl-1">
                                             <li className="flex items-center gap-2 line-through decoration-slate-300"><Ban size={14} className="text-slate-300" /> Etalase Produk Terkunci</li>
                                             <li className="flex items-center gap-2 line-through decoration-slate-300"><Ban size={14} className="text-slate-300" /> Pengaturan Multi-Cabang</li>
                                             <li className="flex items-center gap-2 line-through decoration-slate-300"><Ban size={14} className="text-slate-300" /> Analitik Penjualan Lanjut</li>
-                                        </ul>
-                                        <button className="w-full mt-4 bg-slate-900 text-white rounded-xl py-3.5 font-bold shadow-lg hover:shadow-xl hover:bg-slate-800 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
+                                        </ul> */}
+                                        <button onClick={() => setIsSubscriptionModalOpen(true)} className="w-full mt-4 bg-slate-900 text-white rounded-xl py-3.5 font-bold shadow-lg hover:shadow-xl hover:bg-slate-800 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
                                             <Zap size={18} className="fill-white" /> Perpanjang Paket Sekarang
                                         </button>
                                     </div>
@@ -445,12 +448,12 @@ export default function BusinessProfile() {
                                                 <span className="font-bold text-sm mb-1">Hari Lagi</span>
                                             </div>
                                         </div>
-                                        <ul className="space-y-2.5 text-sm text-slate-600 font-medium">
+                                        {/* <ul className="space-y-2.5 text-sm text-slate-600 font-medium">
                                             <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Fitur Etalase Lengkap</li>
                                             <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-slate-300" /> Multi-Cabang / Outlet</li>
                                             <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-slate-300" /> Analitik Penjualan</li>
-                                        </ul>
-                                        <button className="w-full mt-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl py-3.5 font-bold shadow-lg shadow-amber-500/30 hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
+                                        </ul> */}
+                                        <button onClick={() => setIsSubscriptionModalOpen(true)} className="w-full mt-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl py-3.5 font-bold shadow-lg shadow-amber-500/30 hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
                                             <Crown size={18} className="fill-amber-200" /> Upgrade ke Premium
                                         </button>
                                     </div>
@@ -458,15 +461,18 @@ export default function BusinessProfile() {
                                     // KONDISI: PREMIUM
                                     <div className="space-y-4">
                                         <p className="text-slate-300 text-sm">Anda menikmati semua fitur terbaik kami tanpa batas.</p>
-                                        <ul className="space-y-2.5 text-sm text-amber-100/80 font-medium">
+                                        {/* <ul className="space-y-2.5 text-sm text-amber-100/80 font-medium">
                                             <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-amber-400" /> Multi-Cabang / Outlet Terbuka</li>
                                             <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-amber-400" /> Laporan Analitik Real-time</li>
                                             <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-amber-400" /> Lencana Verified (Prioritas)</li>
-                                        </ul>
+                                        </ul> */}
                                         <div className="bg-white/10 rounded-xl p-3 border border-white/10 mt-4 flex justify-between items-center backdrop-blur-sm">
                                             <span className="text-xs text-slate-300 font-medium">Masa Aktif:</span>
-                                            <span className="text-xs font-bold text-white tracking-wider">Selamanya</span>
+                                            <span className="text-xs font-bold text-white tracking-wider">Sisa {daysRemaining} hari </span>
                                         </div>
+                                        <button onClick={() => setIsSubscriptionModalOpen(true)} className="w-full  px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-sm font-bold rounded-xl shadow-[0_4px_14px_0_rgba(245,158,11,0.39)] hover:shadow-[0_6px_20px_rgba(245,158,11,0.23)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center">
+                                            <Wallet className="w-4 h-4 mr-2" /> Perpanjang
+                                        </button>
                                     </div>
                                 )}
                             </div>
@@ -619,6 +625,11 @@ export default function BusinessProfile() {
             {showAlert?.isOpen && (
                 <Alert type={showAlert?.type} message={showAlert?.message} onClose={() => setShowAlert(null)} />
             )}
+
+            {
+                isSubscriptionModalOpen &&
+                <ModalSubscription onClose={() => setIsSubscriptionModalOpen(false)} />
+            }
         </div>
     );
 }

@@ -1,5 +1,5 @@
 "use client";
-import { Bell, ChevronDown, LogOut, Menu, Settings, User, X, Check, Crown, Sparkles, Zap, ShieldCheck, AlertCircle } from 'lucide-react'
+import { Bell, ChevronDown, LogOut, Menu, Settings, User, X, Check, Crown, Sparkles, Zap, ShieldCheck, AlertCircle, Store } from 'lucide-react'
 import React, { Dispatch, SetStateAction, useState, useEffect } from 'react'
 import GlassCard from './GlassCard';
 import { usePathname } from 'next/navigation';
@@ -17,9 +17,11 @@ type Props = {
   handleProfileClick: () => void;
   title: string;
   handleLogout: () => void;
+  user: any
+  business: any
 }
 
-const Header = ({ setIsSidebarOpen, isSidebarOpen, setIsMobileActionMenuOpen, handleNotificationClick, handleProfileClick, isMobileActionMenuOpen, closeMobileActionMenu, title, handleLogout }: Props) => {
+const Header = ({ setIsSidebarOpen, user, business, isSidebarOpen, setIsMobileActionMenuOpen, handleNotificationClick, handleProfileClick, isMobileActionMenuOpen, closeMobileActionMenu, title, handleLogout }: Props) => {
   const [notifOpen, setNotifOpen] = useState<boolean>(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
@@ -28,8 +30,7 @@ const Header = ({ setIsSidebarOpen, isSidebarOpen, setIsMobileActionMenuOpen, ha
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [planType, setPlanType] = useState<'trial' | 'premium'>('trial');
   const [planStatus, setPlanStatus] = useState<'active' | 'expired' | 'canceled'>('active');
-  const [user, setUser] = useState<any>();
-  const [business, setBusiness] = useState<any>();
+
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -52,27 +53,10 @@ const Header = ({ setIsSidebarOpen, isSidebarOpen, setIsMobileActionMenuOpen, ha
   });
 
   useEffect(() => {
-    getProfile()
+    setPlanType(business?.plan || 'trial');
+    setPlanStatus(business?.subscription_status || 'active');
   }, [])
 
-  const getProfile = async () => {
-    setIsLoading(true)
-    try {
-      const res = await Get<any>('business/profile');
-      if (res?.data) {
-        // Tangkap dua field terpisah dari response API
-        setPlanType(res?.data?.business?.plan || 'trial');
-        setPlanStatus(res?.data?.business?.subscription_status || 'active');
-        
-        setUser(res?.data?.user)
-        setBusiness(res?.data?.business)
-      }
-    } catch (e: any) {
-      console.error(e);
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   // --- KOMPONEN RENDER BADGE ---
   // Dibuat function agar tidak mengulang kode di versi Mobile dan Desktop
@@ -201,15 +185,17 @@ const Header = ({ setIsSidebarOpen, isSidebarOpen, setIsMobileActionMenuOpen, ha
               </div>
 
               {/* Avatar Frame Box */}
-              <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold transition-all duration-500 relative ${
-                  planStatus === 'expired' || planStatus === 'canceled'
-                  ? 'bg-rose-100 text-rose-500 border border-rose-200 shadow-[0_4px_12px_rgba(225,29,72,0.1)] grayscale'
-                  : planType === 'premium'
+              <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold transition-all duration-500 relative ${planStatus === 'expired' || planStatus === 'canceled'
+                ? 'bg-rose-100 text-rose-500 border border-rose-200 shadow-[0_4px_12px_rgba(225,29,72,0.1)] grayscale'
+                : planType === 'premium'
                   ? 'bg-gradient-to-tr from-slate-900 via-slate-800 to-slate-950 text-amber-400 shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-slate-700/60'
                   : 'bg-gradient-to-tr from-emerald-500 to-teal-600 text-white shadow-[0_4px_12px_rgba(16,185,129,0.15)] group-hover:shadow-[0_4px_16px_rgba(16,185,129,0.3)]'
                 }`}>
-                <img src={business?.logo_url} className='rounded-2xl w-full h-full object-cover' />
-                
+                {
+                  business?.logo_url ?
+                    <img src={business?.logo_url} className='rounded-2xl w-full h-full object-cover' /> :
+                    <Store size={24} className={`${planType === 'premium' ? 'text-slate-300' : "text-slate-100"}`} />
+                }
                 {/* Indikator Bintang (Premium Aktif) atau Tanda Seru (Habis) */}
                 {planStatus === 'expired' || planStatus === 'canceled' ? (
                   <span className="absolute -top-1 -right-1 w-3 h-3 bg-rose-500 rounded-full flex items-center justify-center text-[7px] text-white border border-white font-black shadow-sm">!</span>

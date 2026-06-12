@@ -39,9 +39,6 @@ const ModalSubscription = ({ onClose }: Props) => {
         try {
             const res = await Get<{ success: boolean, data: any }>('subscription/show-subscription');
             if (res?.success) {
-                if (res?.data?.is_payment && res?.data?.subscription_status) {
-                    window.location.reload()
-                }
                 setData(res?.data);
                 if (res?.data?.subscription) {
                     setVaData(res?.data?.subscription);

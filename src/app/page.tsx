@@ -39,6 +39,7 @@ import {
 } from 'recharts';
 import MainLayout from '@/Components/Layout/MainLayout';
 import { Get } from '@/utils/Get'; // Pastikan import ini ada
+import ModalSubscription from '@/Components/Layout/ModalSubscription';
 
 // Simulasi data untuk sidebar
 const navigation = [
@@ -71,14 +72,13 @@ const navigation = [
 
 
 // Komponen Dashboard (Konten Utama)
-const Dashboard = () => {
+const Dashboard = ({ setIsSubscriptionModalOpen }: any) => {
     // --- STATE SUBSCRIPTION ---
     const [isLoading, setIsLoading] = useState(true);
     const [planType, setPlanType] = useState<'trial' | 'premium'>('trial');
     const [planStatus, setPlanStatus] = useState<'active' | 'expired' | 'canceled'>('active');
     const [endTime, setEndTime] = useState<string | null>(null);
     const [daysRemaining, setDaysRemaining] = useState<number>(0);
-
     useEffect(() => {
         const fetchProfile = async () => {
             setIsLoading(true);
@@ -186,7 +186,7 @@ const Dashboard = () => {
                             Telah berakhir pada {formatDateTime(endTime)}
                         </p>
                     </div>
-                    <button className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-rose-600 to-red-500 hover:from-rose-700 hover:to-red-600 text-white text-sm font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center">
+                    <button onClick={() => setIsSubscriptionModalOpen(true)} className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-rose-600 to-red-500 hover:from-rose-700 hover:to-red-600 text-white text-sm font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center">
                         <CreditCard className="w-4 h-4 mr-2" /> Perpanjang
                     </button>
                 </div>
@@ -211,9 +211,12 @@ const Dashboard = () => {
                                 Sisa {daysRemaining} hari (Habis: {formatDateTime(endTime)})
                             </p>
                         </div>
-                        <button className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-sm font-bold rounded-xl shadow-[0_4px_14px_0_rgba(245,158,11,0.39)] hover:shadow-[0_6px_20px_rgba(245,158,11,0.23)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center">
-                            <Wallet className="w-4 h-4 mr-2" /> Kelola
-                        </button>
+                        {
+                            daysRemaining < 8 &&
+                            <button onClick={() => setIsSubscriptionModalOpen(true)} className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-sm font-bold rounded-xl shadow-[0_4px_14px_0_rgba(245,158,11,0.39)] hover:shadow-[0_6px_20px_rgba(245,158,11,0.23)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center">
+                                <Wallet className="w-4 h-4 mr-2" /> Perpanjang
+                            </button>
+                        }
                     </div>
                 </div>
             );
@@ -236,7 +239,7 @@ const Dashboard = () => {
                             Sisa {daysRemaining} hari (Habis: {formatDateTime(endTime)})
                         </p>
                     </div>
-                    <button className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-gray-900 to-gray-800 hover:from-black hover:to-gray-900 text-white text-sm font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center border border-gray-700">
+                    <button onClick={() => setIsSubscriptionModalOpen(true)} className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-gray-900 to-gray-800 hover:from-black hover:to-gray-900 text-white text-sm font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center border border-gray-700">
                         <CreditCard className="w-4 h-4 mr-2" /> Upgrade
                     </button>
                 </div>
@@ -424,11 +427,17 @@ const Dashboard = () => {
 
 // Komponen Utama App
 export default function App() {
+    const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
+
     return (
         <div className="flex h-screen bg-gradient-to-br from-[#e0f2f1] via-[#e0f7fa] to-[#f3e5f5] font-sans selection:bg-emerald-200 selection:text-emerald-900">
             <main className="flex-1 overflow-x-hidden overflow-y-auto bg-transparent relative z-10">
-                <Dashboard />
+                <Dashboard setIsSubscriptionModalOpen={setIsSubscriptionModalOpen} />
             </main>
+            {
+                isSubscriptionModalOpen &&
+                <ModalSubscription onClose={() => setIsSubscriptionModalOpen(false)} />
+            }
         </div>
     );
 }
