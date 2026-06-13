@@ -136,8 +136,7 @@ const Eight = ({ categories, isDarkMode, onClick }: Props) => {
                                     </span>
                                 </div>
 
-                                <div className={`p-1.5 rounded-xl transition-all duration-500 text-white`}
-                                    style={{ backgroundColor: cat.color || 'var(--category-primary-color)' }}>
+                                <div className={`p-1.5 rounded-xl transition-all duration-500 text-white bg-[var(--category-primary-color)]`}>
                                     <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-500 group-hover:rotate-12" />
                                 </div>
                             </div>

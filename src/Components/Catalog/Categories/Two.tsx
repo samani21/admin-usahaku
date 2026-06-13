@@ -43,10 +43,10 @@ const Two = ({ categories, isDarkMode, onClick }: Props) => {
                                 className="w-8 h-8 md:w-10 md:h-10 text-[var(--category-primary-color)] transform transition-transform duration-500 ease-out group-hover:scale-110"
                             />
                         </div>
-
-                        {/* Seamless Badge */}
-                        <div className={`absolute -top-1 -right-1 w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center text-[10px] md:text-xs font-semibold shadow-md border-[3px] z-20 transition-transform duration-500 group-hover:scale-110
-                            ${isDarkMode ? 'bg-slate-700 border-slate-900 text-white' : 'bg-white border-white text-slate-800'}`}>
+                        <div
+                            className={`absolute -top-1 -right-1 w-7 h-7 md:w-8 md:h-8 rounded-full bg-[var(--category-primary-color)] flex items-center justify-center text-[10px] md:text-xs font-semibold text-white shadow-md border-[3px] z-20 transition-transform duration-500 group-hover:scale-110
+                                    ${isDarkMode ? 'border-slate-900' : 'border-white'}`}
+                        >
                             {totalItems}
                         </div>
                     </div>
@@ -118,9 +118,8 @@ const Two = ({ categories, isDarkMode, onClick }: Props) => {
 
                             {/* Sleek Integrated Badge */}
                             <div
-                                className={`absolute -top-1 -right-1 w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center text-[10px] md:text-xs font-semibold text-white shadow-md border-[3px] z-20 transition-transform duration-500 group-hover:scale-110
+                                className={`absolute -top-1 -right-1 w-7 h-7 md:w-8 md:h-8 rounded-full bg-[var(--category-primary-color)] flex items-center justify-center text-[10px] md:text-xs font-semibold text-white shadow-md border-[3px] z-20 transition-transform duration-500 group-hover:scale-110
                                     ${isDarkMode ? 'border-slate-900' : 'border-white'}`}
-                                style={{ backgroundColor: cat?.color || 'var(--category-primary-color)' }}
                             >
                                 {cat.count || 0}
                             </div>

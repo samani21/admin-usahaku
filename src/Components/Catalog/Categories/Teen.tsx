@@ -118,8 +118,7 @@ const Teen = ({ categories, isDarkMode, onClick }: Props) => {
                                     </h3>
                                     <div className="flex items-center gap-2.5 mt-2">
                                         <div
-                                            className="h-[2px] w-4 rounded-full opacity-30 transition-all duration-700 ease-out group-hover:w-10 group-hover:opacity-100"
-                                            style={{ backgroundColor: cat.color || 'var(--category-primary-color)' }}
+                                            className="h-[2px] w-4 rounded-full opacity-30 transition-all duration-700 ease-out bg-[var(--category-primary-color)] group-hover:w-10 group-hover:opacity-100"
                                         />
                                         <span className={`text-[10px] font-medium uppercase tracking-wider
                                             ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>

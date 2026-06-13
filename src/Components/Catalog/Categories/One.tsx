@@ -58,9 +58,8 @@ const One = ({ categories, isDarkMode, onClick }: Props) => {
                             <div
                                 key={i}
                                 onClick={() => { onClick?.(cat?.name); handleScroll(); }}
-                                className={`relative group overflow-hidden rounded-3xl cursor-pointer transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl border
-                            ${isLarge ? "col-span-2 row-span-2" : "col-span-2 md:col-span-2 row-span-1 sm:row-span-2"}
-                            ${isDarkMode ? "border-white/10 shadow-black/50" : "border-transparent shadow-slate-200"}`}
+                                className={`relative group overflow-hidden rounded-3xl cursor-pointer col-span-2 row-span-1 transition-all duration-500 hover:-translate-y-1 shadow-sm hover:shadow-xl border
+                    ${isDarkMode ? "bg-slate-800/80 border-white/10 hover:bg-slate-800" : "bg-white border-slate-200 hover:bg-slate-50"}`}
                             >
                                 {/* Image Layer - Cinematic Zoom */}
                                 <img
