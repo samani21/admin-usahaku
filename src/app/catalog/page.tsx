@@ -21,6 +21,7 @@ import Link from 'next/link';
 import Loading from '@/Components/Loading';
 import HeaderView from './View/HeaderView';
 import HeroView from './View/HeroView';
+import CategoriesView from './View/CategoryView';
 
 
 export default function CatalogPage() {
@@ -102,8 +103,8 @@ export default function CatalogPage() {
                 return <HeaderView themeDark={isDarkMode} setThemeDark={setIsDarkMode} headerData={catalog?.header ?? null} getCalog={getCalog} />
             case "Hero/Banner":
                 return <HeroView isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} heroData={catalog?.hero ?? null} getCalog={getCalog} />
-            // case "Kategori":
-            //     return <CategoriesPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} categoriesData={catalog?.category ?? null} categories={catalog?.categories ?? []} getCalog={getCalog} />
+            case "Kategori":
+                return <CategoriesView isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} categoriesData={catalog?.category ?? null} categories={catalog?.categories ?? []} getCalog={getCalog} />
             // case "Produk dan Modal":
             //     return <ProductPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} productData={catalog?.product ?? null} productsData={catalog?.products ?? []} getCalog={getCalog} />
             // case "Ringkasan Pembayaran":
