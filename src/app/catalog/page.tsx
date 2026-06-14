@@ -26,6 +26,7 @@ import HeroView from './View/HeroView';
 import CategoriesView from './View/CategoryView';
 import ProductView from './View/ProductView';
 import { ProductsType, Variants } from '@/types/Admin/ProductsType';
+import SummaryView from './View/SummaryView';
 
 
 export default function CatalogPage() {
@@ -122,8 +123,8 @@ export default function CatalogPage() {
                 return <CategoriesView isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} categoriesData={catalog?.category ?? null} categories={catalog?.categories ?? []} getCalog={getCalog} />
             case "Produk dan Modal":
                 return <ProductView isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} productData={catalog?.product ?? null} productsData={catalog?.products ?? []} getCalog={getCalog} handleCart={handleCart} />
-            // case "Ringkasan Pembayaran":
-            //     return <SummaryPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} summaryData={catalog?.summary ?? null} getCalog={getCalog} />
+            case "Ringkasan Pembayaran":
+                return <SummaryView isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} summaryData={catalog?.summary ?? null} getCalog={getCalog} />
             default:
                 return null
         }
