@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect, useRef, SetStateAction, Dispatch } from 'react';
 import { Palette, Home, Utensils, Cpu, Sparkles, Pipette, HeartPulse, Shirt, Coffee, GraduationCap, Upload, CircleCheckBigIcon, Circle, Sun, Moon, Check, SunMoon, CheckCircleIcon } from 'lucide-react';
-import { ProductsType } from '@/types/Admin/ProductsType';
+import { ProductsType, Variants } from '@/types/Admin/ProductsType';
 import { Post } from '@/utils/Post';
 import { AlertType } from '@/types/Alert';
 import { ProductType } from '@/types/Admin/Catalog/Products';
@@ -100,9 +100,10 @@ type Props = {
     isDarkMode: boolean;
     setIsDarkMode: Dispatch<SetStateAction<boolean>>;
     getCalog: () => void;
+    handleCart: (p: ProductsType | null, v: Variants | null, qty: number) => void;
 }
 
-export default function ProductView({ productData, productsData, isDarkMode, setIsDarkMode, getCalog }: Props) {
+export default function ProductView({ productData, productsData, isDarkMode, setIsDarkMode, getCalog, handleCart }: Props) {
     const [selectedColor, setSelectedColor] = useState(BUSINESS_THEMES[0].hex);
     const [activeTab, setActiveTab] = useState(BUSINESS_THEMES[0].id);
     const [productLayout, setProductLayout] = useState<number>();
@@ -315,13 +316,15 @@ export default function ProductView({ productData, productsData, isDarkMode, set
                                         <ProductConfig
                                             theme={productLayout}
                                             products={products?.slice(0, 4) ?? []}
-                                            isDarkMode={isDarkMode} />
+                                            isDarkMode={isDarkMode}
+                                            handleCart={handleCart} />
                                     </div>
                                     <div className='md:hidden'>
                                         <ProductConfig
                                             theme={productLayout}
                                             products={products?.slice(1, 3) ?? []}
-                                            isDarkMode={isDarkMode} />
+                                            isDarkMode={isDarkMode}
+                                            handleCart={handleCart} />
                                     </div>
                                 </>
                             }
@@ -344,13 +347,15 @@ export default function ProductView({ productData, productsData, isDarkMode, set
                                             <ProductConfig
                                                 theme={lh?.id}
                                                 products={products?.slice(0, 4) ?? []}
-                                                isDarkMode={isDarkMode} />
+                                                isDarkMode={isDarkMode}
+                                                handleCart={handleCart} />
                                         </div>
                                         <div className='md:hidden'>
                                             <ProductConfig
                                                 theme={lh?.id}
                                                 products={products?.slice(1, 3) ?? []}
-                                                isDarkMode={isDarkMode} />
+                                                isDarkMode={isDarkMode}
+                                                handleCart={handleCart} />
                                         </div>
                                     </div>
                                 ))

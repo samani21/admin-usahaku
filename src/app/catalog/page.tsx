@@ -13,7 +13,9 @@ import {
     Bell,
     Dock,
     Store,
-    ArrowRightToLine
+    ArrowRightToLine,
+    Navigation,
+    X
 } from 'lucide-react';
 import { Get } from '@/utils/Get';
 import { Catalog } from '@/types/Admin/Catalog/Catalog';
@@ -23,6 +25,7 @@ import HeaderView from './View/HeaderView';
 import HeroView from './View/HeroView';
 import CategoriesView from './View/CategoryView';
 import ProductView from './View/ProductView';
+import { ProductsType, Variants } from '@/types/Admin/ProductsType';
 
 
 export default function CatalogPage() {
@@ -32,6 +35,7 @@ export default function CatalogPage() {
     const [loading, setLoading] = useState<boolean>(false);
     const [catalog, setCatalog] = useState<Catalog | null>(null);
     const [error, setError] = useState<boolean>(false);
+    const [toastMessage, setToastMessage] = useState<string | null>(null);
     // Menangani efek scroll untuk navbar
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -76,6 +80,16 @@ export default function CatalogPage() {
         }
     };
 
+
+    const handleCart = async (p: ProductsType | null, v: Variants | null, qty: number) => {
+        triggerToast(`✓ Berhasil ditambah ke keranjang  ${p?.name} ${v ? `(${v?.name})` : ''}`)
+    }
+    const triggerToast = (message: string) => {
+        setToastMessage(message);
+        setTimeout(() => {
+            setToastMessage(null);
+        }, 4000);
+    };
     const renderPage = () => {
         if (error) {
             return (
@@ -107,7 +121,7 @@ export default function CatalogPage() {
             case "Kategori":
                 return <CategoriesView isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} categoriesData={catalog?.category ?? null} categories={catalog?.categories ?? []} getCalog={getCalog} />
             case "Produk dan Modal":
-                return <ProductView isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} productData={catalog?.product ?? null} productsData={catalog?.products ?? []} getCalog={getCalog} />
+                return <ProductView isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} productData={catalog?.product ?? null} productsData={catalog?.products ?? []} getCalog={getCalog} handleCart={handleCart} />
             // case "Ringkasan Pembayaran":
             //     return <SummaryPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} summaryData={catalog?.summary ?? null} getCalog={getCalog} />
             default:
@@ -199,6 +213,18 @@ export default function CatalogPage() {
                 </div>
                 {renderPage()}
             </main>
+
+            {toastMessage && (
+                <div className="fixed top-6 left-1/2 -translate-x-1/2 z-101 bg-zinc-900 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 animate-fade-in border border-zinc-800">
+                    <div className="bg-zinc-800 p-1.5 rounded-lg text-zinc-300">
+                        <Navigation className="w-4 h-4 animate-bounce" />
+                    </div>
+                    <span className="text-xs sm:text-sm font-semibold pr-2">{toastMessage}</span>
+                    <button onClick={() => setToastMessage(null)} className="text-zinc-400 hover:text-white">
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
+            )}
             {loading && <Loading title='Sedang Proses' />}
             {/* Style kustom untuk menyembunyikan scrollbar */}
             <style>{`

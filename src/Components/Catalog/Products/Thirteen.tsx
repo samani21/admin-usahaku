@@ -15,37 +15,18 @@ type Props = {
     products: ProductsType[];
     isDarkMode: boolean;
     handleCart?: (p: ProductsType | null, v: Variants | null, qty: number) => void;
-    selectedOutlet?: OutletsType | null
+
 }
 
-const Thirteen = ({ products, isDarkMode, handleCart, selectedOutlet }: Props) => {
+const Thirteen = ({ products, isDarkMode, handleCart }: Props) => {
     const [product, setProduct] = useState<ProductsType | null>(null);
     const [selectedVariant, setSelectedVariant] = useState<Variants | null>(null);
     const [quantity, setQuantity] = useState<number>(1);
-    const [activeAlert, setActiveAlert] = useState<boolean>(false);
 
     const disableButton = useMemo(() => {
-        if (!product || !selectedOutlet) return true;
+        if (!product) return true;
         return product?.variants?.length > 0 && !selectedVariant;
-    }, [product, selectedVariant, selectedOutlet]);
-
-    const mockItem = useMemo(() => {
-        return {
-            name: product?.name,
-            price: product?.final_price,
-            image: product?.image,
-            category: product?.category,
-            quantity: quantity
-        }
-    }, [activeAlert, product, quantity])
-
-    useEffect(() => {
-        if (activeAlert) {
-            const timer = setTimeout(() => setActiveAlert(false), 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [activeAlert]);
-
+    }, [product, selectedVariant]);
     useEffect(() => {
         if (product) {
             document.body.style.overflow = 'hidden';
@@ -58,13 +39,10 @@ const Thirteen = ({ products, isDarkMode, handleCart, selectedOutlet }: Props) =
     }, [product]);
 
     const addCart = () => {
-        if (selectedOutlet) {
-            if (handleCart) handleCart(product, selectedVariant, quantity);
-            setActiveAlert(true);
-            setProduct(null);
-            setSelectedVariant(null);
-            setQuantity(1);
-        }
+        if (handleCart) handleCart(product, selectedVariant, quantity);
+        setProduct(null);
+        setSelectedVariant(null);
+        setQuantity(1);
     };
 
     const currentPrice = selectedVariant?.price ?? product?.price ?? 0;

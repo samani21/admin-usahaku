@@ -20,16 +20,14 @@ type Props = {
     products: ProductsType[];
     isDarkMode: boolean;
     handleCart?: (p: ProductsType | null, v: Variants | null, qty: number) => void;
-    selectedOutlet?: OutletsType | null
 }
 
-const ProductConfig = ({ theme, products, isDarkMode, handleCart, selectedOutlet }: Props) => {
+const ProductConfig = ({ theme, products, isDarkMode, handleCart }: Props) => {
 
     const commonProps = {
         products,
         isDarkMode,
         handleCart,
-        selectedOutlet
     };
 
     /* ===================== Numeric Theme ===================== */

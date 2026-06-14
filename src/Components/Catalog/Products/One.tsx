@@ -15,20 +15,19 @@ type Props = {
     products: ProductsType[];
     isDarkMode: boolean;
     handleCart?: (p: ProductsType | null, v: Variants | null, qty: number) => void;
-    selectedOutlet?: OutletsType | null
+
 }
 
-const One = ({ products, isDarkMode, handleCart, selectedOutlet }: Props) => {
+const One = ({ products, isDarkMode, handleCart }: Props) => {
     const [product, setProduct] = useState<ProductsType | null>(null)
     const [productAlert, setProductAlert] = useState<ProductsType | null>(null)
     const [selectedVariant, setSelectedVariant] = useState<Variants | null>(null)
     const [quantity, setQuantity] = useState<number>(1);
-    const [activeAlert, setActiveAlert] = useState<boolean>(false);
 
     const disableButton = useMemo(() => {
-        if (!product || !selectedOutlet) return true;
+        if (!product) return true;
         return product?.variants?.length > 0 && !selectedVariant;
-    }, [product, selectedVariant, selectedOutlet]);
+    }, [product, selectedVariant]);
 
 
     useEffect(() => {
@@ -36,26 +35,12 @@ const One = ({ products, isDarkMode, handleCart, selectedOutlet }: Props) => {
         return () => { document.body.style.overflow = 'unset'; };
     }, [product]);
 
-    const mockItem = useMemo(() => ({
-        name: productAlert?.name,
-        image: productAlert?.image,
-    }), [productAlert]);
-
-    useEffect(() => {
-        if (activeAlert) {
-            const timer = setTimeout(() => setActiveAlert(false), 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [activeAlert]);
 
     const addCart = () => {
-        if (selectedOutlet) {
-            // setActiveAlert(true); // Uncomment jika ingin toast muncul
-            if (handleCart) handleCart(product, selectedVariant, quantity);
-            setProduct(null);
-            setSelectedVariant(null);
-            setQuantity(1);
-        }
+        if (handleCart) handleCart(product, selectedVariant, quantity);
+        setProduct(null);
+        setSelectedVariant(null);
+        setQuantity(1);
     };
 
     useEffect(() => {
