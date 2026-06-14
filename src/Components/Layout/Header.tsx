@@ -55,7 +55,7 @@ const Header = ({ setIsSidebarOpen, user, business, isSidebarOpen, setIsMobileAc
   useEffect(() => {
     setPlanType(business?.plan || 'trial');
     setPlanStatus(business?.subscription_status || 'active');
-  }, [])
+  }, [business])
 
 
   // --- KOMPONEN RENDER BADGE ---
