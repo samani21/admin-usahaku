@@ -46,7 +46,7 @@ const NavIcons = ({ colorClass, toggleTheme, themeMode, darkOnly, displayMode, i
                     setIsOpenScan(true);
                     setIsOpenSidebar(false); // Tutup sidebar saat modal scan dibuka
                 }}
-                className={`w-full md:w-9 md:h-9 rounded-xl flex items-center justify-center gap-2 p-2 md:p-0 transition-colors  ${themeMode === 'dark' ? "hover:bg-slate-800 text-white" : "hover:bg-slate-50 text-slate-800"}`}
+                className={`w-full md:w-9 md:h-9 rounded-xl flex items-center md:justify-center gap-2 p-2 md:p-0 transition-colors  ${themeMode === 'dark' ? "hover:bg-slate-800 text-white" : "hover:bg-slate-50 text-slate-800"}`}
             >
                 <ScanBarcode className="w-5 h-5" />
                 <span className="md:hidden">Scan Produk</span>
@@ -56,12 +56,9 @@ const NavIcons = ({ colorClass, toggleTheme, themeMode, darkOnly, displayMode, i
 
     return (
         <div>
-            {/* --- TAMPILAN DESKTOP (Layar Besar) --- */}
             <div className="hidden md:flex items-center gap-2">
                 <MenuItems />
             </div >
-
-            {/* --- TOMBOL HAMBURGER (Hanya muncul di Mobile) --- */}
             <div className="flex md:hidden">
                 <button
                     onClick={() => setIsOpenSidebar(true)}
@@ -70,19 +67,9 @@ const NavIcons = ({ colorClass, toggleTheme, themeMode, darkOnly, displayMode, i
                     <Menu className="w-6 h-6" />
                 </button>
             </div>
-
-            {/* --- SIDEBAR MOBILE (Geser dari Kanan) --- */}
             {isOpenSidebar && (
-                <div className="fixed inset-0 z-50 flex justify-end md:hidden">
-                    {/* Backdrop / Latar Belakang Gelap (Klik untuk menutup) */}
-                    <div
-                        className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
-                        onClick={() => setIsOpenSidebar(false)}
-                    />
-
-                    {/* Konten Sidebar */}
+                <div className='absolute top-0 right-[-25px]'>
                     <div className={`relative w-64 h-full p-6 shadow-xl flex flex-col gap-6 transition-transform transform translate-x-0 ${themeMode === 'dark' ? "bg-slate-900 text-white" : "bg-white text-slate-900"}`}>
-                        {/* Tombol Close */}
                         <div className="flex justify-between items-center border-b pb-4 border-slate-200 dark:border-slate-700">
                             <span className="font-semibold">Menu</span>
                             <button
@@ -92,9 +79,7 @@ const NavIcons = ({ colorClass, toggleTheme, themeMode, darkOnly, displayMode, i
                                 <X className="w-6 h-6" />
                             </button>
                         </div>
-
-                        {/* List Menu di dalam Sidebar */}
-                        <div className="flex flex-col items-start gap-4">
+                        <div className="flex flex-col w-64  mt-[-10px] w-full  items-start gap-4">
                             <MenuItems />
                         </div>
                     </div>

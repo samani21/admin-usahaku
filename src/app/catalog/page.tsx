@@ -187,9 +187,9 @@ export default function CatalogPage() {
                             const Icon = item.icon;
 
                             return (
-                                <button
+                                item?.id === 'Preview' ? <button
                                     key={item.id}
-                                    onClick={() => setActiveMenu(item.id)}
+                                    onClick={()=>window.location.href='/catalog/preview'}
                                     className={`
                     relative flex items-center gap-2.5 px-6 py-3 text-sm transition-all duration-300 rounded-xl whitespace-nowrap
                     ${isActive
@@ -207,7 +207,28 @@ export default function CatalogPage() {
                                             <span className={`relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border-2 ${isDarkMode ? 'border-slate-900' : 'border-white'}`}></span>
                                         </span>
                                     )}
-                                </button>
+                                </button> :
+                                    <button
+                                        key={item.id}
+                                        onClick={() => setActiveMenu(item.id)}
+                                        className={`
+                    relative flex items-center gap-2.5 px-6 py-3 text-sm transition-all duration-300 rounded-xl whitespace-nowrap
+                    ${isActive
+                                                ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 font-semibold scale-105'
+                                                : isDarkMode
+                                                    ? 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                                                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}
+                  `}
+                                    >
+                                        <Icon size={18} className={isActive ? 'text-white' : 'text-slate-400'} />
+                                        {item.label}
+                                        {isActive && (
+                                            <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                <span className={`relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border-2 ${isDarkMode ? 'border-slate-900' : 'border-white'}`}></span>
+                                            </span>
+                                        )}
+                                    </button>
                             );
                         })}
                     </nav>
