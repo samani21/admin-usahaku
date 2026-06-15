@@ -231,12 +231,17 @@ export default function PreviewView({ onClose }: Props) {
                 </div>
             </div>
             {toastMessage && (
-                <div className="fixed top-6 left-1/2 -translate-x-1/2 z-101 bg-zinc-900 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 animate-fade-in border border-zinc-800">
-                    <div className="bg-zinc-800 p-1.5 rounded-lg text-zinc-300">
-                        <Navigation className="w-4 h-4 animate-bounce" />
+                <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[101] w-[calc(100%-2rem)] sm:w-max max-w-md bg-zinc-900/95 backdrop-blur-sm text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center justify-between gap-4 animate-fade-in border border-zinc-800 transition-all hover:bg-zinc-900">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-white/10 p-2 rounded-xl text-zinc-200 shrink-0">
+                            <Navigation className="w-4 h-4 animate-bounce" />
+                        </div>
+                        <span className="text-sm font-medium leading-snug">{toastMessage}</span>
                     </div>
-                    <span className="text-xs sm:text-sm font-semibold pr-2">{toastMessage}</span>
-                    <button onClick={() => setToastMessage(null)} className="text-zinc-400 hover:text-white">
+                    <button
+                        onClick={() => setToastMessage(null)}
+                        className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors shrink-0"
+                    >
                         <X className="w-4 h-4" />
                     </button>
                 </div>

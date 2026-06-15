@@ -224,11 +224,11 @@ const Eleven = ({ products, isDarkMode, handleCart }: Props) => {
                                     <div className="text-2xl sm:text-3xl font-black tracking-tighter text-[var(--product-primary-color)]">
                                         {formatIDR(currentFinalPrice)}
                                     </div>
-                                    {product?.discount_price && (
+                                    {product?.discount_price ? (
                                         <div className={`text-sm line-through font-bold mt-1 ${isDarkMode ? "text-slate-600" : "text-slate-400"}`}>
                                             {formatIDR(currentPrice)}
                                         </div>
-                                    )}
+                                    ) : ""}
                                 </div>
                                 <div className={`p-5 rounded-[2rem] border ${isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"}`}>
                                     <span className={`text-[10px] font-black uppercase tracking-widest block mb-1.5 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>

@@ -199,10 +199,7 @@ const Fourteen = ({ products, isDarkMode, handleCart }: Props) => {
 
                         {/* Floating Tech Badges */}
                         <div className="absolute top-6 left-6 flex flex-col gap-3">
-                            <div className={`px-4 py-1.5 rounded-sm text-[9px] font-black uppercase tracking-[0.3em] backdrop-blur-md border shadow-lg
-                                ${isDarkMode ? "bg-black/50 border-white/20 text-white" : "bg-white/50 border-black/10 text-black"}`}>
-                                Visual Lab // 01
-                            </div>
+
                             {product?.discount_price && (
                                 <div className="bg-[var(--product-primary-color)] text-white px-5 py-2 rounded-sm font-black text-xl italic skew-x-[-12deg] shadow-xl w-fit">
                                     -{Promo(product, selectedVariant)}
@@ -236,26 +233,16 @@ const Fourteen = ({ products, isDarkMode, handleCart }: Props) => {
 
                             {/* System Options & Interactions */}
                             <div className="space-y-8 pt-6">
-                                {product?.variants && product?.variants.length > 0 && (
+                                {product?.variants && product?.variants?.length > 0 && (
                                     <div className="space-y-4">
-                                        <div className="flex items-center gap-2 mb-4">
-                                            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                                            <p className="text-[10px] font-black uppercase tracking-widest opacity-50">System Options:</p>
-                                        </div>
-                                        <div className="flex flex-wrap gap-3">
-                                            {product.variants.map((v) => (
-                                                <button
-                                                    key={v.id}
-                                                    onClick={() => setSelectedVariant(v)}
-                                                    className={`px-6 py-3 border-[3px] font-black text-[11px] uppercase italic transition-all skew-x-[-8deg] hover:skew-x-0
-                                                        ${selectedVariant?.id === v.id
-                                                            ? `${isDarkMode ? "bg-white text-black border-white" : "bg-black text-white border-black"} scale-105`
-                                                            : `${isDarkMode ? "border-zinc-800 text-zinc-400" : "border-slate-300 text-slate-500"} hover:border-[var(--product-primary-color)] hover:text-current`}`}
-                                                >
-                                                    <span className="block skew-x-[8deg] group-hover:skew-x-0">{v.name}</span>
-                                                </button>
-                                            ))}
-                                        </div>
+                                        <p className={`text-[10px] font-black uppercase tracking-widest 
+                                        ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>Pilih Varian</p>
+                                        <VariantPicker
+                                            variants={product?.variants}
+                                            selectedVariant={selectedVariant}
+                                            setSelectedVariant={setSelectedVariant}
+                                            isDarkMode={isDarkMode}
+                                        />
                                     </div>
                                 )}
 

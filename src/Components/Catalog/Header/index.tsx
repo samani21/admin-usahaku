@@ -27,10 +27,10 @@ type Props = {
     spanOne?: string;
     spanTwo?: string;
     displayMode: string;
-
+    isConfigHeader?: boolean;
 }
 
-const HeaderConfig = ({ layout, themeMode, isBuild, logoImage, frameType, frameTheme, toggleTheme, spanOne, spanTwo, displayMode }: Props) => {
+const HeaderConfig = ({ layout, themeMode, isBuild, logoImage, frameType, frameTheme, toggleTheme, spanOne, spanTwo, displayMode, isConfigHeader = false }: Props) => {
     const component = {
         themeMode,
         isBuild,
@@ -40,7 +40,8 @@ const HeaderConfig = ({ layout, themeMode, isBuild, logoImage, frameType, frameT
         toggleTheme,
         spanOne,
         spanTwo,
-        displayMode
+        displayMode,
+        isConfigHeader
     }
     switch (layout) {
         case 1:

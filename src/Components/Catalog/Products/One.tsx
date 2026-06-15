@@ -165,7 +165,7 @@ const One = ({ products, isDarkMode, handleCart }: Props) => {
                 }}
                 isDarkMode={isDarkMode}
             >
-                <div className='flex flex-col md:flex-row h-full md:min-h-[600px]'>
+                <div className='flex flex-col md:flex-row h-full md:min-h-[600px] overflow-y-auto no-scrollbar'>
                     {/* Gallery Section */}
                     <div className={`md:w-1/2 relative ${isDarkMode ? "bg-[#0F172A]" : "bg-slate-50"}`}>
                         <img
@@ -178,7 +178,7 @@ const One = ({ products, isDarkMode, handleCart }: Props) => {
                     </div>
 
                     {/* Info Section */}
-                    <div className="md:w-1/2 p-6 md:p-10 lg:p-12 flex flex-col h-full overflow-y-auto no-scrollbar">
+                    <div className="md:w-1/2 p-6 md:p-10 lg:p-12 flex flex-col h-full">
                         <div className='flex flex-wrap items-center gap-3 mb-5'>
                             <span className={`px-3.5 py-1 ${isDarkMode ? "bg-slate-800 text-slate-300 " : "bg-slate-100 text-slate-600"} text-[11px] font-bold rounded-full uppercase tracking-wider`}>
                                 {product?.category}
@@ -249,7 +249,7 @@ const One = ({ products, isDarkMode, handleCart }: Props) => {
                             <button
                                 disabled={disableButton}
                                 onClick={addCart}
-                                className={`w-full group/btn relative overflow-hidden py-4 px-6 bg-[var(--product-primary-color)] text-white rounded-[20px] font-bold text-sm tracking-wide transition-all duration-300 hover:shadow-[0_8px_25px_-8px_var(--product-primary-color)] active:scale-[0.98] ${isDarkMode ? 'disabled:bg-slate-800 ' : "disabled:bg-slate-300"}disabled:text-slate-500 disabled:shadow-none disabled:cursor-not-allowed`}
+                                className={`w-full mb-4 group/btn relative overflow-hidden py-4 px-6 bg-[var(--product-primary-color)] text-white rounded-[20px] font-bold text-sm tracking-wide transition-all duration-300 hover:shadow-[0_8px_25px_-8px_var(--product-primary-color)] active:scale-[0.98] ${isDarkMode ? 'disabled:bg-slate-800 ' : "disabled:bg-slate-300"}disabled:text-slate-500 disabled:shadow-none disabled:cursor-not-allowed`}
                             >
                                 <span className="relative z-10 flex items-center justify-center gap-2">
                                     <ShoppingBag size={18} strokeWidth={2.5} /> BELI SEKARANG

@@ -122,7 +122,6 @@ export default function HeaderView({ themeDark, setThemeDark, headerData, getCal
     const [showCropModal, setShowCropModal] = useState(false);
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [logo, setLogo] = useState<string | null>(null);
-
     useEffect(() => {
         if (headerData) {
             setHeaderLayout(headerData.layout_header);
@@ -548,7 +547,8 @@ export default function HeaderView({ themeDark, setThemeDark, headerData, getCal
                                             toggleTheme={() => setThemeDark(!themeDark)}
                                             spanOne={spanOne}
                                             spanTwo={spanTwo}
-                                            displayMode={displayMode} />
+                                            displayMode={displayMode}
+                                            isConfigHeader={true} />
                                     </div>
                                 ))
                             }

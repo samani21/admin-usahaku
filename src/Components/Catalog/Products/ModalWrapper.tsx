@@ -55,7 +55,7 @@ const ModalWrapper = ({ children, activeModal, closeModal, isDarkMode }: Props) 
                         {/* 3. Refined Drag Handle (Tidak overlap dengan konten) */}
                         <div
                             onPointerDown={(e) => controls.start(e)}
-                            className="w-full flex items-center justify-center pt-4 pb-2 cursor-grab active:cursor-grabbing flex-shrink-0 touch-none z-30"
+                            className="md:hidden w-full flex items-center justify-center pt-4 pb-2 cursor-grab active:cursor-grabbing flex-shrink-0 touch-none z-30"
                         >
                             <div className={`w-12 h-1.5 rounded-full transition-opacity hover:opacity-80 ${isDarkMode ? 'bg-white/30' : 'bg-slate-300'
                                 }`} />

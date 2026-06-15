@@ -45,7 +45,7 @@ const Four = ({ isDarkMode, headline, subHeadline, ctaText }: Props) => {
 
                     {/* Judul Utama Serif (Jarak dirapatkan) */}
                     <h2 className={`text-4xl md:text-5xl lg:text-6xl font-serif leading-[1.15] mb-5
-                        ${isDarkMode ? 'text-[var(--hero-secondary-color)]' : 'text-[var(--hero-primary-color)]'}
+                        ${isDarkMode ? '' : 'text-[var(--hero-primary-color)]'}
                     `}>
                         {headline}
                     </h2>
@@ -75,7 +75,7 @@ const Four = ({ isDarkMode, headline, subHeadline, ctaText }: Props) => {
                         <button
                             onClick={handleScroll}
                             className={`relative flex items-center gap-3 px-6 py-3 border border-current font-bold uppercase tracking-[0.15em] text-xs md:text-sm transition-transform duration-300 ease-out group-hover:-translate-x-0.5 group-hover:-translate-y-0.5
-                                ${isDarkMode ? 'bg-slate-900 text-[var(--hero-secondary-color)]' : 'bg-[#faf9f6] text-[var(--hero-primary-color)]'}
+                                ${isDarkMode ? '' : 'bg-[#faf9f6] text-[var(--hero-primary-color)]'}
                             `}
                         >
                             {ctaText}
