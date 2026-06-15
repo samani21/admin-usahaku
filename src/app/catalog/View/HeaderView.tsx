@@ -319,7 +319,7 @@ export default function HeaderView({ themeDark, setThemeDark, headerData, getCal
                                 </button>
                                 <button
                                     onClick={handleSaveCrop}
-                                    className="flex-1 py-2 text-sm font-semibold bg-indigo-600 text-white rounded-xl flex items-center justify-center gap-2"
+                                    className="flex-1 py-2 text-sm font-semibold bg-emerald-600 text-white rounded-xl flex items-center justify-center gap-2"
                                 >
                                     <Check size={16} /> Gunakan Gambar
                                 </button>
@@ -331,11 +331,13 @@ export default function HeaderView({ themeDark, setThemeDark, headerData, getCal
             <div>
                 <div className="min-h-screen font-sans ">
                     <div className="space-y-6">
-                        <div className="space-y-2 p-4">
-                            <label className="text-sm font-semibold uppercase tracking-wider text-gray-400">Pilih Kategori Warna</label>
-                            {/* Business Presets */}
+                        <div className="space-y-6 p-4 md:p-6 w-full max-w-7xl mx-auto font-sans">
+                            {/* --- KATEGORI WARNA PRESET --- */}
                             <div className="space-y-3">
-                                <div className="flex gap-2 max-h-[500px] overflow-x-auto pr-2  no-scrollbar rounded-xl">
+                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">
+                                    Pilih Kategori Warna
+                                </label>
+                                <div className="flex gap-3 max-h-[500px] overflow-x-auto pb-4 pt-1 px-1 no-scrollbar">
                                     {BUSINESS_THEMES.map((theme) => (
                                         <button
                                             key={theme.id}
@@ -343,85 +345,100 @@ export default function HeaderView({ themeDark, setThemeDark, headerData, getCal
                                                 setSelectedColor(theme.hex);
                                                 setActiveTab(theme.id);
                                             }}
-                                            className={`w-full flex whitespace-nowrap items-center gap-3 p-3 rounded-xl border-2 transition-all ${activeTab === theme.id
-                                                ? 'border-indigo-600 bg-white shadow-md'
-                                                : 'border-transparent bg-gray-100 hover:bg-gray-200'
+                                            className={`min-w-[200px] flex items-center gap-3 p-3 rounded-2xl border transition-all duration-200 ease-in-out ${activeTab === theme.id
+                                                ? 'border-emerald-500 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] ring-1 ring-emerald-500'
+                                                : 'border-slate-200 bg-white hover:bg-slate-50 hover:shadow-sm hover:border-slate-300'
                                                 }`}
                                         >
                                             <div
-                                                className="p-2 rounded-lg text-white shrink-0"
+                                                className="p-2.5 rounded-xl text-white shrink-0 shadow-sm"
                                                 style={{ backgroundColor: theme.hex }}
                                             >
                                                 {theme.icon}
                                             </div>
-                                            <div className="text-left">
-                                                <div className="font-bold text-slate-900 text-sm">{theme.name}</div>
-                                                <div className="text-xs text-gray-500 leading-tight line-clamp-1">{theme.description}</div>
+                                            <div className="text-left flex-1 overflow-hidden">
+                                                <div className="font-semibold text-slate-900 text-sm truncate">{theme.name}</div>
+                                                <div className="text-xs text-slate-500 leading-tight truncate mt-0.5">{theme.description}</div>
                                             </div>
                                         </button>
                                     ))}
                                 </div>
                             </div>
 
-                            {/* Custom Picker */}
-                            <div className="p-4 bg-white rounded-2xl shadow-sm border border-gray-100 space-y-3">
-                                <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                                    <Pipette size={16} />
-                                    <span>Custom Warna Sendiri</span>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                    <input
-                                        type="color"
-                                        value={selectedColor}
-                                        onChange={(e) => {
-                                            setSelectedColor(e.target.value);
-                                            setActiveTab('custom');
-                                        }}
-                                        className="h-12 w-12  rounded-lg cursor-pointer border-none bg-transparent"
-                                    />
-                                    <div className="flex-1 px-3 py-2 bg-gray-50 text-slate-900 rounded-lg border border-gray-200 font-mono text-sm">
-                                        {selectedColor?.toUpperCase()}
+                            {/* --- CUSTOM PICKER & SETTINGS CARD --- */}
+                            <div className="p-5 md:p-7 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 space-y-8">
+
+                                {/* Custom Warna */}
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
+                                        <Pipette size={18} className="text-emerald-500" />
+                                        <span>Kustomisasi Warna</span>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <div className="relative shrink-0">
+                                            <input
+                                                type="color"
+                                                value={selectedColor}
+                                                onChange={(e) => {
+                                                    setSelectedColor(e.target.value);
+                                                    setActiveTab('custom');
+                                                }}
+                                                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                                            />
+                                            <div
+                                                className="h-12 w-12 rounded-xl shadow-inner border border-black/10 transition-transform hover:scale-105"
+                                                style={{ backgroundColor: selectedColor }}
+                                            />
+                                        </div>
+                                        <div className="flex-1 px-4 py-3 bg-slate-50 text-slate-700 rounded-xl border border-slate-200 font-mono text-sm tracking-wide shadow-sm">
+                                            {selectedColor?.toUpperCase()}
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-bold uppercase text-gray-500">Nama Usaha (2 Span)</label>
-                                    <div className="flex gap-2">
+
+                                <hr className="border-slate-100" />
+
+                                {/* Input Nama Usaha */}
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">Nama Usaha (2 Span)</label>
+                                    <div className="flex gap-3">
                                         <input
                                             value={spanOne}
                                             onChange={(e) => setSpanOne(e.target.value)}
-                                            placeholder="Span 1"
-                                            className="w-1/2 p-2 text-sm text-slate-900  rounded-lg border border-gray-300"
+                                            placeholder="Kata Pertama"
+                                            className="w-1/2 px-4 py-2.5 text-sm text-slate-900 bg-slate-50 rounded-xl border border-slate-200 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all"
                                         />
                                         <input
                                             value={spanTwo}
                                             onChange={(e) => setSpanTwo(e.target.value)}
-                                            placeholder="Span 2"
-                                            className="w-1/2 p-2 text-sm text-slate-900 rounded-lg border border-gray-300"
+                                            placeholder="Kata Kedua"
+                                            className="w-1/2 px-4 py-2.5 text-sm text-slate-900 bg-slate-50 rounded-xl border border-slate-200 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all"
                                         />
                                     </div>
                                 </div>
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-bold uppercase text-gray-500">Logo</label>
-                                    {
-                                        logo ?
-                                            <button
-                                                onClick={() => {
-                                                    setLogo(null);
-                                                    setLogoFile(null)
-                                                    setIsDeleteLogo(true)
-                                                }}
-                                                className="flex items-center gap-2 px-4 py-2 text-white text-sm bg-red-700 hover:bg-red-800 rounded-lg transition-colors w-full justify-center"
-                                            >
-                                                <Trash2 className="w-4 h-4" />Hapus Logo
-                                            </button> :
 
-                                            <button
-                                                onClick={() => fileInputRef.current?.click()}
-                                                className="flex items-center gap-2 px-4 py-2 text-white text-sm bg-slate-700 hover:bg-slate-800 rounded-lg transition-colors w-full justify-center"
-                                            >
-                                                <Upload className="w-4 h-4" /> {logo ? "Ganti Logo" : "Upload Logo"}
-                                            </button>
-                                    }
+                                {/* Upload Logo */}
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">Logo Usaha</label>
+                                    {logo ? (
+                                        <button
+                                            onClick={() => {
+                                                setLogo(null);
+                                                setLogoFile(null);
+                                                setIsDeleteLogo(true);
+                                            }}
+                                            className="flex items-center justify-center gap-2 py-3 px-4 text-red-600 text-sm font-medium bg-red-50 hover:bg-red-100 border border-red-100 rounded-xl transition-all w-full"
+                                        >
+                                            <Trash2 className="w-4 h-4" /> Hapus Logo Saat Ini
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="flex items-center justify-center gap-2 py-3 px-4 text-slate-700 text-sm font-medium bg-slate-50 hover:bg-slate-100 border border-slate-200 border-dashed rounded-xl transition-all w-full hover:border-slate-400"
+                                        >
+                                            <Upload className="w-4 h-4 text-slate-500" /> Upload Logo Baru
+                                        </button>
+                                    )}
                                     <input
                                         type="file"
                                         ref={fileInputRef}
@@ -430,15 +447,23 @@ export default function HeaderView({ themeDark, setThemeDark, headerData, getCal
                                         onChange={handleLogoUpload}
                                     />
                                 </div>
-                                <div className="space-y-4 border-t border-gray-100 pt-4">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[10px] font-bold uppercase text-gray-500">Tipe Frame:</span>
-                                        <div className="flex bg-gray-100 p-1 rounded-lg">
+
+                                <hr className="border-slate-100" />
+
+                                {/* Pengaturan Tampilan (Toggles) */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                                    {/* Tipe Frame */}
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">Bentuk Frame</label>
+                                        <div className="flex bg-slate-100/80 p-1.5 rounded-xl">
                                             {['circle', 'square', 'none'].map(t => (
                                                 <button
                                                     key={t}
                                                     onClick={() => setFrameType(t as "circle" | "square" | "none")}
-                                                    className={`text-[10px] px-3 py-1 rounded-md transition-all font-medium capitalize ${frameType === t ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                                                    className={`flex-1 text-xs px-3 py-2 rounded-lg transition-all font-semibold capitalize ${frameType === t
+                                                        ? 'bg-white text-emerald-600 shadow-sm'
+                                                        : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
                                                         }`}
                                                 >
                                                     {t}
@@ -447,53 +472,17 @@ export default function HeaderView({ themeDark, setThemeDark, headerData, getCal
                                         </div>
                                     </div>
 
-                                    {/* BARU: Mode Tampilan Switch (3 Pilihan) */}
+                                    {/* Aksen Warna Frame */}
                                     <div className="space-y-2">
-                                        <span className="text-[10px] font-bold uppercase text-gray-500 block">Mode Tampilan Aplikasi:</span>
-                                        <div className="grid grid-cols-3 gap-2 bg-gray-100 p-1 rounded-xl">
-                                            <button
-                                                onClick={() => {
-                                                    setDisplayMode('light')
-                                                    setThemeDark(false)
-                                                }}
-                                                className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition-all ${displayMode === 'light' ? 'bg-white text-orange-500 shadow-sm' : 'text-gray-500'
-                                                    }`}
-                                            >
-                                                <Sun size={14} /> Light
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    setDisplayMode('dark')
-                                                    setThemeDark(true)
-                                                }}
-                                                className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition-all ${displayMode === 'dark' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500'
-                                                    }`}
-                                            >
-                                                <Moon size={14} /> Dark
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    setDisplayMode('auto')
-                                                    setThemeDark(false)
-                                                }}
-                                                className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition-all ${displayMode === 'auto' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500'
-                                                    }`}
-                                            >
-                                                <SunMoon size={14} /> Auto
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[10px] font-bold uppercase text-gray-500">Aksen Warna Frame:</span>
-                                        <div className="flex gap-2">
+                                        <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">Aksen Frame</label>
+                                        <div className="flex bg-slate-100/80 p-1.5 rounded-xl">
                                             {['dark', 'light'].map(th => (
                                                 <button
                                                     key={th}
                                                     onClick={() => setFrameTheme(th as "dark" | "light")}
-                                                    className={`text-[10px] px-4 py-1.5 rounded-full border transition-all font-bold uppercase ${frameTheme === th
-                                                        ? 'bg-slate-800 text-white border-slate-800'
-                                                        : 'bg-gray-100 text-gray-400 border-transparent hover:bg-gray-200'
+                                                    className={`flex-1 text-xs px-3 py-2 rounded-lg transition-all font-semibold capitalize ${frameTheme === th
+                                                        ? 'bg-slate-800 text-white shadow-sm'
+                                                        : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
                                                         }`}
                                                 >
                                                     {th}
@@ -501,26 +490,87 @@ export default function HeaderView({ themeDark, setThemeDark, headerData, getCal
                                             ))}
                                         </div>
                                     </div>
-                                    <div className='flex items-center justify-end'>
-                                        <button
-                                            onClick={handleSubmit}
-                                            className="w-full mt-6 flex mb-1 items-center justify-center gap-2 p-2 text-sm bg-green-600 text-white font-semibold hover:bg-green-800 rounded-md transition-colors"
-                                        >
-                                            <Check className="w-4 h-4" /> Simpan Perubahan
-                                        </button>
+
+                                    {/* Mode Tema Aplikasi */}
+                                    <div className="space-y-2 md:col-span-2">
+                                        <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">Mode Tampilan</label>
+                                        <div className="grid grid-cols-3 gap-1 bg-slate-100/80 p-1.5 rounded-xl">
+                                            <button
+                                                onClick={() => {
+                                                    setDisplayMode('light');
+                                                    setThemeDark(false);
+                                                }}
+                                                className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold transition-all ${displayMode === 'light'
+                                                    ? 'bg-white text-amber-500 shadow-sm'
+                                                    : 'text-slate-500 hover:bg-slate-200/50'
+                                                    }`}
+                                            >
+                                                <Sun size={15} /> Light
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setDisplayMode('dark');
+                                                    setThemeDark(true);
+                                                }}
+                                                className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold transition-all ${displayMode === 'dark'
+                                                    ? 'bg-white text-emerald-600 shadow-sm'
+                                                    : 'text-slate-500 hover:bg-slate-200/50'
+                                                    }`}
+                                            >
+                                                <Moon size={15} /> Dark
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setDisplayMode('auto');
+                                                    setThemeDark(false);
+                                                }}
+                                                className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold transition-all ${displayMode === 'auto'
+                                                    ? 'bg-white text-emerald-600 shadow-sm'
+                                                    : 'text-slate-500 hover:bg-slate-200/50'
+                                                    }`}
+                                            >
+                                                <SunMoon size={15} /> Auto
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
+
+                                {/* Submit Button */}
+                                <div className="pt-4">
+                                    <button
+                                        onClick={handleSubmit}
+                                        className="w-full flex items-center justify-center gap-2 py-3.5 text-sm bg-slate-900 text-white font-semibold rounded-xl shadow-md hover:bg-slate-800 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 ease-in-out"
+                                    >
+                                        <Check className="w-5 h-5" /> Simpan Perubahan
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                        <div className={`flex px-4 overflow-auto w-full gap-4 thin-scroll ${themeDark ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`}>
-                            {
-                                listHeader?.map((lh, i) => (
-                                    <div key={i} className='whitespace-nowrap text-sm font-medium bg-gray-200 text-gray-600 p-2 rounded-lg cursor-pointer flex items-center gap-2' onClick={() => setHeaderLayout(lh?.id)}>
-                                        {lh?.id === headerLayout ? <CheckCircleIcon /> : <Circle />}
-                                        <span>{lh?.id}. {lh?.name}</span>
-                                    </div>
-                                ))
-                            }
+
+                            {/* --- HEADER LAYOUT SELECTOR --- */}
+                            <div className={`mt-6 p-4 rounded-3xl transition-colors duration-300 ${themeDark ? 'bg-slate-900 text-white border border-slate-800' : 'bg-white border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]'}`}>
+                                <label className={`text-xs font-bold uppercase tracking-wider ml-1 mb-3 block ${themeDark ? 'text-slate-400' : 'text-slate-500'}`}>Layout Header</label>
+                                <div className="flex overflow-x-auto w-full gap-3 pb-2 no-scrollbar">
+                                    {listHeader?.map((lh, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => setHeaderLayout(lh?.id)}
+                                            className={`whitespace-nowrap text-sm font-medium px-4 py-2.5 rounded-xl flex items-center gap-2.5 transition-all duration-200 border ${lh?.id === headerLayout
+                                                ? 'bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm'
+                                                : themeDark
+                                                    ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
+                                                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:border-slate-300'
+                                                }`}
+                                        >
+                                            {lh?.id === headerLayout ? (
+                                                <CheckCircleIcon className="w-4 h-4 text-emerald-600" />
+                                            ) : (
+                                                <Circle className="w-4 h-4 opacity-50" />
+                                            )}
+                                            <span>{lh?.name}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                         <div className='relative pb-8 space-y-4'>
                             {

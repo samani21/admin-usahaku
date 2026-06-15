@@ -221,83 +221,115 @@ export default function SummaryView({ summaryData, isDarkMode, setIsDarkMode, ge
                             </div>
 
                             {/* Custom Picker */}
-                            <div className="p-4 bg-white rounded-2xl shadow-sm border border-gray-100 space-y-3">
-                                <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                                    <Pipette size={16} />
-                                    <span>Custom Warna Sendiri</span>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                    <input
-                                        type="color"
-                                        value={selectedColor}
-                                        onChange={(e) => {
-                                            setSelectedColor(e.target.value);
-                                            setActiveTab('custom');
-                                        }}
-                                        className="h-12 w-12  rounded-lg cursor-pointer border-none bg-transparent"
-                                    />
-                                    <div className="flex-1 px-3 py-2 bg-gray-50 text-slate-900 rounded-lg border border-gray-200 font-mono text-sm">
-                                        {selectedColor.toUpperCase()}
+                        </div>
+                        <div className="space-y-6 w-full font-sans">
+                            <div className="p-5 md:p-7 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 space-y-6">
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
+                                        <Pipette size={18} className="text-emerald-500" />
+                                        <span>Kustomisasi Warna Sendiri</span>
                                     </div>
-                                </div>
-                                <div className="sm:flex items-center gap-4">
-                                    <div className="space-y-1 w-full">
-                                        <div className='sm:flex items-center gap-4'>
-                                            <div className="space-y-2 w-full">
-                                                <span className="text-[10px] font-bold uppercase text-gray-500 block">Mode Tampilan Aplikasi:</span>
-                                                <div className="grid grid-cols-3 gap-2 bg-gray-100 p-1 rounded-xl">
-                                                    <button
-                                                        onClick={() => {
-                                                            setDisplayMode('light')
-                                                            setIsDarkMode(false)
-                                                        }}
-                                                        className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition-all ${displayMode === 'light' ? 'bg-white text-orange-500 shadow-sm' : 'text-gray-500'
-                                                            }`}
-                                                    >
-                                                        <Sun size={14} /> Light
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            setDisplayMode('dark')
-                                                            setIsDarkMode(true)
-                                                        }}
-                                                        className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition-all ${displayMode === 'dark' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500'
-                                                            }`}
-                                                    >
-                                                        <Moon size={14} /> Dark
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            setDisplayMode('auto')
-                                                            setIsDarkMode(false)
-                                                        }}
-                                                        className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition-all ${displayMode === 'auto' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500'
-                                                            }`}
-                                                    >
-                                                        <SunMoon size={14} /> Auto
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <button
-                                                onClick={handleSubmit}
-                                                className="w-full mt-6  flex mb-1 items-center justify-center gap-2 p-2 text-sm bg-green-600 text-white font-semibold hover:bg-green-800 rounded-md transition-colors"
-                                            >
-                                                <Check className="w-4 h-4" /> Simpan Perubahan
-                                            </button>
+                                    <div className="flex items-center gap-4">
+                                        <div className="relative shrink-0">
+                                            <input
+                                                type="color"
+                                                value={selectedColor}
+                                                onChange={(e) => {
+                                                    setSelectedColor(e.target.value);
+                                                    setActiveTab('custom');
+                                                }}
+                                                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                                            />
+                                            <div
+                                                className="h-12 w-12 rounded-xl shadow-inner border border-black/10 transition-transform hover:scale-105"
+                                                style={{ backgroundColor: selectedColor }}
+                                            />
+                                        </div>
+                                        <div className="flex-1 px-4 py-3 bg-slate-50 text-slate-700 rounded-xl border border-slate-200 font-mono text-sm tracking-wide shadow-sm">
+                                            {selectedColor?.toUpperCase()}
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                        <div className={`flex px-4 overflow-auto w-full gap-4 thin-scroll ${isDarkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`}>
-                            {
-                                ListSummary?.map((ls, i) => (
-                                    <div key={i} className='whitespace-nowrap text-sm font-medium bg-gray-200 text-gray-600 p-2 rounded-lg cursor-pointer flex items-center gap-2' onClick={() => setSummaryLayout(ls?.id)}>
-                                        {ls?.id === summaryLayout ? <CheckCircleIcon /> : <Circle />}
-                                        <span>{ls?.id}. {ls?.name}</span>
+                                <hr className="border-slate-100" />
+                                <div className="flex flex-col md:flex-row md:items-end gap-5 w-full">
+                                    <div className="space-y-2 flex-1 w-full">
+                                        <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">Mode Tampilan Aplikasi</label>
+                                        <div className="grid grid-cols-3 gap-1 bg-slate-100/80 p-1.5 rounded-xl">
+                                            <button
+                                                onClick={() => {
+                                                    setDisplayMode('light');
+                                                    setIsDarkMode(false);
+                                                }}
+                                                className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold transition-all ${displayMode === 'light'
+                                                    ? 'bg-white text-amber-500 shadow-sm'
+                                                    : 'text-slate-500 hover:bg-slate-200/50'
+                                                    }`}
+                                            >
+                                                <Sun size={15} /> Light
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setDisplayMode('dark');
+                                                    setIsDarkMode(true);
+                                                }}
+                                                className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold transition-all ${displayMode === 'dark'
+                                                    ? 'bg-white text-emerald-600 shadow-sm'
+                                                    : 'text-slate-500 hover:bg-slate-200/50'
+                                                    }`}
+                                            >
+                                                <Moon size={15} /> Dark
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setDisplayMode('auto');
+                                                    setIsDarkMode(false);
+                                                }}
+                                                className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold transition-all ${displayMode === 'auto'
+                                                    ? 'bg-white text-slate-800 shadow-sm'
+                                                    : 'text-slate-500 hover:bg-slate-200/50'
+                                                    }`}
+                                            >
+                                                <SunMoon size={15} /> Auto
+                                            </button>
+                                        </div>
                                     </div>
-                                ))
-                            }
+
+                                    <div className="flex-1 w-full">
+                                        <button
+                                            onClick={handleSubmit}
+                                            className="w-full flex items-center justify-center gap-2 py-3.5 px-4 text-sm bg-emerald-600 text-white font-semibold rounded-xl shadow-md hover:bg-emerald-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+                                        >
+                                            <Check className="w-5 h-5" /> Simpan Perubahan
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className={`p-4 md:p-5 rounded-3xl transition-colors duration-300 ${isDarkMode ? 'bg-slate-900 text-white border border-slate-800' : 'bg-white border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]'}`}>
+                                <label className={`text-xs font-bold uppercase tracking-wider ml-1 mb-3 block ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                                    Pilih Layout Kategori
+                                </label>
+                                <div className="flex overflow-x-auto w-full gap-3 pb-2 no-scrollbar">
+                                    {ListSummary?.map((lc, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => setSummaryLayout(lc?.id)}
+                                            className={`whitespace-nowrap text-sm font-medium px-4 py-2.5 rounded-xl flex items-center gap-2.5 transition-all duration-200 border ${lc?.id === summaryLayout
+                                                ? 'bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm'
+                                                : isDarkMode
+                                                    ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
+                                                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:border-slate-300'
+                                                }`}
+                                        >
+                                            {lc?.id === summaryLayout ? (
+                                                <CheckCircleIcon className="w-4 h-4 text-emerald-600" />
+                                            ) : (
+                                                <Circle className="w-4 h-4 opacity-50" />
+                                            )}
+                                            <span>{lc?.name}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                         <div className={`px-2 ${isDarkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`}>
                             <div className={`${isDarkMode ? "bg-slate-900" : "bg-slate-100"} rounded-lg`}>
