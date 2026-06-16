@@ -100,7 +100,6 @@ const Dashboard = ({ setIsSubscriptionModalOpen }: any) => {
                     }
                 }
             } catch (error) {
-                console.error("Gagal memuat profil:", error);
             } finally {
                 setIsLoading(false);
             }

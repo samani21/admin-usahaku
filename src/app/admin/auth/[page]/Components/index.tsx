@@ -29,7 +29,7 @@ function AuthView({ page }: Props) {
         glow: 'shadow-emerald-500/20',
         accentColor: '#10b981'
     };
-
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
     const themeStyles = {
         bg: theme === 'dark' ? 'bg-[#080911] text-slate-100' : 'bg-[#f5f7fc] text-slate-900',
         card: theme === 'dark' ? 'bg-[#101222]/90 border-slate-800/80 shadow-2xl' : 'bg-white/95 border-slate-200/80 shadow-xl',
@@ -110,7 +110,7 @@ function AuthView({ page }: Props) {
                             <div>
                                 <div className="flex items-center gap-2.5 mb-5">
                                     <div className={`bg-gradient-to-tr w-12 h-12 flex items-center justify-start text-white font-black text-base shadow-lg`}>
-                                        <img src={'/logo_usahaku.png'} className='rounded-xl w-12 h-12' />
+                                        <img src={`${baseUrl}/logo_usahaku.png`} className='rounded-xl w-12 h-12' />
                                     </div>
                                     <div>
                                         <h1 className="text-lg font-bold tracking-tight leading-none">UsahaKu</h1>

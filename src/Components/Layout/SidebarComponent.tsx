@@ -20,7 +20,7 @@ const SidebarComponent = ({ isSidebarOpen, setIsSidebarOpen, setLoading, user, b
     const pathname = usePathname();
     const [pathNameParent, setPathNameParent] = useState<string>('');
     const [pathNameChild, setPathNameChild] = useState<string>('');
-
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
     useEffect(() => {
         if (pathname) {
             const parts = pathname.split("/");
@@ -48,9 +48,8 @@ const SidebarComponent = ({ isSidebarOpen, setIsSidebarOpen, setLoading, user, b
                         </button>
 
                         <div className='w-32 h-32'>
-                            <img src="/logo.png" alt="" />
+                            <img src={`${baseUrl}/logo.png`} alt="" />
                         </div>
-
                         <nav className="w-full overflow-hidden  space-y-2">
                             <div className='h-[100%] overflow-auto no-scrollbar'>
                                 {

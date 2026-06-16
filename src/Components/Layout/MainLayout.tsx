@@ -97,7 +97,6 @@ const MainLayout = ({ children }: Props) => {
                 setBusiness(res?.data?.business)
             }
         } catch (e: any) {
-            console.error(e);
         } finally {
             setLoading(false)
         }
