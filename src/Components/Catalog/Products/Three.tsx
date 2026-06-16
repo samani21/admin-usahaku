@@ -168,7 +168,7 @@ const Three = ({ products, isDarkMode, handleCart }: Props) => {
                         </div>
 
                         {/* Service List */}
-                        {product?.service && product?.service?.length > 0 && (
+                        {product?.service && product?.service?.length > 0 ? (
                             <div className="mt-10 w-full space-y-4 px-4">
                                 {product.service.map((s, i) => (
                                     <div key={i} className={`flex items-start gap-3 text-sm font-bold ${isDarkMode ? "text-slate-400" : "text-slate-600"}`}>
@@ -177,7 +177,7 @@ const Three = ({ products, isDarkMode, handleCart }: Props) => {
                                     </div>
                                 ))}
                             </div>
-                        )}
+                        ) : ''}
                     </div>
 
                     {/* Content / Right Side */}
@@ -187,12 +187,12 @@ const Three = ({ products, isDarkMode, handleCart }: Props) => {
                             {/* Header & Promo Info */}
                             <div className="space-y-4">
                                 <div className='flex items-center justify-end w-full min-h-[32px]'>
-                                    {product?.discount_price && (
+                                    {product?.discount_price ? (
                                         <div className="bg-rose-500 flex items-center gap-2 text-[11px] text-white px-4 py-1.5 rounded-full font-black italic shadow-md">
                                             <Tag size={12} strokeWidth={2.5} />
                                             -{Promo(product, selectedVariant)}
                                         </div>
-                                    )}
+                                    ) : ''}
                                 </div>
 
                                 <div>
@@ -210,11 +210,11 @@ const Three = ({ products, isDarkMode, handleCart }: Props) => {
                                     <p className={`text-4xl font-black ${isDarkMode ? "text-white" : "text-slate-900"}`}>
                                         {formatIDR(selectedVariant?.final_price ?? product?.final_price ?? 0)}
                                     </p>
-                                    {product?.discount_price && (
+                                    {product?.discount_price ? (
                                         <p className={`text-lg font-bold line-through mb-1 ${isDarkMode ? "text-slate-500" : "text-slate-400"}`}>
                                             {formatIDR(selectedVariant?.price ?? product?.price ?? 0)}
                                         </p>
-                                    )}
+                                    ) : ''}
                                 </div>
                             </div>
 
@@ -228,9 +228,9 @@ const Three = ({ products, isDarkMode, handleCart }: Props) => {
 
                             {/* Selections */}
                             <div className="space-y-8 pt-4">
-                                {product?.variants && product?.variants?.length > 0 && (
+                                {product?.variants && product?.variants?.length > 0 ? (
                                     <VariantPicker variants={product?.variants} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} isDarkMode={isDarkMode} />
-                                )}
+                                ) : ''}
 
                                 {product?.is_qty && (
                                     <div className="pt-2">

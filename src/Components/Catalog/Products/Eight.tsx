@@ -204,17 +204,17 @@ const Eight = ({ products, isDarkMode, handleCart }: Props) => {
                                     <span className="text-4xl md:text-5xl font-black text-[var(--product-primary-color)] tracking-tighter">
                                         {formatIDR(selectedVariant?.final_price || product?.final_price || 0)}
                                     </span>
-                                    {product?.discount_price && (
+                                    {product?.discount_price ? (
                                         <span className={`text-xl line-through font-bold italic ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>
                                             {formatIDR(selectedVariant?.price || product?.price || 0)}
                                         </span>
-                                    )}
+                                    ) : ''}
                                 </div>
-                                {product?.discount_price && (
+                                {product?.discount_price ? (
                                     <div className="inline-flex items-center gap-2 px-3 py-1.5 mt-2 rounded-lg bg-emerald-500/10 text-emerald-500 font-black text-[10px] uppercase tracking-widest border border-emerald-500/20 w-fit">
                                         <Tag size={12} strokeWidth={3} /> HEMAT {formatIDR(product?.discount_price)} {product?.percent_discount && `(${Promo(product, selectedVariant)})`}
                                     </div>
-                                )}
+                                ) : ''}
                             </div>
 
                             {/* Description */}
@@ -224,7 +224,7 @@ const Eight = ({ products, isDarkMode, handleCart }: Props) => {
 
                             {/* Interactive Selectors */}
                             <div className={`pt-6 space-y-8 border-t ${isDarkMode ? 'border-white/10' : 'border-slate-200'}`}>
-                                {product?.variants && product?.variants?.length > 0 && (
+                                {product?.variants && product?.variants?.length > 0 ? (
                                     <div className="space-y-4">
                                         <p className={`text-[10px] font-black uppercase tracking-[0.3em] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                             Spesifikasi Pilihan
@@ -236,16 +236,16 @@ const Eight = ({ products, isDarkMode, handleCart }: Props) => {
                                             isDarkMode={isDarkMode}
                                         />
                                     </div>
-                                )}
+                                ) : ''}
 
-                                {product?.is_qty && (
+                                {product?.is_qty ? (
                                     <div className="space-y-4">
                                         <p className={`text-[10px] font-black uppercase tracking-[0.3em] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                             Kuantitas Pesanan
                                         </p>
                                         <QtySelector quantity={quantity} product={product} selectedVariant={selectedVariant} setQuantity={setQuantity} isDarkMode={isDarkMode} />
                                     </div>
-                                )}
+                                ) : ''}
                             </div>
                         </div>
 

@@ -1,27 +1,27 @@
-import { LayoutType, ThemeType } from "./type";
+import { ThemeType } from "./type";
 
-const primary = '#2563EB';
+const primary = '#F472B6';
 const header = {
-    layout: 3,
+    layout: 7,
     mode: 'dark'
 }
 const hero = {
-    layout: 13,
-    mode: 'light'
-}
-const category = {
-    layout: 13,
+    layout: 10,
     mode: 'dark'
 }
+const category = {
+    layout: 8,
+    mode: 'light'
+}
 const product = {
-    layout: 1,
+    layout: 11,
     mode: 'auto',
 }
 const summary = {
-    layout: 7,
+    layout: 14,
     mode: 'dark',
 }
-export const ThemeOne: ThemeType = {
+export const ThemeTwo: ThemeType = {
     'color': primary,
     'header': header,
     'hero': hero,

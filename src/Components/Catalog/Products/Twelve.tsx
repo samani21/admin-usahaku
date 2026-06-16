@@ -108,9 +108,9 @@ const Twelve = ({ products, isDarkMode, handleCart }: Props) => {
 
                             <div className="p-4 text-center">
                                 <div className={!is_available ? "opacity-40" : ""}>
-                                    {p.category && (
+                                    {p.category ? (
                                         <span className="text-[10px] font-black uppercase opacity-40 block mb-0.5">{p.category}</span>
-                                    )}
+                                    ) : ''}
                                     <h3 className="font-bold text-sm truncate uppercase italic tracking-tight mb-1">{p.name}</h3>
                                 </div>
 
@@ -157,12 +157,12 @@ const Twelve = ({ products, isDarkMode, handleCart }: Props) => {
                                 <span className="text-xl md:text-2xl font-black text-[var(--product-primary-color)] italic tracking-tighter">
                                     {formatIDR(currentFinalPrice)}
                                 </span>
-                                {currentDiscount > 0 && (
+                                {currentDiscount > 0 ? (
                                     <div className="flex items-center sm:justify-end gap-2">
                                         <span className="text-md sm:text-xl font-bold opacity-30 line-through italic">{formatIDR(currentPrice)}</span>
                                         <span className="bg-rose-500/10 text-rose-500 text-[10px] font-black px-2 py-1 rounded-lg">-{discountPercent}%</span>
                                     </div>
-                                )}
+                                ) : ''}
                             </div>
                         </div>
                     </div>
@@ -172,16 +172,16 @@ const Twelve = ({ products, isDarkMode, handleCart }: Props) => {
                         {/* Kolom Gambar */}
                         <div className="relative rounded-[2.5rem] overflow-hidden shadow-2xl group aspect-[4/3] md:aspect-video lg:aspect-square">
                             <img src={selectedVariant?.image ?? product?.image} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
-                            {currentDiscount > 0 && (
+                            {currentDiscount > 0 ? (
                                 <div className="absolute top-6 text-[10px] left-6 bg-rose-600 text-white px-5 py-2 rounded-2xl font-black italic shadow-xl flex items-center gap-2">
                                     <Tag size={16} /> HEMAT {formatIDR(currentDiscount)}
                                 </div>
-                            )}
+                            ) : ''}
                         </div>
 
                         {/* Kolom Deskripsi */}
                         <div className="space-y-8">
-                            {product?.description && (
+                            {product?.description ? (
                                 <div className={`p-8 rounded-[2.5rem] ${isDarkMode ? "bg-slate-800/50 border border-white/5" : "bg-slate-50 border border-black/5"} space-y-4`}>
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-2xl bg-rose-500/10 flex items-center justify-center text-rose-500 border border-rose-500/20">
@@ -195,7 +195,7 @@ const Twelve = ({ products, isDarkMode, handleCart }: Props) => {
                                     // maxHeight='max-h-[120px]'
                                     />
                                 </div>
-                            )}
+                            ) : ''}
                             {/* Kontrol: Varian, Qty, Total */}
                             <div className={`p-8 rounded-[2.5rem] border ${isDarkMode ? "border-slate-800 bg-slate-900/50" : "border-slate-200 bg-white shadow-sm"} space-y-8`}>
                                 {product?.variants && product?.variants?.length > 0 ? (

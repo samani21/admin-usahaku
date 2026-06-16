@@ -111,12 +111,12 @@ const Fiveteen = ({ products, isDarkMode, handleCart }: Props) => {
                         {/* Info Section */}
                         <div className="text-center w-full px-4 space-y-3">
                             <div className="space-y-1">
-                                {p?.category && (
+                                {p?.category ? (
                                     <span className={`text-[10px] font-black tracking-[0.3em] uppercase
                                         ${isDarkMode ? "text-zinc-500" : "text-slate-400"}`}>
                                         {p?.category}
                                     </span>
-                                )}
+                                ) : ''}
                                 <h3 className={`text-xl font-black uppercase italic leading-none tracking-tighter line-clamp-2 transition-colors
                                     ${is_available && isDarkMode ? 'group-hover:text-zinc-300' : is_available && !isDarkMode ? 'group-hover:text-slate-600' : ''}`}>
                                     {p?.name}
@@ -168,11 +168,11 @@ const Fiveteen = ({ products, isDarkMode, handleCart }: Props) => {
                             />
                         </div>
 
-                        {product?.discount_price && (
+                        {product?.discount_price ? (
                             <div className="absolute top-8 left-8 bg-[var(--product-primary-color)] text-white px-6 py-2.5 rounded-full font-black text-sm uppercase tracking-widest shadow-2xl rotate-[-5deg] z-20">
                                 Hemat {Promo(product, selectedVariant)}
                             </div>
-                        )}
+                        ) : ''}
                     </div>
 
                     {/* Right: Scrollable Order Details */}
@@ -203,11 +203,11 @@ const Fiveteen = ({ products, isDarkMode, handleCart }: Props) => {
                                         <span className="text-4xl sm:text-5xl font-black tracking-tighter italic text-[var(--product-primary-color)] drop-shadow-sm">
                                             {formatIDR(selectedVariant?.final_price ?? product?.final_price ?? 0)}
                                         </span>
-                                        {product?.discount_price && (
+                                        {product?.discount_price ? (
                                             <span className={`text-lg sm:text-xl line-through font-bold italic ${isDarkMode ? "text-zinc-600" : "text-slate-400"}`}>
                                                 {formatIDR(selectedVariant?.price ?? product?.price ?? 0)}
                                             </span>
-                                        )}
+                                        ) : ''}
                                     </div>
                                 </div>
 
@@ -221,16 +221,16 @@ const Fiveteen = ({ products, isDarkMode, handleCart }: Props) => {
 
                             {/* Configuration Panel */}
                             <div className={`space-y-8 pt-8 border-t border-dashed ${isDarkMode ? "border-zinc-800" : "border-slate-200"}`}>
-                                {product?.variants && product?.variants?.length > 0 && (
+                                {product?.variants && product?.variants?.length > 0 ? (
                                     <div className="space-y-4">
                                         <p className={`text-[10px] font-black uppercase tracking-[0.3em] ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`}>
                                             Pilih Konfigurasi
                                         </p>
                                         <VariantPicker variants={product?.variants} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} isDarkMode={isDarkMode} />
                                     </div>
-                                )}
+                                ) : ''}
 
-                                {product?.is_qty && (
+                                {product?.is_qty ? (
                                     <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-[2rem] border
                                         ${isDarkMode ? "bg-black/50 border-white/5" : "bg-slate-50 border-slate-200"}`}>
                                         <span className={`text-[10px] font-black uppercase tracking-[0.3em] ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`}>
@@ -238,7 +238,7 @@ const Fiveteen = ({ products, isDarkMode, handleCart }: Props) => {
                                         </span>
                                         <QtySelector quantity={quantity} setQuantity={setQuantity} isDarkMode={isDarkMode} product={product} selectedVariant={selectedVariant} />
                                     </div>
-                                )}
+                                ) : ''}
                             </div>
                         </div>
 

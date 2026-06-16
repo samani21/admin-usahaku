@@ -185,11 +185,11 @@ const Ten = ({ products, isDarkMode, handleCart }: Props) => {
                                         ${isDarkMode ? "bg-white/10 text-white" : "bg-slate-900 text-white"}`}>
                                         {product?.category}
                                     </span>
-                                    {product?.discount_price && (
+                                    {product?.discount_price ? (
                                         <span className="px-4 py-1.5 rounded-full bg-[var(--product-primary-color)] text-white text-[9px] font-black uppercase tracking-widest shadow-lg shadow-[var(--product-primary-color)]/20">
                                             HEMAT {Promo(product, selectedVariant)}
                                         </span>
-                                    )}
+                                    ) : ''}
                                 </div>
                                 <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tighter leading-[0.9] italic uppercase">
                                     {product?.name}
@@ -211,11 +211,11 @@ const Ten = ({ products, isDarkMode, handleCart }: Props) => {
                                     <div className="text-2xl font-black tracking-tighter">
                                         {formatIDR(selectedVariant?.final_price ?? product?.final_price ?? 0)}
                                     </div>
-                                    {product?.discount_price && (
+                                    {product?.discount_price ? (
                                         <div className={`text-sm line-through font-bold mt-1 ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>
                                             {formatIDR(selectedVariant?.price ?? product?.price ?? 0)}
                                         </div>
-                                    )}
+                                    ) : ''}
                                 </div>
                                 <div className={`p-5 rounded-3xl ${isDarkMode ? 'bg-white/5' : 'bg-slate-50'}`}>
                                     <span className={`text-[10px] font-black uppercase tracking-widest block mb-1
@@ -229,19 +229,19 @@ const Ten = ({ products, isDarkMode, handleCart }: Props) => {
 
                             {/* Selectors Area */}
                             <div className="space-y-8">
-                                {product?.variants && product?.variants?.length > 0 && (
+                                {product?.variants && product?.variants?.length > 0 ? (
                                     <div className="space-y-4">
                                         <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Varian Pilihan</p>
                                         <VariantPicker variants={product?.variants} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} isDarkMode={isDarkMode} />
                                     </div>
-                                )}
+                                ) : ''}
 
-                                {product && product?.is_qty && (
+                                {product && product?.is_qty ? (
                                     <div className="space-y-4">
                                         <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Kuantitas</p>
                                         <QtySelector product={product} selectedVariant={selectedVariant} quantity={quantity} setQuantity={setQuantity} isDarkMode={isDarkMode} />
                                     </div>
-                                )}
+                                ) : ''}
                             </div>
                         </div>
 

@@ -107,12 +107,12 @@ const Thirteen = ({ products, isDarkMode, handleCart }: Props) => {
                         </div>
 
                         {/* Info Produk - Tipografi Renggang */}
-                        {p.category && (
+                        {p.category ? (
                             <p className={`text-[9px] sm:text-[10px] tracking-[0.5em] uppercase mb-3 transition-opacity duration-500
                                 ${is_available ? "opacity-40 group-hover:opacity-80" : "opacity-30"}`}>
                                 {p.category}
                             </p>
-                        )}
+                        ) : ''}
 
                         <h3 className={`text-base sm:text-lg font-light tracking-[0.15em] uppercase leading-relaxed mb-4 line-clamp-1 w-full px-4
                             ${!is_available ? "opacity-50" : ""}`}>
@@ -164,19 +164,19 @@ const Thirteen = ({ products, isDarkMode, handleCart }: Props) => {
                             alt={product?.name}
                         />
                         {/* Kategori yang dioverlay asimetris seperti desain majalah */}
-                        {product?.category && (
+                        {product?.category ? (
                             <div className={`hidden md:block absolute top-16 left-0 -ml-1 px-8 py-3 shadow-xl tracking-[0.3em] text-xs font-light uppercase border-y
                                 ${isDarkMode ? "bg-[#0f0f11]/90 border-white/10 backdrop-blur-md" : 'bg-white/90 border-black/10 backdrop-blur-md'}`}>
                                 {product?.category}
                             </div>
-                        )}
+                        ) : ''}
 
-                        {product?.discount_price && (
+                        {product?.discount_price ? (
                             <div className={`absolute top-6 right-6 px-6 py-2 text-[10px] font-black uppercase tracking-widest shadow-xl
                                 ${isDarkMode ? 'bg-white text-black' : 'bg-black text-white'}`}>
                                 -{Promo(product, selectedVariant)}
                             </div>
-                        )}
+                        ) : ''}
                     </div>
 
                     {/* Bagian Kiri: Detail Informasi (Scrollable Area) */}
@@ -185,11 +185,11 @@ const Thirteen = ({ products, isDarkMode, handleCart }: Props) => {
                         <div className="space-y-12">
                             {/* Header Info */}
                             <div className="space-y-6 text-center md:text-left">
-                                {product?.category && (
+                                {product?.category ? (
                                     <span className="md:hidden text-[10px] font-medium uppercase tracking-[0.4em] opacity-50 block">
                                         {product?.category}
                                     </span>
-                                )}
+                                ) : ''}
                                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-[0.1em] uppercase leading-tight">
                                     {product?.name}
                                 </h2>
@@ -205,20 +205,20 @@ const Thirteen = ({ products, isDarkMode, handleCart }: Props) => {
                                         <span className="text-2xl sm:text-3xl font-medium tracking-widest uppercase">
                                             {formatIDR(currentFinalPrice)}
                                         </span>
-                                        {currentDiscount > 0 && (
+                                        {currentDiscount > 0 ? (
                                             <span className="text-sm opacity-40 line-through tracking-widest uppercase">
                                                 {formatIDR(currentPrice)}
                                             </span>
-                                        )}
+                                        ) : ''}
                                     </div>
 
-                                    {currentDiscount > 0 && (
+                                    {currentDiscount > 0 ? (
                                         <div className={`inline-flex items-center gap-2 mt-4 px-3 py-1.5 border text-[9px] font-medium uppercase tracking-widest
                                             ${isDarkMode ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10' : 'border-emerald-500/20 text-emerald-600 bg-emerald-50'}`}>
                                             <Tag size={12} />
                                             Save {formatIDR(currentDiscount)} {product?.percent_discount && `(${Promo(product, selectedVariant)})`}
                                         </div>
-                                    )}
+                                    ) : ''}
                                 </div>
                             </div>
 
@@ -232,7 +232,7 @@ const Thirteen = ({ products, isDarkMode, handleCart }: Props) => {
 
                             {/* Spesifikasi & Input */}
                             <div className={`py-10 border-y space-y-10 ${isDarkMode ? "border-white/10" : "border-black/10"}`}>
-                                {product?.variants && product?.variants?.length > 0 && (
+                                {product?.variants && product?.variants?.length > 0 ? (
                                     <div className="space-y-6">
                                         <h4 className="text-[10px] font-medium uppercase tracking-[0.3em] opacity-40 text-center md:text-left">Variants</h4>
                                         <VariantPicker
@@ -242,15 +242,15 @@ const Thirteen = ({ products, isDarkMode, handleCart }: Props) => {
                                             isDarkMode={isDarkMode}
                                         />
                                     </div>
-                                )}
+                                ) : ''}
 
                                 <div className="flex flex-col sm:flex-row items-center justify-between gap-8 pt-4">
-                                    {product?.is_qty && (
+                                    {product?.is_qty ? (
                                         <div className="w-full sm:w-auto flex flex-col items-center sm:items-start gap-4">
                                             <h4 className="text-[10px] font-medium uppercase tracking-[0.3em] opacity-40">Quantity</h4>
                                             <QtySelector product={product} selectedVariant={selectedVariant} quantity={quantity} setQuantity={setQuantity} isDarkMode={isDarkMode} />
                                         </div>
-                                    )}
+                                    ) : ''}
 
                                     <div className="text-center sm:text-right w-full sm:w-auto">
                                         <h4 className="text-[10px] font-medium uppercase tracking-[0.3em] opacity-40 mb-3">Subtotal</h4>

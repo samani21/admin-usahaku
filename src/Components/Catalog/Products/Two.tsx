@@ -189,12 +189,12 @@ const Two = ({ products, isDarkMode, handleCart }: Props) => {
 
                         {/* Right: Actions */}
                         <div className="space-y-8">
-                            {product?.variants && product?.variants?.length > 0 && (
+                            {product?.variants && product?.variants?.length > 0 ? (
                                 <div className="text-left">
                                     <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-4 block text-center md:text-left">Pilih Gaya</span>
                                     <VariantPicker variants={product?.variants} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} isDarkMode={isDarkMode} />
                                 </div>
-                            )}
+                            ) : ''}
 
                             {/* Summary Box */}
                             <div className={`p-6 sm:p-8 rounded-[2rem] space-y-6 backdrop-blur-md border transition-colors

@@ -160,11 +160,11 @@ const Nine = ({ products, isDarkMode, handleCart }: Props) => {
                                 className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                                 alt={product?.name}
                             />
-                            {product?.discount_price && (
+                            {product?.discount_price ? (
                                 <div className="absolute top-4 left-4 sm:top-6 sm:left-6 bg-[var(--product-primary-color)] text-white px-4 sm:px-6 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-black italic shadow-2xl animate-bounce">
                                     OFF {Promo(product, selectedVariant)}
                                 </div>
-                            )}
+                            ) : ''}
                         </div>
                     </div>
 
@@ -178,12 +178,12 @@ const Nine = ({ products, isDarkMode, handleCart }: Props) => {
                                     <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.4em] opacity-40 italic">
                                         {product?.category}
                                     </span>
-                                    {product?.stock && (
+                                    {product?.stock ? (
                                         <span className={`px-3 py-1 rounded-md text-[10px] font-black uppercase italic border
                                             ${isDarkMode ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
                                             {product?.stock} In Stock
                                         </span>
-                                    )}
+                                    ) : ''}
                                 </div>
                                 <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black italic tracking-tighter leading-[0.9] uppercase">
                                     {product?.name}
@@ -199,7 +199,7 @@ const Nine = ({ products, isDarkMode, handleCart }: Props) => {
 
                             {/* Interactive Options */}
                             <div className={`space-y-8 pt-8 border-t ${isDarkMode ? 'border-white/10' : 'border-slate-200'}`}>
-                                {product?.variants && product?.variants.length > 0 && (
+                                {product?.variants && product?.variants.length > 0 ? (
                                     <div className="space-y-4">
                                         <p className={`text-[10px] font-black uppercase tracking-[0.3em] ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`}>
                                             Pilih Varian
@@ -211,9 +211,9 @@ const Nine = ({ products, isDarkMode, handleCart }: Props) => {
                                             isDarkMode={isDarkMode}
                                         />
                                     </div>
-                                )}
+                                ) : ''}
 
-                                {product?.is_qty && (
+                                {product?.is_qty ? (
                                     <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 rounded-[2rem] border-2
                                         ${isDarkMode ? 'bg-zinc-900/50 border-white/5' : 'bg-slate-50 border-slate-100'}`}>
                                         <div className="space-y-1">
@@ -222,7 +222,7 @@ const Nine = ({ products, isDarkMode, handleCart }: Props) => {
                                         </div>
                                         <QtySelector product={product} selectedVariant={selectedVariant} quantity={quantity} setQuantity={setQuantity} isDarkMode={isDarkMode} />
                                     </div>
-                                )}
+                                ) : ''}
                             </div>
                         </div>
 

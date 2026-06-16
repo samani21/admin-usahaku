@@ -179,14 +179,14 @@ const Sevent = ({ products, isDarkMode, handleCart }: Props) => {
 
                             {/* Title & Price Header */}
                             <div className="space-y-4">
-                                {product?.category && (
+                                {product?.category ? (
                                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--product-primary-color)]/10 border border-[var(--product-primary-color)]/20 text-[var(--product-primary-color)]">
                                         <Info size={14} strokeWidth={2.5} />
                                         <span className="text-[10px] font-black uppercase tracking-widest">
                                             {product.category}
                                         </span>
                                     </div>
-                                )}
+                                ) : ''}
 
                                 <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-[1.1]">
                                     {product?.name}
@@ -197,11 +197,11 @@ const Sevent = ({ products, isDarkMode, handleCart }: Props) => {
                                         <p className="text-4xl font-black text-[var(--product-primary-color)] tracking-tighter">
                                             {formatIDR(selectedVariant?.final_price || product?.final_price || 0)}
                                         </p>
-                                        {product?.discount_price && (
+                                        {product?.discount_price ? (
                                             <p className={`text-base font-bold line-through ${isDarkMode ? "text-slate-500" : "text-slate-400"}`}>
                                                 {formatIDR(selectedVariant?.price || product?.price || 0)}
                                             </p>
-                                        )}
+                                        ) : ''}
                                     </div>
                                 </div>
                             </div>
@@ -214,7 +214,7 @@ const Sevent = ({ products, isDarkMode, handleCart }: Props) => {
                             </div>
 
                             {/* Variants Selection */}
-                            {product?.variants && product.variants.length > 0 && (
+                            {product?.variants && product.variants.length > 0 ? (
                                 <div className="space-y-4">
                                     <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${isDarkMode ? "text-slate-500" : "text-slate-400"}`}>
                                         Pilihan Variasi
@@ -226,10 +226,10 @@ const Sevent = ({ products, isDarkMode, handleCart }: Props) => {
                                         isDarkMode={isDarkMode}
                                     />
                                 </div>
-                            )}
+                            ) : ''}
 
                             {/* Prominent Quantity Box */}
-                            {product?.is_qty && (
+                            {product?.is_qty ? (
                                 <div className={`p-5 rounded-[2rem] border flex items-center justify-between
                                     ${isDarkMode ? "bg-slate-900 border-white/5" : "bg-slate-50 border-slate-200"}`}>
                                     <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>
@@ -237,7 +237,7 @@ const Sevent = ({ products, isDarkMode, handleCart }: Props) => {
                                     </span>
                                     <QtySelector quantity={quantity} product={product} selectedVariant={selectedVariant} setQuantity={setQuantity} isDarkMode={isDarkMode} />
                                 </div>
-                            )}
+                            ) : ''}
                         </div>
 
                         {/* Sticky Action Footer */}

@@ -199,11 +199,11 @@ const One = ({ products, isDarkMode, handleCart }: Props) => {
                             <p className="text-3xl md:text-4xl font-extrabold text-[var(--product-primary-color)] leading-none tracking-tighter">
                                 {formatIDR(selectedVariant?.final_price ?? product?.final_price ?? 0)}
                             </p>
-                            {(product?.discount_price || selectedVariant?.price) && (
+                            {(product?.discount_price || selectedVariant?.price) ? (
                                 <p className={`text-lg md:text-xl font-medium ${isDarkMode ? "text-slate-500 " : " text-slate-400 "}line-through`}>
                                     {formatIDR(selectedVariant?.price ?? product?.price ?? 0)}
                                 </p>
-                            )}
+                            ) : ''}
                         </div>
 
                         <div className="space-y-8 flex-grow">

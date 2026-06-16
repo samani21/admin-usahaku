@@ -75,7 +75,7 @@ const Four = ({ isDarkMode, headline, subHeadline, ctaText }: Props) => {
                         <button
                             onClick={handleScroll}
                             className={`relative flex items-center gap-3 px-6 py-3 border border-current font-bold uppercase tracking-[0.15em] text-xs md:text-sm transition-transform duration-300 ease-out group-hover:-translate-x-0.5 group-hover:-translate-y-0.5
-                                ${isDarkMode ? '' : 'bg-[#faf9f6] text-[var(--hero-primary-color)]'}
+                                ${isDarkMode ? 'text-[var(--hero-primary-color)]' : 'bg-[#faf9f6] text-[var(--hero-primary-color)]'}
                             `}
                         >
                             {ctaText}

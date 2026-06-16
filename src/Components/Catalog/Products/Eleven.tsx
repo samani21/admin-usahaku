@@ -120,14 +120,14 @@ const Eleven = ({ products, isDarkMode, handleCart }: Props) => {
                             {/* Content */}
                             <div className="flex flex-col flex-1 pt-4 justify-between">
                                 <div className="space-y-1">
-                                    {p?.category && (
+                                    {p?.category ? (
                                         <span className={`text-[9px] font-black tracking-[0.3em] uppercase
                                             ${is_available
                                                 ? isDarkMode ? 'text-indigo-400' : 'text-indigo-600'
                                                 : isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`}>
                                             {p?.category}
                                         </span>
-                                    )}
+                                    ) : ''}
                                     <h3 className={`font-black text-lg md:text-xl leading-tight line-clamp-2 tracking-tighter transition-colors duration-300
                                         ${is_available && isDarkMode ? 'group-hover:text-indigo-300' : is_available && !isDarkMode ? 'group-hover:text-indigo-600' : ''}`}>
                                         {p?.name}
@@ -185,11 +185,11 @@ const Eleven = ({ products, isDarkMode, handleCart }: Props) => {
                         {/* Decorative Gradient Overlay */}
                         <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 via-transparent to-pink-500/20 mix-blend-overlay pointer-events-none" />
 
-                        {product?.discount_price && (
+                        {product?.discount_price ? (
                             <div className="absolute top-6 left-6 bg-gradient-to-r from-pink-500 to-amber-400 text-white px-5 py-2 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl border border-white/20">
                                 Hemat {Promo(product, selectedVariant)}
                             </div>
-                        )}
+                        ) : ''}
                     </div>
 
                     {/* Content Section - Flow natural & Scrollable */}
@@ -243,23 +243,23 @@ const Eleven = ({ products, isDarkMode, handleCart }: Props) => {
 
                             {/* Selectors Area */}
                             <div className="space-y-8 py-8 border-t border-dashed border-current/20">
-                                {product?.variants && product?.variants?.length > 0 && (
+                                {product?.variants && product?.variants?.length > 0 ? (
                                     <div className="space-y-4">
                                         <p className={`text-[10px] font-black uppercase tracking-[0.3em] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                             Pilihan Variasi
                                         </p>
                                         <VariantPicker variants={product?.variants} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} isDarkMode={isDarkMode} />
                                     </div>
-                                )}
+                                ) : ''}
 
-                                {product && product?.is_qty && (
+                                {product && product?.is_qty ? (
                                     <div className="space-y-4">
                                         <p className={`text-[10px] font-black uppercase tracking-[0.3em] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                             Tentukan Jumlah
                                         </p>
                                         <QtySelector product={product} selectedVariant={selectedVariant} quantity={quantity} setQuantity={setQuantity} isDarkMode={isDarkMode} />
                                     </div>
-                                )}
+                                ) : ''}
                             </div>
                         </div>
 

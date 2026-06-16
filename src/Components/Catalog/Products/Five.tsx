@@ -204,23 +204,23 @@ const Five = ({ products, isDarkMode, handleCart }: Props) => {
                         <div className={`w-full max-w-2xl flex flex-col gap-10 py-10 border-y 
                             ${isDarkMode ? "border-slate-800" : "border-slate-200"}`}>
 
-                            {product?.variants && product?.variants?.length > 0 && (
+                            {product?.variants && product?.variants?.length > 0 ? (
                                 <div className="flex flex-col items-center">
                                     <span className={`text-[10px] font-bold uppercase tracking-[0.3em] mb-5 ${isDarkMode ? "text-slate-500" : "text-slate-400"}`}>
                                         Pilih Edisi Varian
                                     </span>
                                     <VariantPicker variants={product?.variants} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} isDarkMode={isDarkMode} />
                                 </div>
-                            )}
+                            ) : ''}
 
-                            {product?.is_qty && (
+                            {product?.is_qty ? (
                                 <div className="flex flex-col items-center">
                                     <span className={`text-[10px] font-bold uppercase tracking-[0.3em] mb-5 ${isDarkMode ? "text-slate-500" : "text-slate-400"}`}>
                                         Tentukan Jumlah
                                     </span>
                                     <QtySelector product={product} selectedVariant={selectedVariant} quantity={quantity} setQuantity={setQuantity} isDarkMode={isDarkMode} />
                                 </div>
-                            )}
+                            ) : ''}
                         </div>
 
                         {/* Total & Call to Action */}
@@ -230,11 +230,11 @@ const Five = ({ products, isDarkMode, handleCart }: Props) => {
                             </p>
 
                             <div className="flex flex-col items-center mb-8">
-                                {product?.discount_price && (
+                                {product?.discount_price ? (
                                     <span className={`text-sm line-through font-bold mb-1 ${isDarkMode ? "text-slate-600" : "text-slate-400"}`}>
                                         {formatIDR((selectedVariant?.price ?? product?.price ?? 0) * quantity)}
                                     </span>
-                                )}
+                                ) : ''}
                                 <span className="text-4xl md:text-5xl font-black tracking-tighter text-[var(--product-primary-color)]">
                                     {formatIDR((selectedVariant?.final_price ?? product?.final_price ?? 0) * quantity)}
                                 </span>

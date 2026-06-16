@@ -202,21 +202,21 @@ const Six = ({ products, isDarkMode, handleCart }: Props) => {
 
                         {/* Interactive UI (Variants & Quantity) */}
                         <div className="p-6 md:p-12 space-y-8 flex-grow">
-                            {product?.variants && product?.variants?.length > 0 && (
+                            {product?.variants && product?.variants?.length > 0 ? (
                                 <div className="space-y-4">
                                     <span className={`text-[9px] font-black uppercase tracking-[0.3em]
                                         ${isDarkMode ? "text-zinc-500" : "text-zinc-400"}`}>Select Variant</span>
                                     <VariantPicker variants={product?.variants} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} isDarkMode={isDarkMode} />
                                 </div>
-                            )}
+                            ) : ''}
 
-                            {product?.is_qty && (
+                            {product?.is_qty ? (
                                 <div className="space-y-4">
                                     <span className={`text-[9px] font-black uppercase tracking-[0.3em]
                                         ${isDarkMode ? "text-zinc-500" : "text-zinc-400"}`}>Quantity</span>
                                     <QtySelector quantity={quantity} product={product} selectedVariant={selectedVariant} setQuantity={setQuantity} isDarkMode={isDarkMode} />
                                 </div>
-                            )}
+                            ) : ''}
                         </div>
 
                         {/* Action Footer (Mengalir di bagian paling bawah) */}

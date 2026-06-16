@@ -200,11 +200,11 @@ const Fourteen = ({ products, isDarkMode, handleCart }: Props) => {
                         {/* Floating Tech Badges */}
                         <div className="absolute top-6 left-6 flex flex-col gap-3">
 
-                            {product?.discount_price && (
+                            {product?.discount_price ? (
                                 <div className="bg-[var(--product-primary-color)] text-white px-5 py-2 rounded-sm font-black text-xl italic skew-x-[-12deg] shadow-xl w-fit">
                                     -{Promo(product, selectedVariant)}
                                 </div>
-                            )}
+                            ) : ''}
                         </div>
                     </div>
 
@@ -233,7 +233,7 @@ const Fourteen = ({ products, isDarkMode, handleCart }: Props) => {
 
                             {/* System Options & Interactions */}
                             <div className="space-y-8 pt-6">
-                                {product?.variants && product?.variants?.length > 0 && (
+                                {product?.variants && product?.variants?.length > 0 ? (
                                     <div className="space-y-4">
                                         <p className={`text-[10px] font-black uppercase tracking-widest 
                                         ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>Pilih Varian</p>
@@ -244,7 +244,7 @@ const Fourteen = ({ products, isDarkMode, handleCart }: Props) => {
                                             isDarkMode={isDarkMode}
                                         />
                                     </div>
-                                )}
+                                ) : ''}
 
                                 {/* Price Matrix Box */}
                                 <div className={`p-6 rounded-[2rem] border-2 space-y-6
@@ -256,21 +256,21 @@ const Fourteen = ({ products, isDarkMode, handleCart }: Props) => {
                                             <span className="text-4xl sm:text-5xl font-black tracking-tighter italic text-[var(--product-primary-color)]">
                                                 {formatIDR(currentFinalPrice)}
                                             </span>
-                                            {currentDiscount > 0 && (
+                                            {currentDiscount > 0 ? (
                                                 <span className="text-lg opacity-30 line-through font-bold italic">
                                                     {formatIDR(currentPrice)}
                                                 </span>
-                                            )}
+                                            ) : ''}
                                         </div>
                                     </div>
 
-                                    {product?.is_qty && (
+                                    {product?.is_qty ? (
                                         <div className={`pt-6 border-t border-dashed flex flex-col sm:flex-row sm:items-center justify-between gap-4
                                             ${isDarkMode ? "border-white/10" : "border-slate-200"}`}>
                                             <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Output Quantity</span>
                                             <QtySelector product={product} selectedVariant={selectedVariant} quantity={quantity} setQuantity={setQuantity} isDarkMode={isDarkMode} />
                                         </div>
-                                    )}
+                                    ) : ''}
                                 </div>
                             </div>
                         </div>

@@ -29,7 +29,7 @@ const Four = ({ products, isDarkMode, handleCart }: Props) => {
         return product?.variants?.length > 0 && !selectedVariant;
     }, [product, selectedVariant]);
 
- 
+
     useEffect(() => {
         document.body.style.overflow = product ? 'hidden' : 'unset';
         return () => { document.body.style.overflow = 'unset'; };
@@ -213,7 +213,7 @@ const Four = ({ products, isDarkMode, handleCart }: Props) => {
                         </div>
 
                         <div className="space-y-8 flex-grow">
-                            {product?.variants && product?.variants?.length > 0 && (
+                            {product?.variants && product?.variants?.length > 0 ? (
                                 <div className="space-y-4">
                                     <p className={`text-[10px] font-black uppercase tracking-widest 
                                         ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>Pilih Varian</p>
@@ -224,7 +224,7 @@ const Four = ({ products, isDarkMode, handleCart }: Props) => {
                                         isDarkMode={isDarkMode}
                                     />
                                 </div>
-                            )}
+                            ) : ''}
 
                             {product && product.is_qty ? (
                                 <div className="space-y-4">
