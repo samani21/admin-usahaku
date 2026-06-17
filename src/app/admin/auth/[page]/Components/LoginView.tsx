@@ -35,7 +35,6 @@ function LoginView({ themeStyles, showToast, activeScheme, theme }: Props) {
             window.location.href = '/'; // Redirect setelah sukses
         } catch (e: any) {
             showToast(e?.message, 'error')
-        } finally {
             setIsLoading(false)
         }
     }

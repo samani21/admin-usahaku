@@ -38,7 +38,6 @@ const BanksComponent = (props: Props) => {
     const [dataUpdate, setDataUpdate] = useState<BanksType | null>(null)
     const [deleteData, setDeleteData] = useState<BanksType | null>(null)
     const [categorie, setCategorie] = useState<BanksType[]>([]);
-    console.log('dateRangeText', dateRangeText)
     useEffect(() => {
         setTimeout(() => {
             setShowAlert({

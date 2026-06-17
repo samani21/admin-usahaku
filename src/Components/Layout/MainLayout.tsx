@@ -17,7 +17,7 @@ const MainLayout = ({ children }: Props) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
     const [isMobileActionMenuOpen, setIsMobileActionMenuOpen] = useState<boolean>(false);
     const pathname = usePathname();
-    const [loading, setLoading] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(true);
     const segments = pathname.split("/").filter(Boolean);
     const lastOne = segments.slice(-1);
     const [user, setUser] = useState<any>();
@@ -29,12 +29,10 @@ const MainLayout = ({ children }: Props) => {
     const closeMobileActionMenu = () => setIsMobileActionMenuOpen(false);
 
     const handleNotificationClick = () => {
-        console.log("Aksi Notifikasi: Memuat halaman notifikasi...");
         closeMobileActionMenu();
     };
 
     const handleProfileClick = () => {
-        console.log("Aksi Profil: Memuat halaman profil pengguna...");
         closeMobileActionMenu();
     };
 
@@ -85,6 +83,10 @@ const MainLayout = ({ children }: Props) => {
         router?.push('/auth/login')
     }
     useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            router?.push('/auth/login')
+        }
         getProfile()
     }, [])
 
@@ -97,9 +99,15 @@ const MainLayout = ({ children }: Props) => {
                 setBusiness(res?.data?.business)
             }
         } catch (e: any) {
+            localStorage?.removeItem('token');
+            localStorage?.removeItem('user');
+            router?.push('/auth/login')
         } finally {
             setLoading(false)
         }
+    }
+    if (loading) {
+        return <Loading />
     }
     return (
         <div className="min-h-screen bg-[#f0f9f6]  font-sans text-slate-800">
@@ -154,7 +162,6 @@ const MainLayout = ({ children }: Props) => {
                     </div>
                 </main>
             </div>
-            {loading && <Loading />}
         </div>
     )
 }
