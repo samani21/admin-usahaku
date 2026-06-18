@@ -268,7 +268,7 @@ export default function ListProductPage() {
                 render: (row) =>
                     row.variants?.map((v, i) => (
                         <b key={i}>
-                            {v.name} : {v?.stock ?? 0}
+                            {v.name} : {v?.product_variant_stock ?? 0}
                             {row.variants.length !== i + 1 && <br />}
                         </b>
                     )),
@@ -385,18 +385,31 @@ export default function ListProductPage() {
                 handleReset={handleResetFilter}
                 setIsModalOpenForm={setIsModalOpen}
             />
-            <GlassCard className="p-4 overflow-x-auto">
-                <div className="flex items-center gap-4 overflow-x-auto text-slate-800">
-                    <div onClick={() => setSelectOutlet("Semua")} className={`${selectOutlet === 'Semua' ? 'font-semibold border-b-3 px-2 border-emerald-500' : ''} cursor-pointer`}>
+            <GlassCard className="p-3 w-full">
+                {/* Tambahkan class [&::-webkit-scrollbar]:hidden agar scrollbar tidak terlihat tapi tetap bisa di-scroll */}
+                <div className="flex items-center gap-2 overflow-x-auto text-slate-600 [&::-webkit-scrollbar]:hidden">
+                    <button
+                        onClick={() => setSelectOutlet("Semua")}
+                        className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ease-in-out flex-shrink-0 ${selectOutlet === 'Semua'
+                            ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30'
+                            : 'bg-transparent hover:bg-emerald-50 hover:text-emerald-700'
+                            }`}
+                    >
                         Semua
-                    </div>
-                    {
-                        outlets?.map((o, i) => (
-                            <div key={i} onClick={() => setSelectOutlet(o?.name)} className={`${selectOutlet === o?.name ? 'font-semibold border-b-3 px-2 border-emerald-500' : ''} cursor-pointer`}>
-                                {o?.name}
-                            </div>
-                        ))
-                    }
+                    </button>
+
+                    {outlets?.map((o, i) => (
+                        <button
+                            key={i}
+                            onClick={() => setSelectOutlet(o?.name)}
+                            className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ease-in-out flex-shrink-0 ${selectOutlet === o?.name
+                                ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30'
+                                : 'bg-transparent hover:bg-emerald-50 hover:text-emerald-700'
+                                }`}
+                        >
+                            {o?.name}
+                        </button>
+                    ))}
                 </div>
             </GlassCard>
             <div className="mt-6">

@@ -1,13 +1,13 @@
 import { SelectOption } from "@/types/Public";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { AlertTriangle, Eye, EyeOff, Underline } from "lucide-react";
-import React, { ChangeEvent, useMemo, useState } from "react";
-import { useEffect, useRef } from "react";
+import { AlertTriangle, Eye, EyeOff, Info, Link as LinkIcon } from "lucide-react";
+import React, { ChangeEvent, useMemo, useState, useEffect, useRef } from "react";
 import Link from "@tiptap/extension-link";
 import TextAlign from '@tiptap/extension-text-align';
 import TiptapImage from '@tiptap/extension-image';
 import TiptapUnderline from '@tiptap/extension-underline';
+
 type Props = {
     label: string;
     type:
@@ -25,6 +25,7 @@ type Props = {
     | "image"
     | "time"
     | "password"
+    | "radio"
     | "wysiwyg";
 
     name: string;
@@ -40,6 +41,8 @@ type Props = {
     required?: boolean;
     options?: SelectOption[];
     placeholder?: string;
+    disabled?: boolean;
+    information?: string; // Menambahkan prop information
 };
 
 const FormInput = ({
@@ -53,7 +56,9 @@ const FormInput = ({
     required = false,
     options = [],
     placeholder,
+    disabled = false,
     max,
+    information, // Destructure prop information
 }: Props) => {
     const [search, setSearch] = useState("");
     const [open, setOpen] = useState(false);
@@ -68,13 +73,18 @@ const FormInput = ({
     const isPrice = type === "price";
     const isAutocomplete = type === "autocomplete";
 
-    const baseInput =
-        "w-full px-4 py-2 bg-slate-50/50 border-2 border-slate-100 rounded-2xl focus:outline-none focus:ring-0 focus:border-emerald-500 focus:bg-white transition-all text-slate-700 font-semibold placeholder:font-normal";
+    // UI Styles yang Diperbarui
+    const baseInput = `w-full px-4 py-2.5 bg-slate-50 border rounded-xl focus:outline-none focus:ring-4 focus:bg-white transition-all duration-200 text-slate-700 font-medium placeholder:text-slate-400 placeholder:font-normal shadow-sm
+        ${disabled
+            ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed shadow-none"
+            : "border-slate-200 hover:border-slate-300 focus:border-emerald-500 focus:ring-emerald-500/10"
+        }`;
+
     const errorStyle = error
-        ? "border-red-500 focus:border-red-500 focus:ring-red-500/50 focus:ring-2"
-        : "border-gray-300";
-    const fileStyle =
-        "file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-zinc-200 file:text-zinc-800 hover:file:bg-zinc-300";
+        ? "!border-red-500 focus:!border-red-500 focus:!ring-red-500/20"
+        : "";
+
+    const fileStyle = `file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer ${disabled ? "opacity-60 cursor-not-allowed file:cursor-not-allowed" : ""}`;
 
     useEffect(() => {
         if (isAutocomplete) {
@@ -106,7 +116,6 @@ const FormInput = ({
         if (type === "image" && value instanceof File) {
             const objectUrl = URL.createObjectURL(value);
             setPreview(objectUrl);
-
             return () => URL.revokeObjectURL(objectUrl);
         }
     }, [value, type]);
@@ -121,6 +130,7 @@ const FormInput = ({
     };
 
     const handlePriceChange = (e: ChangeEvent<HTMLInputElement>) => {
+        if (disabled) return;
         const raw = e.target.value.replace(/\D/g, "");
         const formatted = formatRupiah(raw);
 
@@ -157,95 +167,111 @@ const FormInput = ({
         extensions: [
             StarterKit,
             TiptapUnderline,
-            TiptapImage, // Gunakan nama alias di sini
+            TiptapImage,
             TextAlign.configure({ types: ['heading', 'paragraph'] }),
+            Link.configure({ openOnClick: false }),
         ],
+        editable: !disabled,
         immediatelyRender: false,
         content: value || '',
         editorProps: {
             attributes: {
-                // Tambahkan 'prose-p:my-1' atau cukup gunakan CSS manual di atas untuk kontrol penuh
-                class: `prose prose-sm focus:outline-none max-w-none min-h-[150px] p-3 border rounded-b-lg bg-white ${error ? "border-red-500" : "border-gray-300"
-                    }`,
+                class: `prose prose-sm focus:outline-none max-w-none min-h-[150px] p-4 bg-white rounded-b-xl transition-colors duration-200 ${error ? "border-red-500" : "border-slate-200"} ${disabled ? "bg-slate-50 text-slate-400 cursor-not-allowed" : ""}`,
             },
         },
         onUpdate: ({ editor }) => {
-            // Hanya kirim perubahan jika user memang sedang mengetik di editor ini
-            if (editor.isFocused) {
+            if (editor.isFocused && !disabled) {
                 const html = editor.getHTML();
                 onChange({
-                    target: {
-                        name: name,
-                        value: html,
-                        type: 'wysiwyg'
-                    }
+                    target: { name: name, value: html, type: 'wysiwyg' }
                 } as any);
             }
         },
     });
+
     useEffect(() => {
         if (editor && value !== editor.getHTML()) {
             editor.commands.setContent(value || '');
         }
     }, [value, editor]);
+
+    useEffect(() => {
+        if (editor) {
+            editor.setEditable(!disabled);
+        }
+    }, [disabled, editor]);
+
     /* ============================= */
     /* RENDER INPUT */
     /* ============================= */
     const renderInput = () => {
         if (isWysiwyg) {
-            return (
-                <div className="flex flex-col">
-                    {/* Toolbar Sederhana */}
-                    <div className="flex flex-wrap gap-1 p-2 bg-gray-50 border border-b-0 border-gray-300 rounded-t-lg">
-                        {/* Group: Text Style */}
-                        <button type="button" onClick={() => editor?.chain().focus().toggleBold().run()} className={`p-1.5 rounded ${editor?.isActive('bold') ? 'bg-green-600 text-white' : 'hover:bg-gray-200'}`}><b>B</b></button>
-                        <button type="button" onClick={() => editor?.chain().focus().toggleItalic().run()} className={`p-1.5 rounded ${editor?.isActive('italic') ? 'bg-green-600 text-white' : 'hover:bg-gray-200'}`}><i>I</i></button>
-                        <button type="button" onClick={() => editor?.chain().focus().toggleUnderline().run()} className={`p-1.5 rounded ${editor?.isActive('underline') ? 'bg-green-600 text-white' : 'hover:bg-gray-200'}`}><u>U</u></button>
-                        <button type="button" onClick={() => editor?.chain().focus().toggleStrike().run()} className={`p-1.5 rounded ${editor?.isActive('strike') ? 'bg-green-600 text-white' : 'hover:bg-gray-200'}`}><s>S</s></button>
+            const btnClass = `p-1.5 rounded transition-colors text-sm font-semibold
+                ${disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-200"}`;
 
-                        <div className="w-[1px] h-6 bg-gray-300 mx-1" /> {/* Divider */}
+            const getActiveStyle = (isActive: boolean) =>
+                isActive && !disabled ? 'bg-emerald-100 text-emerald-700' : 'text-slate-600';
+
+            return (
+                <div className={`flex flex-col border rounded-xl overflow-hidden shadow-sm ${error ? "border-red-500 ring-4 ring-red-500/10" : "border-slate-200 focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/10"} ${disabled ? "opacity-80" : ""}`}>
+                    {/* Toolbar Tiptap */}
+                    <div className="flex flex-wrap items-center gap-1 p-2 bg-slate-50 border-b border-slate-200">
+                        {/* Group: Text Style */}
+                        <button disabled={disabled} type="button" onClick={() => editor?.chain().focus().toggleBold().run()} className={`${btnClass} ${getActiveStyle(editor?.isActive('bold') || false)}`}><b>B</b></button>
+                        <button disabled={disabled} type="button" onClick={() => editor?.chain().focus().toggleItalic().run()} className={`${btnClass} ${getActiveStyle(editor?.isActive('italic') || false)}`}><i>I</i></button>
+                        <button disabled={disabled} type="button" onClick={() => editor?.chain().focus().toggleUnderline().run()} className={`${btnClass} ${getActiveStyle(editor?.isActive('underline') || false)}`}><u>U</u></button>
+                        <button disabled={disabled} type="button" onClick={() => editor?.chain().focus().toggleStrike().run()} className={`${btnClass} ${getActiveStyle(editor?.isActive('strike') || false)}`}><s>S</s></button>
+
+                        <div className="w-[1px] h-5 bg-slate-300 mx-1" />
 
                         {/* Group: Alignment */}
-                        <button type="button" onClick={() => editor?.chain().focus().setTextAlign('left').run()} className={`p-1.5 rounded ${editor?.isActive({ textAlign: 'left' }) ? 'bg-green-600 text-white' : 'hover:bg-gray-200'}`}>L</button>
-                        <button type="button" onClick={() => editor?.chain().focus().setTextAlign('center').run()} className={`p-1.5 rounded ${editor?.isActive({ textAlign: 'center' }) ? 'bg-green-600 text-white' : 'hover:bg-gray-200'}`}>C</button>
-                        <button type="button" onClick={() => editor?.chain().focus().setTextAlign('right').run()} className={`p-1.5 rounded ${editor?.isActive({ textAlign: 'right' }) ? 'bg-green-600 text-white' : 'hover:bg-gray-200'}`}>R</button>
+                        <button disabled={disabled} type="button" onClick={() => editor?.chain().focus().setTextAlign('left').run()} className={`${btnClass} ${getActiveStyle(editor?.isActive({ textAlign: 'left' }) || false)}`}>L</button>
+                        <button disabled={disabled} type="button" onClick={() => editor?.chain().focus().setTextAlign('center').run()} className={`${btnClass} ${getActiveStyle(editor?.isActive({ textAlign: 'center' }) || false)}`}>C</button>
+                        <button disabled={disabled} type="button" onClick={() => editor?.chain().focus().setTextAlign('right').run()} className={`${btnClass} ${getActiveStyle(editor?.isActive({ textAlign: 'right' }) || false)}`}>R</button>
 
-                        <div className="w-[1px] h-6 bg-gray-300 mx-1" />
+                        <div className="w-[1px] h-5 bg-slate-300 mx-1" />
 
                         {/* Group: Lists */}
-                        <button type="button" onClick={() => editor?.chain().focus().toggleBulletList().run()} className={`p-1.5 rounded ${editor?.isActive('bulletList') ? 'bg-green-600 text-white' : 'hover:bg-gray-200'}`}>• List</button>
-                        <button type="button" onClick={() => editor?.chain().focus().toggleOrderedList().run()} className={`p-1.5 rounded ${editor?.isActive('orderedList') ? 'bg-green-600 text-white' : 'hover:bg-gray-200'}`}>1. List</button>
+                        <button disabled={disabled} type="button" onClick={() => editor?.chain().focus().toggleBulletList().run()} className={`${btnClass} ${getActiveStyle(editor?.isActive('bulletList') || false)}`}>• List</button>
+                        <button disabled={disabled} type="button" onClick={() => editor?.chain().focus().toggleOrderedList().run()} className={`${btnClass} ${getActiveStyle(editor?.isActive('orderedList') || false)}`}>1. List</button>
 
-                        <div className="w-[1px] h-6 bg-gray-300 mx-1" />
+                        <div className="w-[1px] h-5 bg-slate-300 mx-1" />
 
                         {/* Group: Extra */}
-                        <button type="button" onClick={() => {
+                        <button disabled={disabled} type="button" onClick={() => {
+                            if (disabled) return;
                             const url = window.prompt('Masukkan URL Link:');
                             if (url) editor?.chain().focus().setLink({ href: url }).run();
-                        }} className={`p-1.5 rounded ${editor?.isActive('link') ? 'bg-green-600 text-white' : 'hover:bg-gray-200'}`}>Link</button>
+                        }} className={`${btnClass} flex items-center gap-1 ${getActiveStyle(editor?.isActive('link') || false)}`}>
+                            <LinkIcon size={14} /> Link
+                        </button>
 
-                        <button type="button" onClick={() => editor?.chain().focus().undo().run()} className="p-1.5 hover:bg-gray-200 rounded">Undo</button>
-                        <button type="button" onClick={() => editor?.chain().focus().redo().run()} className="p-1.5 hover:bg-gray-200 rounded">Redo</button>
+                        <div className="flex-1"></div>
+
+                        <button disabled={disabled} type="button" onClick={() => editor?.chain().focus().undo().run()} className={btnClass}>Undo</button>
+                        <button disabled={disabled} type="button" onClick={() => editor?.chain().focus().redo().run()} className={btnClass}>Redo</button>
                     </div>
 
                     {/* Area Editor */}
-                    <EditorContent editor={editor} />
+                    <EditorContent editor={editor} disabled={disabled} />
                 </div>
             );
         }
+
         if (isPrice) {
             return (
-                <div className="relative">
-                    <span className="absolute left-3 top-3 text-gray-500 text-sm">
+                <div className="relative flex items-center">
+                    <span className={`absolute left-4 text-sm font-semibold z-10 ${disabled ? "text-slate-400" : "text-slate-500"}`}>
                         Rp
                     </span>
                     <input
                         type="text"
                         name={name}
+                        disabled={disabled}
                         value={formatRupiah(value ?? "")}
                         onChange={handlePriceChange}
                         placeholder={placeholder}
-                        className={`${baseInput} pl-10 ${errorStyle}`}
+                        className={`${baseInput} pl-12 ${errorStyle}`}
                     />
                 </div>
             );
@@ -256,10 +282,17 @@ const FormInput = ({
                 <select
                     name={name}
                     value={value}
+                    disabled={disabled}
                     onChange={onChange}
-                    className={`${baseInput} ${errorStyle}`}
+                    className={`${baseInput} pr-10 appearance-none ${errorStyle}`}
+                    style={{
+                        backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                        backgroundPosition: "right 0.5rem center",
+                        backgroundRepeat: "no-repeat",
+                        backgroundSize: "1.5em 1.5em"
+                    }}
                 >
-                    <option value="">-- Pilih {label} --</option>
+                    <option value="" disabled>-- Pilih {label} --</option>
                     {options.map((opt) => (
                         <option key={opt.value} value={opt.value}>
                             {opt.label}
@@ -274,25 +307,27 @@ const FormInput = ({
                 <div ref={wrapperRef} className="relative">
                     <input
                         type="text"
+                        disabled={disabled}
                         placeholder={`Cari ${label}`}
                         value={search}
                         onFocus={() => {
+                            if (disabled) return;
                             setOpen(true);
-                            setSearch(""); // reset supaya semua opsi muncul
+                            setSearch("");
                         }}
                         onChange={(e) => {
+                            if (disabled) return;
                             setSearch(e.target.value);
                             setOpen(true);
                         }}
                         className={`${baseInput} ${errorStyle}`}
                     />
 
-                    {open && (
-                        <div className="absolute z-20 w-full bg-white border border-gray-200 rounded-lg mt-1 max-h-48 overflow-y-auto shadow-lg">
+                    {open && !disabled && (
+                        <div className="absolute z-20 w-full bg-white border border-slate-200 rounded-xl mt-2 max-h-56 overflow-y-auto shadow-xl py-1">
                             {filteredOptions.length > 0 ? (
                                 filteredOptions.map((opt) => {
-                                    const isSelected =
-                                        opt.value.toString() === value?.toString();
+                                    const isSelected = opt.value.toString() === value?.toString();
 
                                     return (
                                         <div
@@ -302,31 +337,27 @@ const FormInput = ({
                                                 setOpen(false);
 
                                                 const fakeEvent = {
-                                                    target: {
-                                                        name,
-                                                        value: opt.value,
-                                                    },
+                                                    target: { name, value: opt.value },
                                                 };
 
                                                 onChange(fakeEvent as any);
                                             }}
-                                            className={`p-2 cursor-pointer text-sm flex justify-between items-center
-                            ${isSelected
-                                                    ? "bg-green-100 text-green-700 font-medium"
-                                                    : "hover:bg-green-50"
-                                                }
-                        `}
+                                            className={`px-4 py-2.5 cursor-pointer text-sm flex justify-between items-center transition-colors
+                                            ${isSelected
+                                                    ? "bg-emerald-50 text-emerald-700 font-semibold"
+                                                    : "hover:bg-slate-50 text-slate-700"
+                                                }`}
                                         >
                                             {opt.label}
                                             {isSelected && (
-                                                <span className="text-green-600 text-xs">✔</span>
+                                                <span className="text-emerald-600 font-bold">✓</span>
                                             )}
                                         </div>
                                     );
                                 })
                             ) : (
-                                <div className="p-2 text-sm text-gray-400">
-                                    Tidak ditemukan
+                                <div className="px-4 py-3 text-sm text-slate-400 italic">
+                                    Pilihan tidak ditemukan
                                 </div>
                             )}
                         </div>
@@ -335,24 +366,27 @@ const FormInput = ({
             );
         }
 
-
         if (isTextArea) {
             return (
                 <textarea
                     name={name}
+                    disabled={disabled}
                     value={value as string}
                     onChange={onChange}
-                    rows={3}
-                    className={`${baseInput} ${errorStyle}`}
+                    rows={4}
+                    placeholder={placeholder}
+                    className={`${baseInput} resize-y ${errorStyle}`}
                 />
             );
         }
+
         if (type === "checkbox") {
             return (
-                <label className="flex items-center space-x-2 cursor-pointer">
+                <label className={`flex items-center space-x-3 w-max ${disabled ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}>
                     <input
                         type="checkbox"
                         name={name}
+                        disabled={disabled}
                         checked={!!value}
                         onChange={(e) =>
                             onChange({
@@ -364,60 +398,62 @@ const FormInput = ({
                                 },
                             } as any)
                         }
-                        className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                        className="w-5 h-5 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500/20 focus:ring-4 transition-all disabled:cursor-not-allowed"
                     />
-                    <span className="text-sm text-gray-700">{label}</span>
+                    <span className={`text-sm font-medium ${disabled ? "text-slate-500" : "text-slate-700"}`}>{label}</span>
                 </label>
             );
         }
+
         if (type === "switch") {
             return (
-                <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">
+                <div className={`flex items-center space-x-4 ${disabled ? "opacity-70" : ""}`}>
+                    <span className={`text-sm font-semibold ${disabled ? "text-slate-500" : "text-slate-700"}`}>
                         {label}
                     </span>
-
                     <button
                         type="button"
+                        disabled={disabled}
                         onClick={() =>
                             onChange({
-                                target: {
-                                    name,
-                                    value: !value,
-                                },
+                                target: { name, value: !value },
                             } as any)
                         }
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${value ? "bg-green-600" : "bg-gray-300"
-                            }`}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-emerald-500/20
+                        ${value ? "bg-emerald-500" : "bg-slate-300"} 
+                        ${disabled ? "cursor-not-allowed" : "cursor-pointer"}`}
                     >
                         <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${value ? "translate-x-6" : "translate-x-1"
-                                }`}
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-300 
+                            ${value ? "translate-x-6" : "translate-x-1"}`}
                         />
                     </button>
                 </div>
             );
         }
+
         if (type === "image") {
             return (
                 <div className="space-y-3">
                     {preview && (
-                        <img
-                            src={preview}
-                            alt="Preview"
-                            className="w-32 h-32 object-cover rounded-lg border"
-                        />
+                        <div className="relative inline-block">
+                            <img
+                                src={preview}
+                                alt="Preview"
+                                className={`w-32 h-32 object-cover rounded-xl border-2 border-slate-200 shadow-sm ${disabled ? "opacity-60" : ""}`}
+                            />
+                        </div>
                     )}
-
                     <input
                         type="file"
                         accept="image/*"
                         name={name}
+                        disabled={disabled}
                         onChange={(e) => {
+                            if (disabled) return;
                             const file = e.target.files?.[0];
                             if (file) {
                                 setPreview(URL.createObjectURL(file));
-
                                 onChange({
                                     ...e,
                                     target: {
@@ -428,57 +464,78 @@ const FormInput = ({
                                 } as any);
                             }
                         }}
-                        className={`${baseInput} ${fileStyle} ${errorStyle}`}
+                        className={`${baseInput} !p-0 !bg-transparent !border-0 !shadow-none ${fileStyle} ${errorStyle}`}
                     />
                 </div>
             );
         }
+
         if (type === "password") {
             return (
-                <div className="relative">
+                <div className="relative flex items-center">
                     <input
                         type={showPassword ? "text" : "password"}
                         name={name}
+                        disabled={disabled}
                         value={value as string}
                         onChange={onChange}
                         placeholder={placeholder}
-                        className={`${baseInput} pr-10 ${errorStyle}`}
+                        className={`${baseInput} pr-12 ${errorStyle}`}
                     />
-
                     <button
                         type="button"
+                        disabled={disabled}
                         onClick={() => setShowPassword((prev) => !prev)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-green-600 transition"
+                        className={`absolute right-4 p-1 rounded-md text-slate-400 transition-colors
+                        ${disabled ? "cursor-not-allowed" : "hover:text-emerald-600 hover:bg-slate-100"}`}
                     >
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                 </div>
             );
         }
+
         if (type === "color") {
             return (
-                <div className="flex items-center gap-3">
+                <div className={`flex items-center gap-3 ${disabled ? "opacity-70" : ""}`}>
                     <input
                         type="color"
                         name={name}
+                        disabled={disabled}
                         value={value || "#000000"}
                         onChange={onChange}
-                        className="w-14 h-10 p-1 border rounded-lg cursor-pointer"
+                        className={`w-12 h-12 p-1 border border-slate-200 rounded-xl bg-slate-50 ${disabled ? "cursor-not-allowed" : "cursor-pointer"}`}
                     />
-
                     <input
                         type="text"
                         value={value || ""}
                         onChange={onChange}
+                        disabled={disabled}
                         name={name}
                         placeholder="#000000"
-                        className={`${baseInput} ${errorStyle}`}
+                        className={`${baseInput} flex-1 uppercase ${errorStyle}`}
                     />
+                </div>
+            );
+        }
 
-                    <div
-                        className="w-10 h-10 rounded-lg border"
-                        style={{ background: value || "#000000" }}
-                    />
+        if (type === "radio") {
+            return (
+                <div className={`flex flex-col space-y-3 mt-2 ${disabled ? "opacity-70" : ""}`}>
+                    {options.map((opt) => (
+                        <label key={opt.value} className={`flex items-center space-x-3 w-max ${disabled ? "cursor-not-allowed" : "cursor-pointer"}`}>
+                            <input
+                                type="radio"
+                                name={name}
+                                disabled={disabled}
+                                value={opt.value}
+                                checked={value !== undefined && value !== "" && value?.toString() === opt.value.toString()}
+                                onChange={onChange}
+                                className="w-5 h-5 text-emerald-600 border-slate-300 focus:ring-emerald-500/20 focus:ring-4 transition-all disabled:cursor-not-allowed"
+                            />
+                            <span className={`text-sm font-medium ${disabled ? "text-slate-500" : "text-slate-700"}`}>{opt.label}</span>
+                        </label>
+                    ))}
                 </div>
             );
         }
@@ -487,68 +544,79 @@ const FormInput = ({
             <input
                 type={isFile ? "file" : type}
                 name={name}
+                disabled={disabled}
                 {...(!isFile && { value })}
                 onChange={onChange}
                 min={type === "number" ? min : undefined}
                 max={type === "number" ? max : undefined}
-                step="1"
+                step={type === "number" ? "1" : undefined}
                 placeholder={placeholder}
-                className={`${baseInput} ${isFile ? fileStyle : ""} ${errorStyle}`}
+                className={`${baseInput} ${isFile ? "!p-0 !bg-transparent !border-0 !shadow-none " + fileStyle : ""} ${errorStyle}`}
             />
         );
     };
-    {
-        isWysiwyg && (
-            <style jsx global>{`
-        /* 1. Paksa tinggi baris dan margin paragraf jadi minimal */
-        .prose p, .tiptap p {
-            margin-top: 0px !important;
-            margin-bottom: 0px !important;
-            line-height: 1.4 !important; /* Mengatur kerapatan teks */
-        }
 
-        /* 2. Atur List agar sangat rapat */
-        .prose ul, .tiptap ul, 
-        .prose ol, .tiptap ol { 
-            list-style-type: disc !important; 
-            padding-left: 1.2rem !important; 
-            margin-top: 2px !important; 
-            margin-bottom: 2px !important;
-        }
-
-        /* 3. Hilangkan jarak antar item list */
-        .prose li, .tiptap li { 
-            margin-top: 0px !important;
-            margin-bottom: 0px !important;
-            padding-left: 0px !important;
-        }
-
-        /* 4. Khusus untuk paragraf di dalam list item (sering bikin renggang) */
-        .prose li > p, .tiptap li > p {
-            margin: 0 !important;
-            display: inline; /* Menghilangkan block behavior yang bikin jarak */
-        }
-
-        /* 5. Area editor utama */
-        .tiptap.prose {
-            font-size: 0.875rem !important; /* Ukuran teks 14px agar proporsional */
-        }
-    `}</style>
-        )
-    }
     return (
-        <div className="flex flex-col space-y-1">
-            <label className="text-xs font-bold text-emerald-800 uppercase tracking-widest ml-1">
-                {label} {required && <span className="text-red-500">*</span>}
-            </label>
+        <div className="flex flex-col space-y-2 w-full">
+            <div className="flex items-center gap-1.5">
+                <label className={`text-sm font-bold tracking-wide flex items-center gap-1 ${disabled ? "text-slate-400" : "text-slate-700"}`}>
+                    {label} {required && <span className="text-red-500">*</span>}
+                </label>
+
+                {/* Menambahkan Popup/Tooltip Information */}
+                {information && (
+                    <div className="group relative flex items-center justify-center cursor-help">
+                        <Info size={16} className="text-slate-400 hover:text-emerald-500 transition-colors" />
+
+                        {/* Box Tooltip */}
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs px-3 py-2 bg-slate-800 text-white text-xs font-medium rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            {information}
+
+                            {/* Panah (Arrow) Tooltip */}
+                            <svg className="absolute text-slate-800 h-2 w-full left-0 top-full" x="0px" y="0px" viewBox="0 0 255 255" xmlSpace="preserve">
+                                <polygon className="fill-current" points="0,0 127.5,127.5 255,0" />
+                            </svg>
+                        </div>
+                    </div>
+                )}
+            </div>
 
             {renderInput()}
 
             {error && (
-                <p className="text-xs text-red-500 flex items-center mt-1">
-                    <AlertTriangle size={14} className="mr-1" />
+                <p className="text-sm font-medium text-red-500 flex items-center mt-1.5 animate-in slide-in-from-top-1 fade-in duration-200">
+                    <AlertTriangle size={16} className="mr-1.5" />
                     {error}
                 </p>
+            )}
+
+            {isWysiwyg && (
+                <style jsx global>{`
+                    .prose p, .tiptap p {
+                        margin-top: 0px !important;
+                        margin-bottom: 0px !important;
+                        line-height: 1.5 !important;
+                    }
+                    .prose ul, .tiptap ul, 
+                    .prose ol, .tiptap ol { 
+                        list-style-type: disc !important; 
+                        padding-left: 1.5rem !important; 
+                        margin-top: 4px !important; 
+                        margin-bottom: 4px !important;
+                    }
+                    .prose li, .tiptap li { 
+                        margin-top: 2px !important;
+                        margin-bottom: 2px !important;
+                        padding-left: 0px !important;
+                    }
+                    .prose li > p, .tiptap li > p {
+                        margin: 0 !important;
+                        display: inline;
+                    }
+                    .tiptap.prose {
+                        font-size: 0.875rem !important;
+                    }
+                `}</style>
             )}
         </div>
     );

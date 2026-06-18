@@ -6,7 +6,9 @@ export interface Variant {
     stock?: string | number; // String untuk input yang kosong/diketik, Number untuk konversi akhir
     image: File | null;
     imagePreviewUrl: string | null;
-    id?: number
+    id?: number;
+    qty_package?: number;
+    is_package: boolean;
 }
 
 /** Tipe untuk State Formulir Produk */
@@ -20,7 +22,8 @@ export interface ProductForm {
     has_variant: 0 | 1; // 0 (Tidak) atau 1 (Ya)
     variants: Variant[];
     category?: number | null
-    is_qty: boolean
+    is_qty: boolean;
+    is_shared_stock: string
 }
 
 /** Tipe untuk Objek Error Validasi */
@@ -46,7 +49,8 @@ export const initialProductState: ProductForm = {
     imagePreviewUrl: null,
     has_variant: 0,
     variants: [],
-    is_qty: true
+    is_qty: true,
+    is_shared_stock: '',
 };
 
 export const initialErrors: Errors = {
@@ -67,6 +71,8 @@ export interface Variants {
     final_price: number,
     customValue?: string,
     product_variant_stock?: number,
+    is_package: boolean;
+    qty_package: number;
     pivot?: {
         percent: number;
         price: number;
@@ -109,6 +115,7 @@ export interface ProductsType {
     category?: string,
     is_quantity?: boolean,
     is_service?: boolean,
+    is_shared_stock: boolean
     is_qty?: boolean,
     service?: Services[]
     product_stock?: number,
