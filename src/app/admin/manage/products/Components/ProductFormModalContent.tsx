@@ -7,7 +7,7 @@ import { CategoriesType } from '@/types/Admin/CategoriesType';
 import { Errors, initialErrors, initialProductState, ProductForm, ProductsType, Variant, VariantErrors } from '@/types/Admin/ProductsType';
 import { getCroppedImg } from '@/utils/cropImage';
 import { Get } from '@/utils/Get';
-import { Check, ImageIcon, NotebookPen, Plus, PlusCircle, Save, Scissors, Trash2, XCircle } from 'lucide-react';
+import { AlertTriangle, Check, ImageIcon, NotebookPen, Plus, PlusCircle, Save, Scissors, Trash2, XCircle } from 'lucide-react';
 import React, { ChangeEvent, Dispatch, FormEvent, SetStateAction, useCallback, useEffect, useState } from 'react'
 import Cropper from 'react-easy-crop';
 import { json } from 'stream/consumers';
@@ -35,7 +35,22 @@ const ProductFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
     const [isCropping, setIsCropping] = useState(false);
     const [idVariant, setIdVariant] = useState<number | null>(null);
     const [categories, setCategories] = useState<OptionsType[]>();
-    console.log('productData', productData)
+    const [error, setError] = useState<any>({
+        name: '',
+        image: '',
+        price: '',
+        is_shared_stock: ''
+    })
+    const useParentStock = [
+        {
+            label: "Satu kesatuan stok (Stok Induk)",
+            value: "1"
+        },
+        {
+            label: "Stok terpisah per varian",
+            value: "0"
+        },
+    ]
     const resetForm = useCallback(() => {
         // Membersihkan URL pratinjau utama
         if (productData.imagePreviewUrl) URL.revokeObjectURL(productData.imagePreviewUrl);
@@ -66,6 +81,8 @@ const ProductFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
                 id: v?.id ?? 0,
                 image: null, // saat edit, file belum di-upload ulang
                 imagePreviewUrl: v?.image || null,
+                is_package: v?.qty_package > 1 ? true : false,
+                qty_package: v?.qty_package
             })) || [];
             setProductData({
                 name: dataUpdate?.name,
@@ -76,7 +93,8 @@ const ProductFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
                 imagePreviewUrl: dataUpdate?.image,
                 has_variant: dataUpdate?.has_variant ? 1 : 0,
                 variants: mappedVariants,
-                is_qty: dataUpdate?.is_qty ?? false
+                is_qty: dataUpdate?.is_qty ?? false,
+                is_shared_stock: String(dataUpdate?.is_shared_stock)
             })
         }
     }, [dataUpdate])
@@ -142,7 +160,7 @@ const ProductFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
             ...prev,
             [name]: newValue,
         }));
-
+        setError((prev: any) => ({ ...prev, [name]: '' }));
         // HANYA hapus error untuk bidang ini
         setErrors(prev => ({
             ...prev,
@@ -157,7 +175,7 @@ const ProductFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
             ...prev,
             has_variant: newValue,
             // Jika diaktifkan, tambahkan varian pertama
-            variants: newValue === 1 ? [{ name: '', price: '', image: null, imagePreviewUrl: null }] : []
+            variants: newValue === 1 ? [{ name: '', price: '', image: null, imagePreviewUrl: null, is_package: false }] : []
         }));
 
         // Reset semua error karena struktur form berubah
@@ -228,7 +246,7 @@ const ProductFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
     const addVariant = () => {
         setProductData(prev => ({
             ...prev,
-            variants: [...prev.variants, { name: '', price: '', stock: '', image: null, imagePreviewUrl: null }],
+            variants: [...prev.variants, { name: '', price: '', stock: '', image: null, imagePreviewUrl: null, is_package: false }],
         }));
     };
 
@@ -253,6 +271,22 @@ const ProductFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
+        if (productData?.name === '') {
+            setError((prev: any) => ({ ...prev, name: 'Isi nama produk' }));
+            return;
+        }
+        if (productData?.price === '') {
+            setError((prev: any) => ({ ...prev, price: 'Isi harga' }));
+            return;
+        }
+        if (productData?.is_shared_stock === '') {
+            setError((prev: any) => ({ ...prev, is_shared_stock: 'Pilih salah satu' }));
+            return;
+        }
+        if (!productData?.image && !productData?.imagePreviewUrl) {
+            setError((prev: any) => ({ ...prev, image: 'Upload gambar produk' }));
+            return;
+        }
         // Validasi Penuh HANYA dijalankan saat submit
         // const { isValid, errors: validationErrors } = validateForm(productData);
         // setErrors(validationErrors);
@@ -274,6 +308,7 @@ const ProductFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
         formData.append('price', (productData.price === '' ? 0 : productData.price).toString());
         formData.append('has_variant', productData.has_variant.toString());
         formData.append('is_qty', productData.is_qty ? "1" : "0");
+        formData.append('is_shared_stock', productData.is_shared_stock ? "1" : "0");
 
         // Tambahkan gambar utama (jika ada)
         if (productData.image) {
@@ -288,6 +323,7 @@ const ProductFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
                 }
                 formData.append(`variants[${i}][name]`, productData?.variants[i]?.name);
                 formData.append(`variants[${i}][price]`, String(productData?.variants[i]?.price));
+                formData.append(`variants[${i}][qty_package]`, String(productData?.variants[i]?.qty_package));
                 if (productData?.variants[i]?.image) {
                     // formData.append(`image`, productData?.variants[i]?.image, productData?.variants[i]?.image.name);
                     formData.append(`variants[${i}][image]`, productData?.variants[i]?.image as File);
@@ -373,7 +409,7 @@ const ProductFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
                                 name="name"
                                 value={productData.name ?? ''}
                                 onChange={handleProductChange}
-                                error={errors.name}
+                                error={error?.name}
                                 required
                             />
                             <FormInput
@@ -382,7 +418,7 @@ const ProductFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
                                 name="price"
                                 value={productData.price ?? 0}
                                 onChange={handleProductChange}
-                                error={errors.price}
+                                error={error?.price}
                                 min={0}
                                 required
                             />
@@ -393,6 +429,16 @@ const ProductFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
                                 value={productData.category ?? null}
                                 onChange={handleProductChange}
                                 options={categories}
+                            />
+                            <FormInput
+                                type="radio"
+                                label="MANAJEMEN STOK"
+                                name="is_shared_stock"
+                                value={productData.is_shared_stock ?? null}
+                                onChange={handleProductChange}
+                                options={useParentStock}
+                                required
+                                error={error?.is_shared_stock}
                             />
 
                             {/* Input Gambar Utama + Pratinjau */}
@@ -408,6 +454,14 @@ const ProductFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
                                     accept="image/*"
                                 />
                                 <ImagePreview imageUrl={productData.imagePreviewUrl} fileName={productData.image?.name} />
+                                {
+                                    error?.image && (
+                                        <p className="text-xs text-red-500 flex items-center mt-1">
+                                            <AlertTriangle size={14} className="mr-1" />
+                                            {error?.image}
+                                        </p>
+                                    )
+                                }
                             </div>
 
                             <div className="col-span-1">
@@ -506,7 +560,24 @@ const ProductFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
                                             min={0}
                                             required
                                         />
-
+                                        <FormInput
+                                            label="Package Variant"
+                                            type="switch"
+                                            name="is_package"
+                                            value={variant?.is_package}
+                                            onChange={(e) => handleVariantChange(index, e)}
+                                            information="Aktifkan opsi ini jika varian merupakan harga paket (bundle), misalnya paket isi 5 pcs dengan harga yang lebih murah dari satuan."
+                                        />
+                                        {
+                                            variant?.is_package &&
+                                            <FormInput
+                                                label="Kuantitas Paket"
+                                                type="number"
+                                                name="qty_package"
+                                                value={variant?.qty_package}
+                                                onChange={(e) => handleVariantChange(index, e)}
+                                            />
+                                        }
                                         {/* Input Gambar Varian (File) + Pratinjau */}
                                         <div className="flex flex-col space-y-1">
                                             <label htmlFor={`variant-image-${index}`} className="text-sm font-medium text-gray-800 flex items-center">
