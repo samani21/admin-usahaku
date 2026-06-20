@@ -1,17 +1,22 @@
 "use client"
 import { OrderType } from '@/types/Admin/Catalog/Order';
-import { CheckIcon, XIcon, Wallet } from 'lucide-react';
+import { CheckIcon, XIcon, Wallet, RefreshCw, AlertCircle, QrCode } from 'lucide-react';
 import React, { useState } from 'react'
-
-const CheckBadgeIcon = () => <svg className="w-12 h-12 text-[#009662] mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+import { QRCodeCanvas } from 'qrcode.react'; // Tambahkan import QR Code
 
 type Props = {
     onClose: () => void;
     activeVerifyOrder: OrderType | null;
-    handleAcceptPayment: (uangDiterima?: number) => void; // Tambahkan opsional parameter jika backend butuh catat nominal
+    handleAcceptPayment: (uangDiterima?: number) => void;
+    // Tambahkan 2 props ini untuk dikirim dari komponen Parent (OrdersComponent)
+    onRefresh?: () => void;
+    isRefreshing?: boolean;
 }
 
-const ModalPayment = ({ onClose, activeVerifyOrder, handleAcceptPayment }: Props) => {
+const ModalPayment = ({ onClose, activeVerifyOrder, handleAcceptPayment, onRefresh, isRefreshing = false }: Props) => {
+    // URL Base untuk QR Code (Bisa disesuaikan dengan routing aplikasi Anda)
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
+
     // Kalkulasi Data
     const isCash = activeVerifyOrder?.payment_method?.toLowerCase() === 'cash';
     const totalAmount = Number(activeVerifyOrder?.grand_total || 0);
@@ -33,14 +38,18 @@ const ModalPayment = ({ onClose, activeVerifyOrder, handleAcceptPayment }: Props
     };
 
     // Validasi untuk menonaktifkan tombol submit
-    const isSubmitDisabled = isCash && (uangDiterima < totalAmount);
+    // Jika Cash: Tidak bisa submit kalau uang kurang
+    // Jika Transfer/QRIS: Tidak bisa submit kalau payment_proof belum ada
+    const isSubmitDisabled = isCash
+        ? (uangDiterima < totalAmount)
+        : (!activeVerifyOrder?.payment_proof);
 
     return (
-        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="bg-white rounded-3xl border border-slate-100 w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
 
                 {/* Header Modal */}
-                <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
                     <div>
                         <h3 className="text-lg font-black text-slate-900">Verifikasi Pembayaran</h3>
                         <p className="text-xs text-slate-500 mt-0.5">Periksa bukti atau input nominal uang yang diterima.</p>
@@ -54,7 +63,7 @@ const ModalPayment = ({ onClose, activeVerifyOrder, handleAcceptPayment }: Props
                 </div>
 
                 {/* Konten Modal / Scrollable */}
-                <div className="p-6 overflow-y-auto space-y-6">
+                <div className="p-6 overflow-y-auto custom-scrollbar space-y-6">
 
                     {/* Ringkasan Pesanan Singkat */}
                     <div className="bg-[#F8FAFC] border border-slate-100 p-4 rounded-2xl grid grid-cols-2 gap-3 text-xs">
@@ -109,7 +118,6 @@ const ModalPayment = ({ onClose, activeVerifyOrder, handleAcceptPayment }: Props
                                     />
                                 </div>
 
-                                {/* Quick Nominal Buttons */}
                                 <div className="flex flex-wrap gap-2">
                                     <button type="button" onClick={() => setUangPas(totalAmount)} className="px-3 py-2 text-xs font-bold bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg transition-colors">
                                         Uang Pas
@@ -123,20 +131,56 @@ const ModalPayment = ({ onClose, activeVerifyOrder, handleAcceptPayment }: Props
                             </div>
                         </div>
                     ) : (
-                        /* KONDISI: Jika BUKAN CASH (Transfer/QRIS) -> Tampilkan Foto Bukti */
-                        <div className="space-y-2">
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
-                                Foto / Bukti Transfer
-                            </label>
-                            {activeVerifyOrder?.payment_proof ? (
-                                <div className='flex items-center justify-center w-full bg-slate-50 border border-slate-200 rounded-2xl p-2'>
-                                    <img src={activeVerifyOrder?.payment_proof} alt="Bukti Pembayaran" className='max-h-80 w-auto rounded-xl object-contain' />
+                        /* KONDISI: Jika BUKAN CASH (Transfer/QRIS) -> Tampilkan Fitur Upload Digital */
+                        <div className="space-y-4 border border-slate-200 p-4 rounded-2xl bg-slate-50/50">
+                            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                                <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">Pembayaran Digital</h4>
+                                <button
+                                    type="button"
+                                    onClick={onRefresh}
+                                    disabled={isRefreshing}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-indigo-700 bg-indigo-100 hover:bg-indigo-200 disabled:opacity-50 rounded-lg transition-colors shadow-sm"
+                                >
+                                    <RefreshCw size={14} className={isRefreshing ? "animate-spin" : ""} />
+                                    {isRefreshing ? 'Mengecek...' : 'Cek Status'}
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                {/* Kolom Kiri: QR Code untuk Customer */}
+                                <div className="flex flex-col items-center justify-center p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 text-center flex items-center gap-1">
+                                        <QrCode size={12} /> Scan untuk Upload
+                                    </p>
+                                    <div className="bg-white p-2 border border-slate-100 rounded-xl shadow-xs ring-4 ring-slate-50">
+                                        {/* Sesuaikan struktur URL ini dengan endpoint upload bukti pembayaran Anda */}
+                                        <QRCodeCanvas value={`${baseUrl}/upload-payment/${activeVerifyOrder?.qr_token}`} size={110} />
+                                        {`${baseUrl}/upload-payment/${activeVerifyOrder?.qr_token}`}
+                                    </div>
+                                    <p className="text-[10px] text-slate-500 text-center mt-3 leading-relaxed">
+                                        Minta pelanggan scan QR ini untuk melampirkan bukti {activeVerifyOrder?.payment_method.toUpperCase()}.
+                                    </p>
                                 </div>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center p-8 bg-slate-50 border border-dashed border-slate-300 rounded-2xl">
-                                    <p className="text-sm font-medium text-slate-400 text-center">Bukti transfer belum diunggah</p>
+
+                                {/* Kolom Kanan: Tampilan Bukti */}
+                                <div className="flex flex-col">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 text-center sm:text-left">
+                                        Hasil Upload Bukti
+                                    </p>
+                                    {activeVerifyOrder?.payment_proof ? (
+                                        <div className='flex-1 flex items-center justify-center w-full bg-white border border-emerald-200 rounded-xl p-2 shadow-sm relative overflow-hidden'>
+                                            <div className="absolute top-2 right-2 bg-emerald-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded uppercase">Uploaded</div>
+                                            <img src={activeVerifyOrder?.payment_proof} alt="Bukti Pembayaran" className='max-h-36 w-auto rounded-lg object-contain' />
+                                        </div>
+                                    ) : (
+                                        <div className="flex-1 flex flex-col items-center justify-center p-4 bg-white border border-dashed border-slate-300 rounded-xl">
+                                            <AlertCircle size={24} className="text-amber-400 mb-2" />
+                                            <p className="text-xs font-bold text-slate-600 text-center">Belum ada bukti</p>
+                                            <p className="text-[10px] text-slate-400 text-center mt-1">Klik <span className="font-bold text-indigo-600">Cek Status</span> jika pelanggan sudah upload.</p>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
+                            </div>
                         </div>
                     )}
 

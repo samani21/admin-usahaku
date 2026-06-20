@@ -55,14 +55,14 @@ function AuthView({ page }: Props) {
     const getProfile = async () => {
         setLoading(true);
         try {
-            const res = await Get<any>('auth/profile');
-            if (res?.user) {
-                if (res?.user?.is_active) {
-                    window.location.href = '/'
-                }
-                setAutoResendOtp(true)
-                setShowOtpModal(res?.user)
-            }
+            // const res = await Get<any>('auth/profile');
+            // if (res?.user) {
+            //     if (res?.user?.is_active) {
+            //         window.location.href = '/'
+            //     }
+            //     setAutoResendOtp(true)
+            //     setShowOtpModal(res?.user)
+            // }
         } catch (e: any) {
 
         } finally {
@@ -104,7 +104,7 @@ function AuthView({ page }: Props) {
             </div>
             <div className="max-w-6xl w-full z-10 flex flex-col gap-4">
                 <div className={`grid lg:grid-cols-12 gap-0 rounded-[32px] overflow-hidden border ${themeStyles.card} transition-all duration-1000 transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-                    <div className="md:hidden lg:block lg:col-span-6 p-8 lg:p-12 flex flex-col justify-between relative overflow-hidden bg-slate-500/[0.02] border-r border-slate-500/10">
+                    <div className="hidden lg:block lg:col-span-6 p-8 lg:p-12 flex flex-col justify-between relative overflow-hidden bg-slate-500/[0.02] border-r border-slate-500/10">
                         <div className={`absolute top-[-20%] left-[-20%] w-[140%] h-[140%] bg-gradient-to-tr ${theme === 'dark' ? 'from-slate-950 via-slate-900/60 to-transparent' : 'from-slate-100 via-white/80 to-transparent'} pointer-events-none z-0`} />
                         <div className="relative z-10 flex flex-col h-full justify-between gap-8">
                             <div>

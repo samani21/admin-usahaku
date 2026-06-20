@@ -3,7 +3,8 @@ import Loading from '@/Components/Loading';
 import { Post } from '@/utils/Post';
 import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-react';
 import React, { useState } from 'react'
-
+import Cookies from 'js-cookie';
+import { getToken } from '@/utils/loclstorange';
 type Props = {
     themeStyles: any;
     showToast: (v: string, type: string) => void;
@@ -18,24 +19,30 @@ function LoginView({ themeStyles, showToast, activeScheme, theme }: Props) {
         email: '',
         password: '',
     });
-
+    const token = getToken();
     const handleInputChange = (field: string, value: string) => {
         setForm(prev => ({ ...prev, [field]: value }));
     };
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsLoading(true)
+        setIsLoading(true);
         try {
             const formData = {
                 email: form?.email,
                 password: form?.password
             };
-            const res = await Post<any, any>('auth/login', formData)
-            localStorage.setItem("token", res?.token);
-            window.location.href = '/'; // Redirect setelah sukses
+            const res = await Post<any, any>('auth/login', formData);
+
+            // Set cookie dengan js-cookie. expires: 1 berarti 1 hari.
+            Cookies.set('token', res?.token, { expires: 1, path: '/' });
+
+            // Redirect dinamis
+            const isLocalAdminPath = window.location.pathname.startsWith('/admin');
+            window.location.href = isLocalAdminPath ? '/admin' : '/';
+
         } catch (e: any) {
-            showToast(e?.message, 'error')
-            setIsLoading(false)
+            showToast(e?.message, 'error');
+            setIsLoading(false);
         }
     }
     return (

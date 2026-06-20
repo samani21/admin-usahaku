@@ -20,6 +20,7 @@ import MapPreview from "@/Components/Maps/MapPreview";
 import { CardContent } from "@/Components/ui/Outlite";
 import Alert from "@/Components/Alert";
 import ModalSubscription from "@/Components/Layout/ModalSubscription";
+import { useCorrectPath } from "@/utils/useCorrectPath";
 
 export default function BusinessProfile() {
     const [loadingButton, setLoadingButton] = useState<boolean>(false);
@@ -47,6 +48,7 @@ export default function BusinessProfile() {
     const [planStatus, setPlanStatus] = useState<'active' | 'expired' | 'canceled'>('active');
     const [daysRemaining, setDaysRemaining] = useState<number>(0);
     const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
+    const { getCorrectPath } = useCorrectPath();
     const handleChange = (key: any, value: string) => setForm((s) => ({ ...s, [key]: value }));
 
     useEffect(() => {
@@ -262,10 +264,10 @@ export default function BusinessProfile() {
 
                             {/* Tombol Aksi Kanan (Desktop) */}
                             <div className="hidden lg:flex gap-3 mb-2">
-                                <button className="flex items-center gap-2 bg-white text-slate-700 border border-slate-200 px-6 py-3 rounded-2xl font-bold hover:bg-slate-50 hover:border-slate-300 transition-all active:scale-95">
+                                <Link href={getCorrectPath('/catalog/preview')} className="flex items-center gap-2 bg-white text-slate-700 border border-slate-200 px-6 py-3 rounded-2xl font-bold hover:bg-slate-50 hover:border-slate-300 transition-all active:scale-95">
                                     <Eye size={18} />
                                     Pratinjau
-                                </button>
+                                </Link>
                                 <button disabled={loadingButton} onClick={handleSave} className="disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none flex items-center gap-2 bg-slate-900 text-white px-8 py-3 rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/20 active:scale-95">
                                     <Save size={18} />
                                     {loadingButton ? "Menyimpan..." : "Simpan Profil"}

@@ -1,6 +1,7 @@
+import { useCorrectPath } from '@/utils/useCorrectPath';
 import { ChevronDown, Lock } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { Dispatch, SetStateAction, useEffect, useState } from 'react'
+import { useRouter, usePathname } from 'next/navigation'; // Tambahkan usePathname
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 
 type Props = {
     icon: any;
@@ -10,13 +11,14 @@ type Props = {
     parent: string;
     pathNameChild?: string;
     setLoading: Dispatch<SetStateAction<boolean>>;
-    isLocked?: boolean; // Jadikan opsional agar aman jika tidak dikirim
+    isLocked?: boolean;
 }
 
 const NavItem = ({ icon: Icon, label, active, children, parent, pathNameChild, setLoading, isLocked = false }: Props) => {
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const hasChildren = children && children.length > 0;
     const route = useRouter();
+    const { getCorrectPath } = useCorrectPath();
 
     const handleClick = (e: React.MouseEvent) => {
         // Cegat klik jika menu dikunci
@@ -28,8 +30,9 @@ const NavItem = ({ icon: Icon, label, active, children, parent, pathNameChild, s
         if (hasChildren) {
             setIsOpen(!isOpen);
         } else {
-            route.push(`${parent}`);
-            setLoading(!active)
+            // Gunakan getCorrectPath sebelum push
+            route.push(getCorrectPath(parent));
+            setLoading(!active);
         }
     };
 
@@ -85,7 +88,9 @@ const NavItem = ({ icon: Icon, label, active, children, parent, pathNameChild, s
                             const isActive = pathNameChild === `${parent}${child?.href}`;
                             return <button
                                 onClick={() => {
-                                    route.push(`${parent}/${child?.href}`);
+                                    // Terapkan helper getCorrectPath ke anak menu juga
+                                    const targetPath = `${parent}/${child?.href}`;
+                                    route.push(getCorrectPath(targetPath));
                                     setLoading(!isActive);
                                 }}
                                 key={idx}
@@ -101,4 +106,4 @@ const NavItem = ({ icon: Icon, label, active, children, parent, pathNameChild, s
     );
 }
 
-export default NavItem
+export default NavItem;

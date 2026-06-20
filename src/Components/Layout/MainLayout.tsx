@@ -6,7 +6,8 @@ import Header from './Header';
 import { getToken } from '@/utils/loclstorange';
 import Loading from '../Loading';
 import { Get } from '@/utils/Get';
-
+import { useCorrectPath } from '@/utils/useCorrectPath';
+import Cookies from 'js-cookie'
 type Props = {
     children: React.ReactNode
 }
@@ -22,6 +23,7 @@ const MainLayout = ({ children }: Props) => {
     const lastOne = segments.slice(-1);
     const [user, setUser] = useState<any>();
     const [business, setBusiness] = useState<any>();
+    const { getCorrectPath } = useCorrectPath();
     const breadcrumb = segments.map((seg, index) => {
         if (index === 0) return "Home";
         return seg.charAt(0).toUpperCase() + seg.slice(1);
@@ -64,7 +66,7 @@ const MainLayout = ({ children }: Props) => {
 
     useEffect(() => {
         if (!token) {
-            router?.push('/auth/login')
+            router?.push(getCorrectPath('/auth/login'))
             return
         }
         const handleResize = () => {
@@ -78,15 +80,11 @@ const MainLayout = ({ children }: Props) => {
 
     const handleLogout = () => {
         setLoading(true)
-        localStorage?.removeItem('token');
+        Cookies.remove('token');
         localStorage?.removeItem('user');
-        router?.push('/auth/login')
+        router?.push(getCorrectPath('/auth/login'))
     }
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            router?.push('/auth/login')
-        }
         getProfile()
     }, [])
 
@@ -99,9 +97,8 @@ const MainLayout = ({ children }: Props) => {
                 setBusiness(res?.data?.business)
             }
         } catch (e: any) {
-            localStorage?.removeItem('token');
-            localStorage?.removeItem('user');
-            router?.push('/auth/login')
+            Cookies.remove('token');
+            router?.push(getCorrectPath('/auth/login'))
         } finally {
             setLoading(false)
         }

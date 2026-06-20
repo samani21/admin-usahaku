@@ -160,8 +160,8 @@ const ModalDetailOrder = ({ onClose, token }: Props) => {
                                         <QrCode size={12} /> Scan Struk Online
                                     </p>
                                     <div className="p-2.5 bg-white border border-slate-200 rounded-xl shadow-sm ring-4 ring-slate-50">
-                                        {data?.qr_token ? (
-                                            <QRCodeCanvas value={`${baseUrl ?? ''}/${data?.slug}/detail/${data?.qr_token}`} size={130} />
+                                        {data?.qr_order ? (
+                                            <QRCodeCanvas value={`${data?.qr_order}`} size={130} />
                                         ) : (
                                             <div className="w-[130px] h-[130px] bg-slate-100 flex items-center justify-center rounded-lg text-slate-400">
                                                 N/A

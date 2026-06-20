@@ -16,6 +16,8 @@ import { BusinessType } from '@/types/Admin/BusinessType';
 import { formatIDR } from '@/types/FormtRupiah';
 import { OrderType } from '@/types/Admin/Catalog/Order';
 import { StatusOrder } from '@/types/StatusOrder';
+import { useCorrectPath } from '@/utils/useCorrectPath';
+import Link from 'next/link';
 
 export default function App() {
     const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
@@ -73,6 +75,8 @@ const Dashboard = ({ setIsSubscriptionModalOpen }: any) => {
     const [chartData, setChartData] = useState<any[]>([]);
     const [stats, setStats] = useState<StatsType>();
     const [orders, setOrders] = useState<OrderType[]>([]);
+    const { getCorrectPath } = useCorrectPath();
+
     // Inisialisasi awal (Default 7 Hari)
     useEffect(() => {
         const end = new Date();
@@ -448,9 +452,9 @@ const Dashboard = ({ setIsSubscriptionModalOpen }: any) => {
                     <div className="p-6 bg-white/50 backdrop-blur-2xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80 flex flex-col">
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-xl font-bold text-gray-900">Order Terbaru</h2>
-                            <button className="text-sm font-bold text-emerald-600 hover:text-emerald-700 transition-colors bg-emerald-50 px-3 py-1.5 rounded-lg">
+                            <Link href={getCorrectPath('/transaction/orders')} className="text-sm font-bold text-emerald-600 hover:text-emerald-700 transition-colors bg-emerald-50 px-3 py-1.5 rounded-lg">
                                 Lihat Semua
-                            </button>
+                            </Link>
                         </div>
                         <div className="space-y-3.5 flex-1 overflow-y-auto pr-2 custom-scrollbar">
                             {orders.map((order) => {

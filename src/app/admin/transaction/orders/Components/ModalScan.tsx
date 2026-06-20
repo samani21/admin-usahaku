@@ -69,7 +69,7 @@ const ModalScan = ({ onClose, handleUpdateStatus }: Props) => {
                 } catch (e) {
                     console.log("Audio contexts blocked or unsupported");
                 }
-
+                console.log('decodedText', decodedText)
                 // Matikan kamera, lalu fetch API
                 if (html5Qrcode.isScanning) {
                     html5Qrcode.stop()

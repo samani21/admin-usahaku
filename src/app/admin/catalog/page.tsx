@@ -27,6 +27,7 @@ import CategoriesView from './View/CategoryView';
 import ProductView from './View/ProductView';
 import { ProductsType, Variants } from '@/types/Admin/ProductsType';
 import SummaryView from './View/SummaryView';
+import { useCorrectPath } from '@/utils/useCorrectPath';
 
 
 export default function CatalogPage() {
@@ -37,6 +38,7 @@ export default function CatalogPage() {
     const [catalog, setCatalog] = useState<Catalog | null>(null);
     const [error, setError] = useState<boolean>(false);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
+    const { getCorrectPath } = useCorrectPath();
     // Menangani efek scroll untuk navbar
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -189,7 +191,7 @@ export default function CatalogPage() {
                             return (
                                 item?.id === 'Preview' ? <button
                                     key={item.id}
-                                    onClick={()=>window.location.href='/catalog/preview'}
+                                    onClick={() => window.location.href = getCorrectPath('/catalog/preview')}
                                     className={`
                     relative flex items-center gap-2.5 px-6 py-3 text-sm transition-all duration-300 rounded-xl whitespace-nowrap
                     ${isActive

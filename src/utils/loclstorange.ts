@@ -1,3 +1,5 @@
+import Cookies from "js-cookie";
+
 export const getUserInfo = () => {
     try {
         if (typeof window !== "undefined") {
@@ -24,15 +26,17 @@ export const getCustomerInfo = () => {
 };
 
 
+
 export const getToken = () => {
     try {
+        // Pengecekan window memastikan ini hanya dieksekusi di sisi client
         if (typeof window !== "undefined") {
-            const jsonValue = localStorage.getItem("token");
-            return jsonValue ? jsonValue : null;
+            const token = Cookies.get("token");
+            return token ? token : null;
         }
         return null;
     } catch (e) {
-        console.error("Error parsing token:", e);
+        console.error("Error getting token from cookies:", e);
         return null;
     }
 };
