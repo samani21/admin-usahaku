@@ -33,7 +33,7 @@ export default function ListProductPage() {
     const [page, setPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [loading, setLoading] = useState<boolean>(false)
+    const [loading, setLoading] = useState<boolean>(true)
     const [dataUpdate, setDataUpdate] = useState<ProductsType | null>(null)
     const [deleteData, setDeleteData] = useState<ProductsType | null>(null)
     const [products, setProducts] = useState<ProductsType[]>([]);

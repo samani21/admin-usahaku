@@ -25,7 +25,7 @@ const OutletsComponent = (props: Props) => {
     const [page, setPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [loading, setLoading] = useState<boolean>(false)
+    const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<string>('');
     const [meta, setMeta] = useState<Meta>({
         last_page: 1,
