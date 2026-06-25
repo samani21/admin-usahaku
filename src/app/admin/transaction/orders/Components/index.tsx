@@ -410,7 +410,7 @@ const OrdersComponent = (props: Props) => {
                                             </button>
 
                                             {/* PENDING -> UNPAID vs PAID */}
-                                            {order.status === 'pending' && order.payment_status === 'unpaid' && (
+                                            {order.status === 'pending' && (order.payment_status === 'unpaid' || order?.payment_status === 'pending_verification') && (
                                                 <button
                                                     onClick={() => handleTriggerProcess(order)}
                                                     className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition-all shadow-sm"
@@ -419,23 +419,41 @@ const OrdersComponent = (props: Props) => {
                                                 </button>
                                             )}
 
-                                            {(order.status === 'pending' && order.payment_status !== 'unpaid') || order.status === 'paid' ? (
-                                                <button
-                                                    onClick={() => handleUpdateStatus(order, 'processing')}
-                                                    className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm"
-                                                >
-                                                    <Play size={14} fill="currentColor" /> Proses Pesanan
-                                                </button>
+                                            {order.payment_status === 'paid' && order.status === 'paid' ? (
+                                                <>
+                                                    <button
+                                                        onClick={() => handleUpdateStatus(order, 'processing')}
+                                                        className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm"
+                                                    >
+                                                        <Play size={14} fill="currentColor" /> Proses Pesanan
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleUpdateStatus(order, 'cancelled', 'cancelled')}
+                                                        className="flex items-center justify-center gap-1.5 px-3 py-2 text-rose-500 hover:bg-rose-50 border border-rose-200 text-xs font-bold rounded-xl transition-all"
+                                                        title="Batalkan Pesanan"
+                                                    >
+                                                        <XCircle size={16} />  Pesanan
+                                                    </button>
+                                                </>
                                             ) : null}
 
                                             {/* PROCESSING */}
-                                            {order.status === 'processing' && (
-                                                <button
-                                                    onClick={() => handleUpdateStatus(order, 'completed')}
-                                                    className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-[#009662] hover:bg-[#007d51] text-white text-xs font-bold rounded-xl transition-all shadow-sm"
-                                                >
-                                                    <Check size={16} strokeWidth={3} /> Selesaikan
-                                                </button>
+                                            {order.payment_status === 'paid' && order.status === 'processing' && (
+                                                <>
+                                                    <button
+                                                        onClick={() => handleUpdateStatus(order, 'completed')}
+                                                        className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-[#009662] hover:bg-[#007d51] text-white text-xs font-bold rounded-xl transition-all shadow-sm"
+                                                    >
+                                                        <Check size={16} strokeWidth={3} /> Selesaikan
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleUpdateStatus(order, 'paid')}
+                                                        className="flex items-center justify-center gap-1.5 px-3 py-2 text-rose-500 hover:bg-rose-50 border border-rose-200 text-xs font-bold rounded-xl transition-all"
+                                                        title="Batalkan Proses"
+                                                    >
+                                                        <XCircle size={16} />  Proses
+                                                    </button>
+                                                </>
                                             )}
 
                                             {/* COMPLETED */}
@@ -449,7 +467,7 @@ const OrdersComponent = (props: Props) => {
                                             )}
 
                                             {/* CANCEL BUTTON (Tampil di pending, paid, processing) */}
-                                            {['pending', 'paid', 'processing'].includes(order.status) && (
+                                            {/* {['pending', 'paid', 'processing'].includes(order.status) && (
                                                 <button
                                                     onClick={() => handleUpdateStatus(order, 'cancelled', 'cancelled')}
                                                     className="flex items-center justify-center gap-1.5 px-3 py-2 text-rose-500 hover:bg-rose-50 border border-rose-200 text-xs font-bold rounded-xl transition-all"
@@ -457,7 +475,7 @@ const OrdersComponent = (props: Props) => {
                                                 >
                                                     <XCircle size={16} />
                                                 </button>
-                                            )}
+                                            )} */}
 
                                             {/* STATUS: DONE / CANCELLED (READ ONLY BADGE) */}
                                             {(order.status === 'done' || order.status === 'cancelled') && (

@@ -155,7 +155,6 @@ const ModalPayment = ({ onClose, activeVerifyOrder, handleAcceptPayment, onRefre
                                     <div className="bg-white p-2 border border-slate-100 rounded-xl shadow-xs ring-4 ring-slate-50">
                                         {/* Sesuaikan struktur URL ini dengan endpoint upload bukti pembayaran Anda */}
                                         <QRCodeCanvas value={`${baseUrl}/upload-payment/${activeVerifyOrder?.qr_token}`} size={110} />
-                                        {`${baseUrl}/upload-payment/${activeVerifyOrder?.qr_token}`}
                                     </div>
                                     <p className="text-[10px] text-slate-500 text-center mt-3 leading-relaxed">
                                         Minta pelanggan scan QR ini untuk melampirkan bukti {activeVerifyOrder?.payment_method.toUpperCase()}.
