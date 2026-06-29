@@ -8,13 +8,18 @@ import ResetView from './ResetView';
 import ModalOtp from './ModalOTP';
 import Loading from '@/Components/Loading';
 import { Get } from '@/utils/Get';
-
+import { useSearchParams } from 'next/navigation';
+import Cookies from 'js-cookie';
 type Props = {
     page: string
 }
 
 function AuthView({ page }: Props) {
     const [theme, setTheme] = useState('light');
+    const searchParams = useSearchParams();
+
+    const referral = searchParams.get("referral");
+
     const [isVisible, setIsVisible] = useState(false);
     const [toasts, setToasts] = useState<any>([]);
     const [showOtpModal, setShowOtpModal] = useState<any>(null);
@@ -44,6 +49,15 @@ function AuthView({ page }: Props) {
         setIsVisible(true);
     }, []);
 
+    useEffect(() => {
+        if (referral) {
+            const ref = Cookies.get('referral');
+            if (!ref) {
+                Cookies.set('referral', referral, { expires: 10 })
+            }
+        }
+    }, [referral])
+
     const showToast = (message: string, type = 'success') => {
         const id = Date.now();
         setToasts((prev: any) => [...prev, { id, message, type }]);
@@ -55,14 +69,14 @@ function AuthView({ page }: Props) {
     const getProfile = async () => {
         setLoading(true);
         try {
-            // const res = await Get<any>('auth/profile');
-            // if (res?.user) {
-            //     if (res?.user?.is_active) {
-            //         window.location.href = '/'
-            //     }
-            //     setAutoResendOtp(true)
-            //     setShowOtpModal(res?.user)
-            // }
+            const res = await Get<any>('auth/profile');
+            if (res?.user) {
+                if (res?.user?.is_active) {
+                    window.location.href = '/'
+                }
+                setAutoResendOtp(true)
+                setShowOtpModal(res?.user)
+            }
         } catch (e: any) {
 
         } finally {
@@ -236,9 +250,10 @@ function AuthView({ page }: Props) {
                             themeStyles={themeStyles}
                             onClose={() => {
                                 setShowOtpModal(false);
-                                localStorage.removeItem("token")
+                                Cookies.remove("token")
                                 showToast('Verifikasi OTP dibatalkan.', 'error');
-                            }} showOtpModal={showOtpModal}
+                            }}
+                            showOtpModal={showOtpModal}
                             autoResendOtp={autoResendOtp} />
                     }
                 </div>

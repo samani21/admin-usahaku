@@ -119,7 +119,7 @@ function LoginView({ themeStyles, showToast, activeScheme, theme }: Props) {
                         type="button"
                         onClick={() => {
                             setIsLoading(true);
-                            window.location.href = '/auth/register'
+                            window.location.href = 'register'
                         }}
                         className={`font-black underline underline-offset-4 decoration-2 ${activeScheme.text}`}
                     >

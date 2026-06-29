@@ -5,7 +5,7 @@ import { Post } from '@/utils/Post';
 import { ArrowRight, Building, Eye, EyeOff, Loader2, Lock, Mail, Phone, Tag, User, Globe, CheckCircle2, XCircle, Ticket } from 'lucide-react';
 import React, { useState, useEffect, Dispatch, SetStateAction } from 'react'
 import ModalOtp from './ModalOTP';
-
+import Cookies from 'js-cookie';
 type Props = {
     themeStyles: any;
     showToast: (v: string, type: string) => void;
@@ -21,7 +21,7 @@ function RegisterView({ themeStyles, showToast, activeScheme, theme, setShowOtpM
     // State untuk mengecek ketersediaan slug
     const [isCheckingSlug, setIsCheckingSlug] = useState<boolean>(false);
     const [slugStatus, setSlugStatus] = useState<'idle' | 'available' | 'taken'>('idle');
-
+    const ref = Cookies.get('referral');
     const [form, setForm] = useState({
         email: '',
         password: '',
@@ -32,6 +32,12 @@ function RegisterView({ themeStyles, showToast, activeScheme, theme, setShowOtpM
         whatsapp: '',
         referralCode: '',
     });
+
+    useEffect(() => {
+        if (ref) {
+            setForm(prev => ({ ...prev, referralCode: ref }))
+        }
+    }, [ref])
 
     const handleInputChange = (field: string, value: string) => {
         setForm(prev => ({ ...prev, [field]: value }));
@@ -116,9 +122,9 @@ function RegisterView({ themeStyles, showToast, activeScheme, theme, setShowOtpM
             formData.append('password', form?.confirmPassword);
             formData.append('slug', form?.slug);
             formData.append('business_name', form?.tenantName);
-            formData.append('code_ref', form?.referralCode);
+            formData.append('code_ref', ref ?? form?.referralCode);
             const res = await Post<any, any>('/auth/register', formData)
-            localStorage.setItem("token", res?.token);
+            Cookies.set("token", res?.token, { expires: 365 });
             setShowOtpModal(res?.user);
         } catch (e: any) {
             showToast(e?.message, 'error');
@@ -336,7 +342,7 @@ function RegisterView({ themeStyles, showToast, activeScheme, theme, setShowOtpM
                         type="button"
                         onClick={() => {
                             setIsLoading(true)
-                            window.location.href = '/auth/login'
+                            window.location.href = 'login'
                         }}
                         className={`font-black underline underline-offset-4 decoration-2 ${activeScheme.text} ml-1`}
                     >

@@ -1,5 +1,6 @@
 'use client'
 import { Post } from '@/utils/Post';
+import { useCorrectPath } from '@/utils/useCorrectPath';
 import { ArrowRight, Loader2, MessageSquareCode, X } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react'
 
@@ -18,11 +19,11 @@ const ModalOtp = ({ onClose, themeStyles, activeScheme, showToast, showOtpModal,
     const [otpTimer, setOtpTimer] = useState(60);
     const [isOtpVerifying, setIsOtpVerifying] = useState<boolean>(false);
     const otpRefs = useRef<any>([]);
-
+    const { getCorrectPath } = useCorrectPath()
     // Fungsi handle resend dimodifikasi menerima parameter 'isAuto'
     const handleResendOtp = async (isAuto = false) => {
         // Jika bukan dari auto trigger dan tombol belum bisa diklik, maka batalkan
-        if (!isAuto && !canResendOtp) return;
+        if (!canResendOtp) return;
         try {
             const formData = {
                 whatsapp: showOtpModal?.whatsapp
@@ -44,7 +45,8 @@ const ModalOtp = ({ onClose, themeStyles, activeScheme, showToast, showOtpModal,
 
     useEffect(() => {
         if (autoResendOtp) {
-            handleResendOtp(true); // Bypass pengecekan 'canResendOtp' dengan parameter true
+            setCanResendOtp(true)
+            handleResendOtp(); // Bypass pengecekan 'canResendOtp' dengan parameter true
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -106,7 +108,7 @@ const ModalOtp = ({ onClose, themeStyles, activeScheme, showToast, showOtpModal,
                 otp: otpValues.join('')
             }
             const res = await Post('auth/verify-otp', formData);
-            window.location.href = '/'
+            window.location.href = getCorrectPath('/')
         } catch (e: any) {
             showToast(e?.message, 'error')
         } finally {
@@ -175,7 +177,7 @@ const ModalOtp = ({ onClose, themeStyles, activeScheme, showToast, showOtpModal,
                             </p>
                         )}
                     </div>
-
+                    {getCorrectPath('/')}
                     {/* Modal Submit Button */}
                     <button
                         type="submit"

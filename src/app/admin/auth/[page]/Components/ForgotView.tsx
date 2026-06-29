@@ -51,7 +51,7 @@ function ForgotView({ themeStyles, showToast, activeScheme, theme }: Props) {
                 <button
                     onClick={() => {
                         setIsLoading(true)
-                        window.location.href = '/auth/login'
+                        window.location.href = 'login'
                     }}
                     className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-slate-100 mb-6 transition-colors"
                 >
