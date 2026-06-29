@@ -177,7 +177,6 @@ const ModalOtp = ({ onClose, themeStyles, activeScheme, showToast, showOtpModal,
                             </p>
                         )}
                     </div>
-                    {getCorrectPath('/')}
                     {/* Modal Submit Button */}
                     <button
                         type="submit"
