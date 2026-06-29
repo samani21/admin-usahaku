@@ -1,20 +1,20 @@
 "use client"
 import { OrderType } from '@/types/Admin/Catalog/Order';
-import { CheckIcon, XIcon, Wallet, RefreshCw, AlertCircle, QrCode } from 'lucide-react';
+import { CheckIcon, XIcon, Wallet, RefreshCw, AlertCircle, QrCode, Ban } from 'lucide-react';
 import React, { useState } from 'react'
-import { QRCodeCanvas } from 'qrcode.react'; // Tambahkan import QR Code
+import { QRCodeCanvas } from 'qrcode.react';
 
 type Props = {
     onClose: () => void;
     activeVerifyOrder: OrderType | null;
-    handleAcceptPayment: (uangDiterima?: number) => void;
-    // Tambahkan 2 props ini untuk dikirim dari komponen Parent (OrdersComponent)
+    // Mengupdate parameter agar bisa mengirim kode & tanggal ke parent
+    handleAcceptPayment: (uangDiterima?: number, transactionCode?: string, transferDate?: string) => void;
+    handleRejectPayment: () => void; // Tambahan fungsi tolak
     onRefresh?: () => void;
     isRefreshing?: boolean;
 }
 
-const ModalPayment = ({ onClose, activeVerifyOrder, handleAcceptPayment, onRefresh, isRefreshing = false }: Props) => {
-    // URL Base untuk QR Code (Bisa disesuaikan dengan routing aplikasi Anda)
+const ModalPayment = ({ onClose, activeVerifyOrder, handleAcceptPayment, handleRejectPayment, onRefresh, isRefreshing = false }: Props) => {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
 
     // Kalkulasi Data
@@ -24,6 +24,10 @@ const ModalPayment = ({ onClose, activeVerifyOrder, handleAcceptPayment, onRefre
     // State untuk Kalkulator Uang Cash
     const [uangDiterima, setUangDiterima] = useState<number>(0);
     const [uangDiterimaDisplay, setUangDiterimaDisplay] = useState<string>('');
+
+    // State untuk Form Pembayaran Digital
+    const [transactionCode, setTransactionCode] = useState<string>('');
+    const [transferDate, setTransferDate] = useState<string>('');
 
     const handleUangDiterimaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const rawValue = e.target.value.replace(/[^0-9]/g, '');
@@ -37,16 +41,14 @@ const ModalPayment = ({ onClose, activeVerifyOrder, handleAcceptPayment, onRefre
         setUangDiterimaDisplay(nominal ? nominal.toLocaleString('id-ID') : '');
     };
 
-    // Validasi untuk menonaktifkan tombol submit
-    // Jika Cash: Tidak bisa submit kalau uang kurang
-    // Jika Transfer/QRIS: Tidak bisa submit kalau payment_proof belum ada
+    // Validasi untuk menonaktifkan tombol submit terima
     const isSubmitDisabled = isCash
         ? (uangDiterima < totalAmount)
         : (!activeVerifyOrder?.payment_proof);
 
     return (
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white rounded-3xl border border-slate-100 w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+            <div className="bg-white rounded-3xl border border-slate-100 w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[95vh]">
 
                 {/* Header Modal */}
                 <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
@@ -131,7 +133,7 @@ const ModalPayment = ({ onClose, activeVerifyOrder, handleAcceptPayment, onRefre
                             </div>
                         </div>
                     ) : (
-                        /* KONDISI: Jika BUKAN CASH (Transfer/QRIS) -> Tampilkan Fitur Upload Digital */
+                        /* KONDISI: Jika BUKAN CASH (Transfer/QRIS) -> Tampilkan Fitur Upload & Input Detail */
                         <div className="space-y-4 border border-slate-200 p-4 rounded-2xl bg-slate-50/50">
                             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                                 <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">Pembayaran Digital</h4>
@@ -153,8 +155,7 @@ const ModalPayment = ({ onClose, activeVerifyOrder, handleAcceptPayment, onRefre
                                         <QrCode size={12} /> Scan untuk Upload
                                     </p>
                                     <div className="bg-white p-2 border border-slate-100 rounded-xl shadow-xs ring-4 ring-slate-50">
-                                        {/* Sesuaikan struktur URL ini dengan endpoint upload bukti pembayaran Anda */}
-                                        <QRCodeCanvas value={`${baseUrl}/upload-payment/${activeVerifyOrder?.qr_token}`} size={110} />
+                                        <QRCodeCanvas value={`${baseUrl}/${activeVerifyOrder?.slug}/detail-order/${activeVerifyOrder?.qr_token}`} size={110} />
                                     </div>
                                     <p className="text-[10px] text-slate-500 text-center mt-3 leading-relaxed">
                                         Minta pelanggan scan QR ini untuk melampirkan bukti {activeVerifyOrder?.payment_method.toUpperCase()}.
@@ -168,7 +169,7 @@ const ModalPayment = ({ onClose, activeVerifyOrder, handleAcceptPayment, onRefre
                                     </p>
                                     {activeVerifyOrder?.payment_proof ? (
                                         <div className='flex-1 flex items-center justify-center w-full bg-white border border-emerald-200 rounded-xl p-2 shadow-sm relative overflow-hidden'>
-                                            <div className="absolute top-2 right-2 bg-emerald-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded uppercase">Uploaded</div>
+                                            <div className="absolute top-2 right-2 bg-emerald-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded uppercase shadow-sm">Uploaded</div>
                                             <img src={activeVerifyOrder?.payment_proof} alt="Bukti Pembayaran" className='max-h-36 w-auto rounded-lg object-contain' />
                                         </div>
                                     ) : (
@@ -180,30 +181,64 @@ const ModalPayment = ({ onClose, activeVerifyOrder, handleAcceptPayment, onRefre
                                     )}
                                 </div>
                             </div>
+
+                            {/* --- FORM INPUT TAMBAHAN UNTUK DIGITAL --- */}
+                            <div className="pt-2 space-y-3">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 mb-1.5 pl-1">Kode Transaksi (Opsional)</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Contoh: TRF-09876"
+                                        value={transactionCode}
+                                        onChange={(e) => setTransactionCode(e.target.value)}
+                                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-sm font-medium text-slate-700 transition-all placeholder:text-slate-300"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 mb-1.5 pl-1">Tanggal Transfer (Opsional)</label>
+                                    <input
+                                        type="date"
+                                        value={transferDate}
+                                        onChange={(e) => setTransferDate(e.target.value)}
+                                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-sm font-medium text-slate-700 transition-all text-slate-500"
+                                    />
+                                </div>
+                            </div>
+
                         </div>
                     )}
 
                 </div>
 
-                {/* Footer Modal dengan Tombol Verifikasi */}
-                <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center gap-2 shrink-0">
+                {/* Footer Modal dengan Tombol Verifikasi & Tolak */}
+                <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center gap-3 shrink-0">
 
                     {/* Tombol Terima Pembayaran */}
                     <button
                         type="button"
-                        onClick={() => handleAcceptPayment(uangDiterima)}
+                        onClick={() => handleAcceptPayment(uangDiterima, transactionCode, transferDate)}
                         disabled={isSubmitDisabled}
-                        className="w-full sm:flex-1 py-3 px-4 bg-[#009662] hover:bg-[#007d51] disabled:bg-slate-300 disabled:cursor-not-allowed disabled:shadow-none text-white text-sm font-bold rounded-xl transition-all shadow-sm shadow-[#009662]/20 flex items-center justify-center gap-2"
+                        className="w-full sm:flex-1 py-3 px-4 bg-[#009662] hover:bg-[#007d51] disabled:bg-slate-300 disabled:cursor-not-allowed disabled:text-slate-500 disabled:shadow-none text-white text-sm font-bold rounded-xl transition-all shadow-sm shadow-[#009662]/20 flex items-center justify-center gap-2 order-1 sm:order-3"
                     >
                         <CheckIcon size={18} />
-                        <span>Terima Pembayaran</span>
+                        <span>Terima</span>
                     </button>
 
-                    {/* Tombol Batal */}
+                    {/* Tombol Tolak Pembayaran */}
+                    <button
+                        type="button"
+                        onClick={handleRejectPayment}
+                        className="w-full sm:w-auto py-3 px-4 bg-white border border-rose-200 hover:bg-rose-50 text-rose-500 text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 order-2"
+                    >
+                        <Ban size={16} />
+                        <span className="hidden sm:inline">Tolak</span>
+                    </button>
+
+                    {/* Tombol Batal/Tutup Modal */}
                     <button
                         type="button"
                         onClick={onClose}
-                        className="w-full sm:w-auto py-3 px-6 bg-white border border-slate-200 hover:bg-slate-50 text-slate-500 hover:text-slate-800 text-sm font-bold rounded-xl transition-colors text-center"
+                        className="w-full sm:w-auto py-3 px-6 bg-white border border-slate-200 hover:bg-slate-50 text-slate-500 hover:text-slate-800 text-sm font-bold rounded-xl transition-colors text-center order-3 sm:order-1"
                     >
                         Batal
                     </button>

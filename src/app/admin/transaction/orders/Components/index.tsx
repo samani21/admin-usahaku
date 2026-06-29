@@ -7,7 +7,8 @@ import {
     AlertCircle, CalendarIcon, Check, CheckCheck, CheckCircle2,
     Clock, Eye, FileCheck2, Hourglass, Package, PackageCheck,
     Play, PlusIcon, ScanBarcode, SearchIcon, ShoppingBagIcon,
-    SlidersIcon, Wallet, XCircle, XIcon, AlertTriangle
+    SlidersIcon, Wallet, XCircle, XIcon, AlertTriangle,
+    Shell
 } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import ModalPayment from './ModalPayment'
@@ -136,6 +137,11 @@ const OrdersComponent = (props: Props) => {
             bg: 'bg-gray-50 text-gray-700 border-gray-200/60',
             icon: <Hourglass size={16} />,
             label: 'Kadaluwarsa'
+        },
+        rejected: {
+            bg: 'bg-rose-50 text-rose-700 border-rose-200/60',
+            icon: <Shell size={16} />,
+            label: 'Ditolak'
         }
     };
 
@@ -478,12 +484,12 @@ const OrdersComponent = (props: Props) => {
                                             )} */}
 
                                             {/* STATUS: DONE / CANCELLED (READ ONLY BADGE) */}
-                                            {(order.status === 'done' || order.status === 'cancelled') && (
+                                            {(order.status === 'done' || order.status === 'cancelled' || order.status === 'expired' || order.status === 'rejected') && (
                                                 <div className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-bold text-slate-500 bg-slate-100/80 border border-slate-200 rounded-xl">
                                                     {order.status === 'done' ? (
                                                         <><CheckCheck size={14} className="text-emerald-500" /> Riwayat Selesai</>
                                                     ) : (
-                                                        <><AlertCircle size={14} className="text-rose-500" /> Dibatalkan</>
+                                                        <><AlertCircle size={14} className="text-rose-500" /> {order.status}</>
                                                     )}
                                                 </div>
                                             )}
@@ -540,6 +546,7 @@ const OrdersComponent = (props: Props) => {
                     onClose={() => { setShowPaymentModal(false); setActiveVerifyOrder(null) }}
                     activeVerifyOrder={activeVerifyOrder}
                     handleAcceptPayment={(v) => handleUpdateStatus(activeVerifyOrder, 'paid', 'paid', v)}
+                    handleRejectPayment={() => handleUpdateStatus(activeVerifyOrder, 'rejected', 'rejected')}
                 />
             )}
 
