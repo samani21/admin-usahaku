@@ -34,7 +34,7 @@ function LoginView({ themeStyles, showToast, activeScheme, theme }: Props) {
             const res = await Post<any, any>('auth/login', formData);
 
             // Set cookie dengan js-cookie. expires: 1 berarti 1 hari.
-            Cookies.set('token', res?.token, { expires: 1, path: '/' });
+            Cookies.set('token', res?.token, { expires: 365, path: '/' });
 
             // Redirect dinamis
             const isLocalAdminPath = window.location.pathname.startsWith('/admin');

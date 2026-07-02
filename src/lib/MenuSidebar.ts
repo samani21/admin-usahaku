@@ -1,4 +1,4 @@
-import { Database, Gift, Globe, LayoutDashboard, ScrollText, Store } from "lucide-react";
+import { Database, Gift, Globe, LayoutDashboard, Radio, ScrollText, Store } from "lucide-react";
 import { ReactElement } from "react";
 
 interface child {
@@ -70,6 +70,33 @@ export const menuSidebar: menuSide[] = [
             {
                 label: 'Pembayaran',
                 href: '/payments'
+            },
+            // {
+            //     label: 'Pembayaran',
+            //     href: '/payment'
+            // },
+            // {
+            //     label: 'Retur / Refund',
+            //     href: '/refund'
+            // },
+            // {
+            //     label: 'Riwayat Keuangan',
+            //     href: '/history'
+            // },
+        ]
+    },
+    {
+        Icon: Radio,
+        label: "Postingan",
+        href: '/posting',
+        child: [
+            {
+                label: 'Story',
+                href: '/stories'
+            },
+            {
+                label: 'Posting',
+                href: '/post'
             },
             // {
             //     label: 'Pembayaran',
