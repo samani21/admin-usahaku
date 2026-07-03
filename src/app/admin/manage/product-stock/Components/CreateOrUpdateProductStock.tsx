@@ -1,14 +1,15 @@
 "use client";
-import React, { ChangeEvent, Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
+
+import React, { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 import { Get } from "@/utils/Get";
 import { ProductStockType } from "@/types/Admin/ProductStockType";
 import { ProductsType } from "@/types/Admin/ProductsType";
 import FormInput from "@/Components/CRUD/FormInput/FormInput";
 import ButtonSubmit from "@/Components/CRUD/FormInput/ButtonSubmit";
 
+// --- TYPES & INTERFACES ---
 type Props = {
-    handleFormSubmit: (form: FormData, id: number | null) => void;
-    data: ProductStockType | null;
+    handleFormSubmit: (form: FormData) => void;
     loading: boolean;
     onCancel: () => void;
     setLoading: Dispatch<SetStateAction<boolean>>;
@@ -16,200 +17,235 @@ type Props = {
 
 interface OptionsType {
     label: string;
-    value: string;
+    value: string | number;
 }
+
+interface FormState {
+    outlet_id: string | number;
+    product_id: string | number;
+    product_variant_id: string | number;
+    date: string;
+    stock: string | number;
+    reference_type: string;
+    note: string;
+}
+
+interface FormErrors {
+    outlet_id?: string | null;
+    product_id?: string | null;
+    product_variant_id?: string | null;
+    date?: string | null;
+    stock?: string | null;
+    reference_type?: string | null;
+    note?: string | null;
+}
+
 const selectOptions: OptionsType[] = [
     { label: "Tambah stok", value: 'restock' },
     { label: "Penyesuaian/Kurangi stok", value: 'adjustment' },
 ];
 
-const CreateOrUpdateProductStock = ({ handleFormSubmit, data, loading, setLoading, onCancel }: Props) => {
-    const [form, setForm] = useState<any>({
+// ==========================================
+// CUSTOM HOOKS
+// ==========================================
+
+const useOutlets = () => {
+    const [outlets, setOutlets] = useState<OptionsType[]>([]);
+
+    useEffect(() => {
+        const fetchOutlets = async () => {
+            try {
+                const res = await Get<{ success: boolean, data: any[] }>('outlet?limit=10000');
+                if (res?.success && res.data) {
+                    const formatted = res.data.map((item) => ({
+                        label: item.name,
+                        value: item.id,
+                    }));
+                    setOutlets(formatted);
+                }
+            } catch (error) {
+                // console.error("Gagal mengambil data outlet:", error);
+            }
+        };
+        fetchOutlets();
+    }, []);
+
+    return { outlets };
+};
+
+const useProducts = (outletId: string | number, outlets: OptionsType[]) => {
+    const [products, setProducts] = useState<ProductsType[]>([]);
+    const [productOptions, setProductOptions] = useState<OptionsType[]>([]);
+
+    useEffect(() => {
+        if (!outletId) {
+            setProducts([]);
+            setProductOptions([]);
+            return;
+        }
+
+        const fetchProducts = async () => {
+            try {
+                const outletLabel = outlets.find((o) => String(o.value) === String(outletId))?.label;
+                if (!outletLabel) return;
+
+                const res = await Get<{ success: boolean, data: { data: ProductsType[] } }>(`products?limit=10000&outlet=${outletLabel}`);
+                if (res?.success && res.data?.data) {
+                    setProducts(res.data.data);
+                    setProductOptions(res.data.data.map((item) => ({
+                        label: item.name,
+                        value: item.id,
+                    })));
+                }
+            } catch (error) {
+                // console.error("Gagal mengambil data produk:", error);
+            }
+        };
+
+        fetchProducts();
+    }, [outletId, outlets]);
+
+    return { products, productOptions };
+};
+
+// ==========================================
+// MAIN COMPONENT
+// ==========================================
+const CreateOrUpdateProductStock = ({ handleFormSubmit, loading, setLoading, onCancel }: Props) => {
+    // 1. Inisialisasi State (Langsung dari data update jika ada)
+    const [form, setForm] = useState<FormState>({
         outlet_id: "",
         product_id: "",
+        product_variant_id: "",
         date: "",
-        product_varian_id: "",
         stock: "",
         reference_type: "",
         note: "",
     });
-    const [error, setError] = useState<any>({
-        product_id: null,
-        outlet_id: null,
-        date: null,
-        product_varian_id: null,
-        stock: null,
-        reference_type: null,
-        note: null,
-    })
 
-    const [productOption, setProductOptions] = useState<OptionsType[]>()
-    const [outletOption, setOutletOption] = useState<OptionsType[]>()
-    const [products, setProducts] = useState<ProductsType[]>()
+    const [error, setError] = useState<FormErrors>({});
 
+    // 2. Mengambil data Options dari Custom Hooks
+    const { outlets } = useOutlets();
+    const { products, productOptions } = useProducts(form.outlet_id, outlets);
+
+    // Auto-select Outlet jika hanya ada 1 dan sedang dalam mode "Create"
     useEffect(() => {
-        setForm({
-            product_id: '',
-            outlet_id: '',
-            product_variant_id: '',
-            stock: '',
-            reference_type: '',
-            note: '',
-            date: '',
-        })
-        if (data) {
-            setForm({
-                product_id: data?.product_id,
-                product_variant_id: data?.product_variant_id,
-                stock: data?.stock,
-                reference_type: data?.reference_type,
-                note: data?.note,
-                date: data?.date
-            });
+        if (outlets.length === 1 && !form.outlet_id) {
+            setForm((prev) => ({ ...prev, outlet_id: outlets[0].value }));
         }
-        getOutlet()
-    }, [])
+    }, [outlets, form.outlet_id]);
 
-    useEffect(() => {
-        if (form?.outlet_id) {
-            getProduct()
-        }
-    }, [form?.outlet_id])
+    // 3. Handlers & Computed Values
     const handleChange = (
-        e: React.ChangeEvent<
-            HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-        >
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
     ) => {
-        const { name, value, files } = e.target as HTMLInputElement;
-        if (files) {
-            setForm((prev: any) => ({
-                ...prev,
-                [name]: files[0],
-            }));
-        } else {
-            setForm((prev: any) => ({
-                ...prev,
-                [name]: value,
-            }));
+        const { name, value, type } = e.target;
+        const files = (e.target as HTMLInputElement).files;
+
+        setForm((prev) => ({
+            ...prev,
+            [name]: type === "file" && files ? files[0] : value,
+        }));
+
+        // Hapus pesan error saat user mengetik
+        if (error[name as keyof FormErrors]) {
+            setError((prev) => ({ ...prev, [name]: null }));
         }
     };
-    const getOutlet = async () => {
-        try {
-            const res = await Get<{ success: Boolean, data: any }>('outlet?limit=10000');
-            if (res?.success) {
-                const outlets = res?.data?.map((item: any) => ({
-                    label: item.name,   // sesuaikan dengan field API
-                    value: item.id,
-                })) ?? [];
-                setOutletOption(outlets);
-                if (outlets?.length === 1) {
-                    setForm((prev: any) => ({
-                        ...prev,
-                        outlet_id: outlets[0]?.v,
-                    }));
-                }
-            }
-        } catch (e) {
-
-        }
-    }
-    const getProduct = async () => {
-        try {
-            const outlet = outletOption?.find((o) => o?.value === form?.outlet_id)?.label;
-            const res = await Get<{ success: Boolean, data: any }>(`products?limit=10000&outlet=${outlet}`);
-            if (res?.success) {
-                const productStock = res?.data?.data?.map((item: any) => ({
-                    label: item.name,   // sesuaikan dengan field API
-                    value: item.id,
-                })) ?? [];
-                setProducts(res?.data?.data);
-                setProductOptions(productStock);
-            }
-        } catch (e) {
-
-        }
-    }
-
 
     const variantOptions = useMemo(() => {
-        const product = products?.find((p) => p?.id === form?.product_id)?.variants
-        return product?.map((item: any) => ({
-            label: item.name,   // sesuaikan dengan field API
+        const product = products.find((p) => String(p.id) === String(form.product_id));
+        return product?.variants?.map((item: any) => ({
+            label: item.name,
             value: item.id,
-        })) ?? [];
-    }, [form.product_id]);
+        })) || [];
+    }, [form.product_id, products]);
 
     const product = useMemo(() => {
-        const product = products?.find((p) => p?.id === form?.product_id)
-        return product
-    }, [form.product_id]);
+        return products.find((p) => String(p.id) === String(form.product_id));
+    }, [form.product_id, products]);
+
+    const stockNow = useMemo(() => {
+        if (product?.has_variant && !product?.is_shared_stock) {
+            return product?.variants?.find((v) => v?.id === form.product_variant_id)?.product_variant_stock ?? 0;
+        }
+
+        return product?.product_stock ?? 0
+    }, [product?.product_stock, form?.product_variant_id])
 
     const totalStock = useMemo(() => {
-        if (form?.reference_type === 'restock') {
-            return Number(product?.product_stock ?? 0) + Number(form.stock ?? 0)
+        let currentStock = 0;
+        if (product?.has_variant && !product?.is_shared_stock) {
+            currentStock = product?.variants?.find((v) => v?.id === form.product_variant_id)?.product_variant_stock ?? 0;
+        } else {
+            currentStock = Number(product?.product_stock || 0);
         }
-        return Number(product?.product_stock ?? 0) - Number(form.stock ?? 0)
-    }, [product?.product_stock, form?.stock])
+        const inputStock = Number(form.stock || 0);
 
-    const handleSubmit = (e: React.FormEvent) => {
+        if (form.reference_type === 'restock') {
+            return currentStock + inputStock;
+        }
+        return currentStock - inputStock;
+    }, [product?.product_stock, form.stock, form.reference_type, form?.product_variant_id]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
-        if (form?.outlet_id == "" || form?.outlet_id === 'undefined') {
-            setError({
-                outlet_id: "Outlet harus diisi"
-            })
-            setLoading(false);
-            return;
-        }
-        if (form?.product_id == "") {
-            setError({
-                product_id: "Product harus diisi"
-            })
-            setLoading(false);
-            return;
-        }
 
-        if (form?.date == "") {
-            setError({
-                date: "Tanggal harus diisi"
-            })
-            setLoading(false);
-            return;
-        }
-        if (variantOptions?.length > 0 && form?.product_variant_id == "" && !product?.is_shared_stock) {
-            setError({
-                product_variant_id: "Variant harus diisi"
-            })
-            setLoading(false);
-            return;
-        }
-        if (form?.reference_type == "") {
-            setError({
-                reference_type: "Reference harus diisi"
-            })
-            setLoading(false);
-            return;
-        }
-        if (form?.stock == "") {
-            setError({
-                stock: "stock harus diisi"
-            })
-            setLoading(false);
-            return;
-        }
+        // --- VALIDASI ---
+        const newErrors: FormErrors = {};
+        let hasError = false;
 
+        if (!form.outlet_id || form.outlet_id === "undefined") {
+            newErrors.outlet_id = "Outlet harus diisi";
+            hasError = true;
+        }
+        if (!form.product_id) {
+            newErrors.product_id = "Product harus diisi";
+            hasError = true;
+        }
+        if (!form.date) {
+            newErrors.date = "Tanggal harus diisi";
+            hasError = true;
+        }
+        if (variantOptions.length > 0 && !form.product_variant_id && !product?.is_shared_stock) {
+            newErrors.product_variant_id = "Variant harus diisi";
+            hasError = true;
+        }
+        if (!form.reference_type) {
+            newErrors.reference_type = "Reference harus diisi";
+            hasError = true;
+        }
+        if (!form.stock) {
+            newErrors.stock = "Stock harus diisi";
+            hasError = true;
+        }
         if (totalStock < 0) {
+            newErrors.stock = "Kuantitas tidak boleh melebihi stok saat ini.";
+            hasError = true;
+        }
+
+        if (hasError) {
+            setError(newErrors);
             return;
         }
-        const formData = new FormData();
-        formData.append('product_id', form?.product_id);
-        formData.append('product_variant_id', form?.product_variant_id ?? null);
-        formData.append('stock', form?.stock);
-        formData.append('outlet_id', form?.outlet_id);
-        formData.append('date', form?.date);
-        formData.append('reference_type', form?.reference_type);
-        formData.append('note', form?.note);
-        handleFormSubmit(formData, data?.id ?? null)
+
+        // --- PROSES SUBMIT ---
+        setLoading(true);
+        try {
+            const formData = new FormData();
+            Object.entries(form).forEach(([key, val]) => {
+                // Hindari mengirim data kosong/null
+                if (val !== null && val !== undefined && val !== "") {
+                    formData.append(key, String(val));
+                }
+            });
+
+            await handleFormSubmit(formData);
+        } catch (err) {
+            // console.error("Gagal memproses data stok produk:", err);
+            setLoading(false); // Pastikan loading mati jika error catch blok ini aktif
+        }
     };
 
     return (
@@ -220,20 +256,21 @@ const CreateOrUpdateProductStock = ({ handleFormSubmit, data, loading, setLoadin
                 name="outlet_id"
                 value={form.outlet_id}
                 onChange={handleChange}
-                options={outletOption}
-                error={error?.outlet_id}
+                options={outlets}
+                error={error.outlet_id ?? ''}
             />
+
             <FormInput
                 type="autocomplete"
                 label="Produk"
                 name="product_id"
                 value={form.product_id}
                 onChange={handleChange}
-                options={productOption}
-                error={error?.product_id}
+                options={productOptions}
+                error={error.product_id ?? ''}
             />
-            {
-                variantOptions?.length > 0 && !product?.is_shared_stock &&
+
+            {variantOptions.length > 0 && !product?.is_shared_stock && (
                 <FormInput
                     type="autocomplete"
                     label="Produk Variant"
@@ -241,19 +278,19 @@ const CreateOrUpdateProductStock = ({ handleFormSubmit, data, loading, setLoadin
                     value={form.product_variant_id}
                     onChange={handleChange}
                     options={variantOptions}
-                    error={error?.product_variant_id}
+                    error={error.product_variant_id ?? ''}
                 />
-
-            }
+            )}
 
             <FormInput
                 type="date"
                 label="Tanggal"
                 name="date"
-                value={form.date ?? 0}
+                value={form.date}
                 onChange={handleChange}
-                error={error?.date}
+                error={error.date ?? ''}
             />
+
             <FormInput
                 type="select"
                 label="Jenis Penyesuaian"
@@ -261,57 +298,58 @@ const CreateOrUpdateProductStock = ({ handleFormSubmit, data, loading, setLoadin
                 value={form.reference_type}
                 onChange={handleChange}
                 options={selectOptions}
-                error={error?.reference_type}
+                error={error.reference_type ?? ''}
             />
+
             <div className="flex items-center gap-4">
                 <div className="w-full">
                     <FormInput
                         type="number"
                         label="Stok Saat Ini"
-                        name=""
-                        value={product?.product_stock ?? 0}
-                        onChange={handleChange}
+                        name="" // Dikosongkan karena tidak masuk ke FormState
+                        value={stockNow}
+                        onChange={() => { }}
                         placeholder="Type number"
-                        error={error?.stock}
                         disabled={true}
                     />
-                    {
-                        error?.stock || totalStock < 0 &&
-                        <div className="h-12"></div>
-                    }
+                    {/* Placeholder space jika kolom Kuantitas memiliki error */}
+                    {(error.stock) && <div className="h-5 mt-1"></div>}
                 </div>
+
                 <FormInput
                     type="number"
-                    label={"Kuantitas"}
+                    label="Kuantitas"
                     name="stock"
-                    value={form.stock ?? 0}
+                    value={form.stock}
                     onChange={handleChange}
                     placeholder="Type number"
-                    error={error?.stock || totalStock < 0 && 'Kuantitas tidak boleh melebihi stok saat ini.'}
-                    disabled={!form?.reference_type}
+                    error={error.stock ?? ''}
+                    disabled={!form.reference_type}
                 />
             </div>
+
             <FormInput
                 type="number"
                 label="Estimasi Stok Akhir"
                 name=""
-                value={totalStock ?? 0}
-                onChange={handleChange}
+                value={totalStock}
+                onChange={() => { }}
                 placeholder="Type number"
                 disabled={true}
                 error={totalStock < 0 ? 'Jumlah tidak boleh lebih besar dari stok saat ini.' : ''}
             />
-            {
-                form.reference_type === 'adjustment' &&
+
+            {form.reference_type === 'adjustment' && (
                 <FormInput
                     type="textarea"
                     label="Catatan"
                     name="note"
                     value={form.note}
                     onChange={handleChange}
-                    error={error?.note}
+                    error={error.note ?? ''}
                 />
-            }
+            )}
+
             <ButtonSubmit onClose={onCancel} isSubmitting={loading} />
         </form>
     );

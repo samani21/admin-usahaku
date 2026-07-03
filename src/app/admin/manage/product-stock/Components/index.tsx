@@ -1,5 +1,8 @@
 "use client"
+
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { Edit, Trash2Icon } from 'lucide-react'
+
 import { Meta } from '@/types/Public'
 import { Get } from '@/utils/Get'
 import { Post } from '@/utils/Post'
@@ -7,260 +10,209 @@ import { Delete } from '@/utils/Delete'
 import { Column } from '@/types/Admin/CRUD'
 import { AlertType } from '@/types/Alert'
 import { ProductStockType } from '@/types/Admin/ProductStockType'
-import CreateOrUpdateProductStock from './CreateOrUpdateProductStock'
+
 import FilterComponent from '@/Components/CRUD/FilterComponent'
 import DataTable from '@/Components/CRUD/DataTable'
 import ModalDelete from '@/Components/CRUD/ModalDelete'
 import ModalCrud from '@/Components/CRUD/ModalCrud'
-import Loading from '@/Components/Loading'
+import CreateOrUpdateProductStock from './CreateOrUpdateProductStock'
 import Alert from '@/Components/Alert'
 
-type Props = {}
-
-const ProductStockComponent = (props: Props) => {
+const ProductStockComponent = () => {
+    // --- FILTER & PAGINATION STATE ---
     const [search, setSearch] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState('');
     const [dateRangeText, setDateRangeText] = useState("");
     const [page, setPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [loading, setLoading] = useState<boolean>(true)
+    const [meta, setMeta] = useState<Meta>({ last_page: 1, limit: 10, page: 1, total: 0 });
+
+    // --- DATA & UI STATE ---
+    const [productStockList, setProductStockList] = useState<ProductStockType[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>('');
-    const [meta, setMeta] = useState<Meta>({
-        last_page: 1,
-        limit: 10,
-        page: 1,
-        total: 0,
-    });
-    const [debouncedSearch, setDebouncedSearch] = useState('');
-    const [showAlert, setShowAlert] = useState<AlertType | null>(null)
+    const [showAlert, setShowAlert] = useState<AlertType | null>(null);
 
-    const [dataUpdate, setDataUpdate] = useState<ProductStockType | null>(null)
-    const [deleteData, setDeleteData] = useState<ProductStockType | null>(null)
-    const [categorie, setProductStock] = useState<ProductStockType[]>([]);
+    // --- MODAL STATE ---
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [dataUpdate, setDataUpdate] = useState<ProductStockType | null>(null);
+    const [deleteData, setDeleteData] = useState<ProductStockType | null>(null);
 
+    // ==========================================
+    // EFFECTS & HELPERS
+    // ==========================================
+
+    // 1. Auto-hide Alert dengan Cleanup Timer
     useEffect(() => {
-        setTimeout(() => {
-            setShowAlert({
-                isOpen: false,
-                message: '',
-                type: 'success'
-            });
-        }, 3000)
-    }, [showAlert])
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedSearch(search);
-        }, 800);
+        if (showAlert?.isOpen) {
+            const timer = setTimeout(() => {
+                setShowAlert(null);
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [showAlert]);
 
+    // 2. Debounce Search
+    useEffect(() => {
+        const handler = setTimeout(() => setDebouncedSearch(search), 800);
         return () => clearTimeout(handler);
-
     }, [search]);
 
+    // 3. Reset Halaman ke 1 jika filter berubah
+    useEffect(() => {
+        setPage(1);
+    }, [debouncedSearch, dateRangeText, itemsPerPage]);
+
+    // 4. Parsing Format Tanggal
     const parsedDate = useMemo(() => {
-        if (!dateRangeText.includes(" - ")) {
-            return { start_date: "", end_date: "" };
-        }
+        if (!dateRangeText.includes(" - ")) return { start_date: "", end_date: "" };
 
         const monthMap: Record<string, string> = {
-            Januari: "01",
-            Februari: "02",
-            Maret: "03",
-            April: "04",
-            Mei: "05",
-            Juni: "06",
-            Juli: "07",
-            Agustus: "08",
-            September: "09",
-            Oktober: "10",
-            November: "11",
-            Desember: "12",
+            Jan: "01", Feb: "02", Mar: "03", Apr: "04", Mei: "05", Jun: "06",
+            Jul: "07", Agt: "08", Agu: "08", Sep: "09", Okt: "10", Nov: "11", Des: "12",
         };
 
         const formatDate = (dateStr: string) => {
             const [day, month, year] = dateStr.trim().split(" ");
-
-            return `${year}-${monthMap[month]}-${day.padStart(2, "0")}`;
+            const formattedMonth = monthMap[month] || "01";
+            return `${year}-${formattedMonth}-${day.padStart(2, "0")}`;
         };
 
         const [start, end] = dateRangeText.split(" - ");
-
-        return {
-            start_date: formatDate(start),
-            end_date: formatDate(end),
-        };
+        return { start_date: formatDate(start), end_date: formatDate(end) };
     }, [dateRangeText]);
 
-
+    // 5. Query String Builder
     const queryString = useMemo(() => {
-        let pages = 0
-        if (debouncedSearch?.trim() != '') {
-            pages = 1
-            setPage(1)
-        }
-        const params = {
-            page: pages > 0 ? pages : page,
-            limit: itemsPerPage,
-            search: debouncedSearch,
-            start_date: parsedDate.start_date || "",
-            end_date: parsedDate.end_date || "",
-        };
+        const params = new URLSearchParams();
+        params.append("page", page.toString());
+        params.append("limit", itemsPerPage.toString());
 
-        return (
-            "?" +
-            Object.entries(params)
-                .map(([key, value]) => `${key}=${encodeURIComponent(value ?? "")}`)
-                .join("&")
-        );
+        if (debouncedSearch.trim()) params.append("search", debouncedSearch);
+        if (parsedDate.start_date) params.append("start_date", parsedDate.start_date);
+        if (parsedDate.end_date) params.append("end_date", parsedDate.end_date);
+
+        return `?${params.toString()}`;
     }, [parsedDate, page, debouncedSearch, itemsPerPage]);
 
+    // ==========================================
+    // API ACTIONS
+    // ==========================================
     const fetchProductStock = useCallback(async () => {
+        setLoading(true);
+        setError('');
         try {
-            setLoading(true)
-            const res = await Get<{ success: boolean; data: ProductStockType[]; meta: Meta }>(
-                `/product-stock${queryString}`
-            );
-
+            const res = await Get<{ success: boolean; data: ProductStockType[]; meta: Meta }>(`/product-stock${queryString}`);
             if (res?.success) {
-                setProductStock(res.data);
+                setProductStockList(res.data);
                 setMeta(res.meta);
-                setLoading(false)
             }
         } catch (err: any) {
-            setError(err?.message)
-            setLoading(false)
+            setError(err?.message || "Gagal mengambil data");
+        } finally {
+            setLoading(false);
         }
-        setLoading(false)
     }, [queryString]);
 
     useEffect(() => {
         fetchProductStock();
-    }, [fetchProductStock, page]);
+    }, [fetchProductStock]);
 
-    // Komponen (handleFormSubmit) (Perbaikan: Kirim formData asli)
-
-    const handleFormSubmit = async (formData: FormData, id: number | null) => {
-        setLoading(true)
+    const handleFormSubmit = async (formData: FormData) => {
+        setLoading(true);
         try {
-            if (id) {
-                const res = await Post(`/product-stock/${id}`, formData);
-                if (res) {
-                    fetchProductStock()
-                    setDataUpdate(null)
-                    setIsModalOpen(false);
-                    setShowAlert({
-                        type: 'success',
-                        message: 'Berhasil update data',
-                        isOpen: true
-                    })
-                    setLoading(false)
-                }
-            } else {
-                const res = await Post('/product-stock', formData);
-                if (res) {
-                    fetchProductStock()
-                    setIsModalOpen(false);
-                    setShowAlert({
-                        type: 'success',
-                        message: 'Berhasil simpan data',
-                        isOpen: true
-                    })
-                    setLoading(false)
-                }
+            const endpoint = '/product-stock';
+            const res = await Post(endpoint, formData);
+
+            if (res) {
+                fetchProductStock();
+                handleCloseModal();
+                setShowAlert({ type: 'success', message: 'Berhasil simpan data', isOpen: true });
             }
         } catch (err: any) {
-            setShowAlert({
-                type: 'error',
-                message: 'Gagal proses data ' + err.message,
-                isOpen: true
-            })
-            setLoading(false)
+            setShowAlert({ type: 'error', message: 'Gagal proses data: ' + err.message, isOpen: true });
+        } finally {
+            setLoading(false);
         }
     };
+
     const onDelete = async (id: number | null) => {
-        setLoading(true)
-        setIsModalOpen(false)
-        setDeleteData(null)
+        setLoading(true);
         try {
             const res = await Delete(`/product-stock/${id}`);
             if (res) {
                 fetchProductStock();
-                setDeleteData(null)
-                setIsModalOpen(false);
-                setShowAlert({
-                    type: 'success',
-                    message: 'Berhasil hapus data',
-                    isOpen: true
-                })
-                setLoading(false)
+                handleCloseModal();
+                setShowAlert({ type: 'success', message: 'Berhasil hapus data', isOpen: true });
             }
         } catch (err: any) {
-            setShowAlert({
-                type: 'error',
-                message: 'Gagal proses data ' + err.message,
-                isOpen: true
-            })
-            setLoading(false)
+            setShowAlert({ type: 'error', message: 'Gagal proses data: ' + err.message, isOpen: true });
+        } finally {
+            setLoading(false);
         }
     };
 
+    // ==========================================
+    // UI HANDLERS
+    // ==========================================
     const handleResetFilter = () => {
         setSearch("");
         setDateRangeText("");
     };
 
-    const handleEdit = (row: ProductStockType) => {
-        setIsModalOpen(true)
-        setDataUpdate(row)
-    }
-    const handleDelete = (row: ProductStockType) => {
-        setIsModalOpen(true)
-        setDeleteData(row)
-    }
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setTimeout(() => {
+            setDataUpdate(null);
+            setDeleteData(null);
+        }, 300); // Tunggu animasi tutup modal selesai
+    };
 
-    const columns: Column<ProductStockType>[] = useMemo(
-        () => [
+    const handleEdit = useCallback((row: ProductStockType) => {
+        setDataUpdate(row);
+        setIsModalOpen(true);
+    }, []);
 
-            {
-                key: "name_outlet",
-                label: "Nama Outlet",
-            },
-            {
-                key: "name_product",
-                label: "Nama Produk",
-            },
-            {
-                key: "name_variant",
-                label: "Nama Variant",
-                render: (row) => row?.name_variant ?? ''
-            },
-            {
-                key: "stock",
-                label: "stock",
-                render: (row) => row?.stock ?? ''
-            },
-            {
-                key: "date",
-                label: "Tanggal",
-                render: (row) => row?.date ?? ''
-            },
-            {
-                key: "reference_type",
-                label: "Reference",
-                render: (row) => row?.reference_type ?? ''
-            },
-            {
-                key: "note",
-                label: "Catatan",
-                render: (row) => row?.note ?? ''
-            },
+    const handleDelete = useCallback((row: ProductStockType) => {
+        setDeleteData(row);
+        setIsModalOpen(true);
+    }, []);
 
-        ],
-        [handleEdit, handleDelete]
-    );
-
+    // ==========================================
+    // TABLE COLUMNS CONFIG
+    // ==========================================
+    const columns: Column<ProductStockType>[] = useMemo(() => [
+        { key: "name_outlet", label: "Nama Outlet" },
+        { key: "name_product", label: "Nama Produk" },
+        {
+            key: "name_variant",
+            label: "Nama Variant",
+            render: (row) => row?.name_variant ?? '-'
+        },
+        {
+            key: "stock",
+            label: "Stok",
+            render: (row) => row?.stock ?? '0'
+        },
+        {
+            key: "date",
+            label: "Tanggal",
+            render: (row) => row?.date ?? '-'
+        },
+        {
+            key: "reference_type",
+            label: "Reference",
+            render: (row) => row?.reference_type ?? '-'
+        },
+        {
+            key: "note",
+            label: "Catatan",
+            render: (row) => row?.note ?? '-'
+        },
+    ], [handleEdit, handleDelete]);
 
     return (
-        <div className='relative'>
+        <div className='relative space-y-6'>
             <FilterComponent
                 search={search}
                 setSearch={setSearch}
@@ -275,7 +227,7 @@ const ProductStockComponent = (props: Props) => {
 
             <div className="mt-6">
                 <DataTable<ProductStockType>
-                    data={categorie}
+                    data={productStockList}
                     columns={columns}
                     page={page}
                     itemsPerPage={itemsPerPage}
@@ -287,30 +239,37 @@ const ProductStockComponent = (props: Props) => {
                 />
             </div>
 
-            {
-                deleteData ?
-                    <ModalDelete
-                        isOpen={isModalOpen}
-                        onClose={() => {
-                            setIsModalOpen(false)
-                            setDeleteData(null)
-                        }}
-                        deleteData={deleteData}
-                        handleDelete={onDelete} /> :
-                    <ModalCrud isOpen={isModalOpen} title={dataUpdate ? "Edit" : "Tambah" + ' Stok Produk'} onClose={() => {
-                        setIsModalOpen(false)
-                        setDataUpdate(null)
-                    }}>
-                        <CreateOrUpdateProductStock handleFormSubmit={handleFormSubmit} data={dataUpdate} loading={loading} setLoading={setLoading} onCancel={() => setIsModalOpen(false)} />
-                    </ModalCrud>
-            }
-            {
-                loading && <Loading />
-            }
-            {
-                showAlert?.isOpen &&
-                <Alert type={showAlert?.type} message={showAlert?.message} onClose={() => setShowAlert(null)} />
-            }
+            {/* MODALS */}
+            {deleteData ? (
+                <ModalDelete
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                    deleteData={deleteData}
+                    handleDelete={onDelete}
+                />
+            ) : (
+                <ModalCrud
+                    isOpen={isModalOpen}
+                    title={dataUpdate ? "Edit Stok Produk" : "Tambah Stok Produk"}
+                    onClose={handleCloseModal}
+                >
+                    <CreateOrUpdateProductStock
+                        handleFormSubmit={handleFormSubmit}
+                        loading={loading}
+                        setLoading={setLoading}
+                        onCancel={handleCloseModal}
+                    />
+                </ModalCrud>
+            )}
+
+            {/* ALERT */}
+            {showAlert?.isOpen && (
+                <Alert
+                    type={showAlert.type}
+                    message={showAlert.message}
+                    onClose={() => setShowAlert(null)}
+                />
+            )}
         </div>
     )
 }
