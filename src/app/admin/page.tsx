@@ -1,10 +1,10 @@
 "use client"
-import React, { useState, useEffect, useMemo } from 'react';
+
+import React, { useState, useEffect, useCallback } from 'react';
 import {
-    LayoutDashboard, Package, Building2, Store, LayoutGrid, PackageOpen,
-    BarChart3, ScrollText, ReceiptText, Wallet, User, LogOut, ChevronDown,
-    ChevronUp, Bell, Search, TrendingUp, TrendingDown, Clock, CheckCircle2,
-    XCircle, Crown, Zap, CreditCard, Sparkles, AlertCircle, Calendar, Filter
+    Wallet, ScrollText, PackageOpen, User, ChevronDown, Clock,
+    CheckCircle2, XCircle, Crown, Zap, CreditCard, Sparkles,
+    AlertCircle, Calendar, Filter
 } from 'lucide-react';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
@@ -19,36 +19,20 @@ import { StatusOrder } from '@/types/StatusOrder';
 import { useCorrectPath } from '@/utils/useCorrectPath';
 import Link from 'next/link';
 
-export default function App() {
-    const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
-
-    return (
-        // Background utama dengan gradien yang lebih kompleks dan halus untuk menonjolkan efek glassmorphism
-        <div className="flex h-screen bg-[#f8fafc] font-sans selection:bg-emerald-200 selection:text-emerald-900 overflow-hidden relative">
-            {/* Dekorasi Background Blob */}
-            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-emerald-300/30 blur-[120px] pointer-events-none"></div>
-            <div className="absolute bottom-[-10%] right-[-5%] w-[50%] h-[50%] rounded-full bg-cyan-300/20 blur-[150px] pointer-events-none"></div>
-            <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] rounded-full bg-amber-300/20 blur-[100px] pointer-events-none"></div>
-
-            <main className="flex-1 overflow-x-hidden overflow-y-auto bg-transparent relative z-10">
-                <Dashboard setIsSubscriptionModalOpen={setIsSubscriptionModalOpen} />
-            </main>
-            {isSubscriptionModalOpen && <ModalSubscription onClose={() => setIsSubscriptionModalOpen(false)} />}
-        </div>
-    );
-}
-
+// --- TYPES ---
 interface StatsType {
     income: number;
     order: number;
     order_items: number;
     customer: number;
 }
+
 interface SalesChartType {
     name: string;
     sales: number;
     type: string;
 }
+
 interface DataType {
     income: number;
     order: number;
@@ -56,132 +40,81 @@ interface DataType {
     customer: number;
     business: BusinessType;
     sales_chart: SalesChartType[];
-    orders: OrderType[]
+    orders: OrderType[];
 }
 
-const Dashboard = ({ setIsSubscriptionModalOpen }: any) => {
-    // --- STATE SUBSCRIPTION ---
-    const [isLoading, setIsLoading] = useState(true);
-    const [planType, setPlanType] = useState<'trial' | 'premium'>('trial');
-    const [planStatus, setPlanStatus] = useState<'active' | 'expired' | 'canceled'>('active');
-    const [endTime, setEndTime] = useState<string | null>(null);
-    const [daysRemaining, setDaysRemaining] = useState<number>(0);
+// --- UTILS ---
+const formatDateTime = (dateString: string | null) => {
+    if (!dateString) return '-';
+    return new Intl.DateTimeFormat('id-ID', {
+        day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+    }).format(new Date(dateString));
+};
 
-    // --- STATE FILTER TANGGAL & GRAFIK ---
+// ==========================================
+// 1. CUSTOM HOOK: Mengelola Filter & Data API
+// ==========================================
+const useDashboardData = () => {
+    const [isLoading, setIsLoading] = useState(true);
     const [isDateModalOpen, setIsDateModalOpen] = useState(false);
+
+    // Filter State
     const [startDate, setStartDate] = useState<string>('');
     const [endDate, setEndDate] = useState<string>('');
     const [activeFilterLabel, setActiveFilterLabel] = useState('7 Hari Terakhir');
-    const [chartData, setChartData] = useState<any[]>([]);
-    const [stats, setStats] = useState<StatsType>();
-    const [orders, setOrders] = useState<OrderType[]>([]);
-    const { getCorrectPath } = useCorrectPath();
 
-    // Inisialisasi awal (Default 7 Hari)
+    // Data State
+    const [stats, setStats] = useState<StatsType | null>(null);
+    const [chartData, setChartData] = useState<SalesChartType[]>([]);
+    const [orders, setOrders] = useState<OrderType[]>([]);
+    const [business, setBusiness] = useState<BusinessType | null>(null);
+
+    // Default Inisialisasi: 7 Hari Terakhir
     useEffect(() => {
         const end = new Date();
         const start = new Date();
-        start.setDate(end.getDate() - 6); // 7 hari termasuk hari ini
+        start.setDate(end.getDate() - 6);
 
-        const startStr = start.toISOString().split('T')[0];
-        const endStr = end.toISOString().split('T')[0];
-
-        setStartDate(startStr);
-        setEndDate(endStr);
-        // generateDynamicChartData(startStr, endStr);
+        setStartDate(start.toISOString().split('T')[0]);
+        setEndDate(end.toISOString().split('T')[0]);
     }, []);
 
-    useEffect(() => {
-        fetchDashboard();
-    }, [startDate, endDate]);
-
-    const fetchDashboard = async () => {
+    const fetchDashboard = useCallback(async () => {
+        if (!startDate || !endDate) return;
+        setIsLoading(true);
         try {
             const res = await Get<{ success: boolean, data: DataType }>(`dashboard?start_date=${startDate}&end_date=${endDate}`);
-            if (res?.success) {
-                const dataStats = {
-                    income: res?.data?.income,
-                    order: res?.data?.order,
-                    order_items: res?.data?.order_items,
-                    customer: res?.data?.customer,
-                }
-                setStats(dataStats)
-                setChartData(res?.data?.sales_chart)
-
-                const businessData = res.data.business;
-                setPlanType(res.data.business?.plan);
-                setPlanStatus(res.data.business?.subscription_status);
-                setEndTime(businessData.end_time);
-
-                if (businessData.end_time) {
-                    const endDate = new Date(businessData.end_time);
-                    const now = new Date();
-                    const diffTime = endDate.getTime() - now.getTime();
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    setDaysRemaining(diffDays > 0 ? diffDays : 0);
-                }
-                setOrders(res?.data?.orders)
+            if (res?.success && res.data) {
+                setStats({
+                    income: res.data.income,
+                    order: res.data.order,
+                    order_items: res.data.order_items,
+                    customer: res.data.customer,
+                });
+                setChartData(res.data.sales_chart || []);
+                setOrders(res.data.orders || []);
+                setBusiness(res.data.business || null);
             }
         } catch (e: any) {
-
+            console.error("Gagal memuat data dashboard", e);
         } finally {
             setIsLoading(false);
         }
-    }
+    }, [startDate, endDate]);
 
-    // --- FUNGSI GENERATE GRAFIK DINAMIS (HARIAN VS BULANAN) ---
-    // const generateDynamicChartData = (startStr: string, endStr: string) => {
-    //     const start = new Date(startStr);
-    //     const end = new Date(endStr);
-    //     const diffTime = Math.abs(end.getTime() - start.getTime());
-    //     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    useEffect(() => {
+        fetchDashboard();
+    }, [fetchDashboard]);
 
-    //     const newData = [];
-
-    //     if (diffDays <= 31) {
-    //         // TAMPILAN HARIAN (Jika <= 31 Hari)
-    //         for (let i = 0; i <= diffDays; i++) {
-    //             const d = new Date(start);
-    //             d.setDate(d.getDate() + i);
-    //             newData.push({
-    //                 name: new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short' }).format(d),
-    //                 sales: parseFloat((Math.random() * 5 + 1).toFixed(1)), // Mock Data
-    //                 type: 'Harian'
-    //             });
-    //         }
-    //     } else {
-    //         // TAMPILAN BULANAN (Jika > 31 Hari)
-    //         let currMonth = start.getMonth();
-    //         let currYear = start.getFullYear();
-    //         const monthCount = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1;
-
-    //         for (let i = 0; i < monthCount; i++) {
-    //             const d = new Date(currYear, currMonth, 1);
-    //             newData.push({
-    //                 name: new Intl.DateTimeFormat('id-ID', { month: 'short', year: '2-digit' }).format(d),
-    //                 sales: parseFloat((Math.random() * 30 + 10).toFixed(1)), // Mock Data (Lebih besar krn per bulan)
-    //                 type: 'Bulanan'
-    //             });
-    //             currMonth++;
-    //         }
-    //     }
-    //     setChartData(newData);
-    // };
-
-    // --- FUNGSI FILTER ---
     const applyQuickFilter = (days: number) => {
         const end = new Date();
         const start = new Date();
         start.setDate(end.getDate() - (days - 1));
 
-        const startStr = start.toISOString().split('T')[0];
-        const endStr = end.toISOString().split('T')[0];
-
-        setStartDate(startStr);
-        setEndDate(endStr);
+        setStartDate(start.toISOString().split('T')[0]);
+        setEndDate(end.toISOString().split('T')[0]);
         setActiveFilterLabel(`${days} Hari Terakhir`);
         setIsDateModalOpen(false);
-        // generateDynamicChartData(startStr, endStr);
     };
 
     const applyCustomFilter = () => {
@@ -190,36 +123,57 @@ const Dashboard = ({ setIsSubscriptionModalOpen }: any) => {
             const eFormat = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short' }).format(new Date(endDate));
             setActiveFilterLabel(`${sFormat} - ${eFormat}`);
             setIsDateModalOpen(false);
-            // generateDynamicChartData(startDate, endDate);
         }
     };
 
-    const formatDateTime = (dateString: string | null) => {
-        if (!dateString) return '-';
-        return new Intl.DateTimeFormat('id-ID', {
-            day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
-        }).format(new Date(dateString));
+    return {
+        isLoading, isDateModalOpen, setIsDateModalOpen,
+        startDate, setStartDate, endDate, setEndDate, activeFilterLabel,
+        stats, chartData, orders, business,
+        applyQuickFilter, applyCustomFilter
     };
+};
 
+// ==========================================
+// 2. CUSTOM HOOK: Logika Kalkulasi Masa Aktif
+// ==========================================
+const useSubscriptionStatus = (business: BusinessType | null) => {
+    const [daysRemaining, setDaysRemaining] = useState<number>(0);
 
-    const recentOrders = [
-        { id: 'ORD-2039', date: '10 menit lalu', amount: 'Rp 250.000', status: 'Selesai', customer: 'Budi Santoso' },
-        { id: 'ORD-2038', date: '45 menit lalu', amount: 'Rp 1.100.000', status: 'Proses', customer: 'Siti Aminah' },
-        { id: 'ORD-2037', date: '2 jam lalu', amount: 'Rp 75.000', status: 'Selesai', customer: 'Rudi Hermawan' },
-        { id: 'ORD-2036', date: '3 jam lalu', amount: 'Rp 450.000', status: 'Batal', customer: 'Agus Pratama' },
-        { id: 'ORD-2035', date: '5 jam lalu', amount: 'Rp 890.000', status: 'Selesai', customer: 'Dewi Lestari' },
-    ];
+    const planType = business?.plan || 'trial';
+    const planStatus = business?.subscription_status || 'active';
+    const endTime = business?.end_time || null;
 
-
-
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'Selesai': return 'bg-emerald-50 text-emerald-600 border-emerald-200/60 shadow-[0_0_10px_rgba(16,185,129,0.1)]';
-            case 'Proses': return 'bg-amber-50 text-amber-600 border-amber-200/60 shadow-[0_0_10px_rgba(245,158,11,0.1)]';
-            case 'Batal': return 'bg-rose-50 text-rose-600 border-rose-200/60 shadow-[0_0_10px_rgba(244,63,94,0.1)]';
-            default: return 'bg-gray-50 text-gray-600';
+    useEffect(() => {
+        if (endTime) {
+            const endDate = new Date(endTime);
+            const now = new Date();
+            const diffTime = endDate.getTime() - now.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            setDaysRemaining(diffDays > 0 ? diffDays : 0);
+        } else {
+            setDaysRemaining(0);
         }
-    };
+    }, [endTime]);
+
+    return { planType, planStatus, endTime, daysRemaining };
+};
+
+// ==========================================
+// KONTEN DASHBOARD UTAMA
+// ==========================================
+const Dashboard = ({ setIsSubscriptionModalOpen }: { setIsSubscriptionModalOpen: (val: boolean) => void }) => {
+    const { getCorrectPath } = useCorrectPath();
+
+    // Inisialisasi Custom Hooks
+    const {
+        isLoading, isDateModalOpen, setIsDateModalOpen,
+        startDate, setStartDate, endDate, setEndDate, activeFilterLabel,
+        stats, chartData, orders, business,
+        applyQuickFilter, applyCustomFilter
+    } = useDashboardData();
+
+    const { planType, planStatus, endTime, daysRemaining } = useSubscriptionStatus(business);
 
     const renderSubscriptionBanner = () => {
         if (isLoading) return <div className="w-full xl:w-96 h-24 bg-white/50 animate-pulse rounded-3xl"></div>;
@@ -262,12 +216,11 @@ const Dashboard = ({ setIsSubscriptionModalOpen }: any) => {
                                 Sisa {daysRemaining} hari (Habis: {formatDateTime(endTime)})
                             </p>
                         </div>
-                        {
-                            daysRemaining < 8 &&
+                        {daysRemaining < 8 && (
                             <button onClick={() => setIsSubscriptionModalOpen(true)} className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-sm font-bold rounded-xl shadow-[0_4px_14px_0_rgba(245,158,11,0.39)] hover:shadow-[0_6px_20px_rgba(245,158,11,0.23)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center">
                                 <Wallet className="w-4 h-4 mr-2" /> Perpanjang
                             </button>
-                        }
+                        )}
                     </div>
                 </div>
             );
@@ -299,7 +252,7 @@ const Dashboard = ({ setIsSubscriptionModalOpen }: any) => {
 
     return (
         <MainLayout>
-            <main className="p-4 sm:p-8 animate-fade-in relative z-10">
+            <main className="p-4 sm:p-8 animate-fade-in relative z-100">
                 {/* Header Section */}
                 <div className="mb-8 flex flex-col xl:flex-row gap-6 items-start xl:items-center justify-between">
                     <div>
@@ -313,7 +266,7 @@ const Dashboard = ({ setIsSubscriptionModalOpen }: any) => {
                     </div>
                 </div>
 
-                {/* Filter Action Bar - Premium Glassmorphism */}
+                {/* Filter Action Bar */}
                 <div className="flex flex-wrap gap-4 justify-between items-center mb-6 p-4 bg-white/40 backdrop-blur-2xl border border-white/60 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)]">
                     <h2 className="text-lg font-bold text-gray-800 px-2">Ringkasan Data</h2>
                     <button
@@ -333,75 +286,25 @@ const Dashboard = ({ setIsSubscriptionModalOpen }: any) => {
 
                 {/* Kartu Statistik */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div
-                        className="group relative overflow-hidden p-6 bg-white/50 backdrop-blur-2xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-                    >
-                        {/* Efek kilauan transparan di dalam card */}
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/40 to-transparent rounded-full translate-x-10 -translate-y-10 pointer-events-none"></div>
-
-                        <div className="flex items-center justify-between mb-5 relative z-10">
-                            <div className="bg-gradient-to-br from-emerald-400 to-teal-500 p-3.5 rounded-2xl shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform duration-300">
-                                <Wallet className="h-6 w-6 text-white" />
+                    {[
+                        { title: 'Total Penjualan', value: formatIDR(Number(stats?.income || 0)), icon: <Wallet className="h-6 w-6 text-white" /> },
+                        { title: 'Total Order', value: stats?.order || 0, icon: <ScrollText className="h-6 w-6 text-white" /> },
+                        { title: 'Produk Terjual', value: stats?.order_items || 0, icon: <PackageOpen className="h-6 w-6 text-white" /> },
+                        { title: 'Pelanggan Baru', value: stats?.customer || 0, icon: <User className="h-6 w-6 text-white" /> },
+                    ].map((item, idx) => (
+                        <div key={idx} className="group relative overflow-hidden p-6 bg-white/50 backdrop-blur-2xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/40 to-transparent rounded-full translate-x-10 -translate-y-10 pointer-events-none"></div>
+                            <div className="flex items-center justify-between mb-5 relative z-10">
+                                <div className="bg-gradient-to-br from-emerald-400 to-teal-500 p-3.5 rounded-2xl shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform duration-300">
+                                    {item.icon}
+                                </div>
                             </div>
-
-                        </div>
-                        <div className="relative z-10">
-                            <h3 className="text-3xl font-extrabold text-gray-900 tracking-tight">{formatIDR(Number(stats?.income))}</h3>
-                            <p className="text-sm font-semibold text-gray-500 mt-1">Total Penjualan</p>
-                        </div>
-                    </div>
-                    <div
-                        className="group relative overflow-hidden p-6 bg-white/50 backdrop-blur-2xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-                    >
-                        {/* Efek kilauan transparan di dalam card */}
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/40 to-transparent rounded-full translate-x-10 -translate-y-10 pointer-events-none"></div>
-
-                        <div className="flex items-center justify-between mb-5 relative z-10">
-                            <div className="bg-gradient-to-br from-emerald-400 to-teal-500 p-3.5 rounded-2xl shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform duration-300">
-                                <ScrollText className="h-6 w-6 text-white" />
+                            <div className="relative z-10">
+                                <h3 className="text-3xl font-extrabold text-gray-900 tracking-tight">{item.value}</h3>
+                                <p className="text-sm font-semibold text-gray-500 mt-1">{item.title}</p>
                             </div>
-
                         </div>
-                        <div className="relative z-10">
-                            <h3 className="text-3xl font-extrabold text-gray-900 tracking-tight">{stats?.order}</h3>
-                            <p className="text-sm font-semibold text-gray-500 mt-1">Total Order</p>
-                        </div>
-                    </div>
-                    <div
-                        className="group relative overflow-hidden p-6 bg-white/50 backdrop-blur-2xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-                    >
-                        {/* Efek kilauan transparan di dalam card */}
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/40 to-transparent rounded-full translate-x-10 -translate-y-10 pointer-events-none"></div>
-
-                        <div className="flex items-center justify-between mb-5 relative z-10">
-                            <div className="bg-gradient-to-br from-emerald-400 to-teal-500 p-3.5 rounded-2xl shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform duration-300">
-                                <PackageOpen className="h-6 w-6 text-white" />
-                            </div>
-
-                        </div>
-                        <div className="relative z-10">
-                            <h3 className="text-3xl font-extrabold text-gray-900 tracking-tight">{stats?.order_items}</h3>
-                            <p className="text-sm font-semibold text-gray-500 mt-1">Produk Terjual</p>
-                        </div>
-                    </div>
-                    <div
-                        className="group relative overflow-hidden p-6 bg-white/50 backdrop-blur-2xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-                    >
-                        {/* Efek kilauan transparan di dalam card */}
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/40 to-transparent rounded-full translate-x-10 -translate-y-10 pointer-events-none"></div>
-
-                        <div className="flex items-center justify-between mb-5 relative z-10">
-                            <div className="bg-gradient-to-br from-emerald-400 to-teal-500 p-3.5 rounded-2xl shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform duration-300">
-                                <User className="h-6 w-6 text-white" />
-                            </div>
-
-                        </div>
-                        <div className="relative z-10">
-                            <h3 className="text-3xl font-extrabold text-gray-900 tracking-tight">{stats?.customer}</h3>
-                            <p className="text-sm font-semibold text-gray-500 mt-1">Pelanggan Baru</p>
-                        </div>
-                    </div>
-
+                    ))}
                 </div>
 
                 {/* Grafik dan Tabel */}
@@ -460,24 +363,17 @@ const Dashboard = ({ setIsSubscriptionModalOpen }: any) => {
                             {orders.map((order) => {
                                 const status = StatusOrder;
                                 const date = new Date(order.created_at);
+                                const formattedDate = date.toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" });
+                                const formattedTime = date.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+                                const currentStatus = status?.[order?.payment_status === 'unpaid' ? order?.payment_status : order?.status];
 
-                                const formattedDate = date.toLocaleDateString("id-ID", {
-                                    day: "2-digit",
-                                    month: "long",
-                                    year: "numeric",
-                                });
-
-                                const formattedTime = date.toLocaleTimeString("id-ID", {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                });
                                 return (
                                     <div key={order.id} className="group flex flex-col p-4 bg-white/60 rounded-2xl border border-white shadow-sm hover:shadow-md hover:bg-white hover:border-emerald-100 transition-all duration-300">
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="text-sm font-extrabold text-gray-800 group-hover:text-emerald-600 transition-colors">{order.order_number}</span>
-                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${status?.[order?.payment_status === 'unpaid' ? order?.payment_status : order?.status]?.bg}`}>
-                                                {status?.[order?.payment_status === 'unpaid' ? order?.payment_status : order?.status]?.icon}
-                                                <span>{status?.[order?.payment_status === 'unpaid' ? order?.payment_status : order?.status]?.label}</span>
+                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${currentStatus?.bg}`}>
+                                                {currentStatus?.icon}
+                                                <span>{currentStatus?.label}</span>
                                             </span>
                                         </div>
                                         <div className="flex items-center justify-between text-sm">
@@ -498,7 +394,7 @@ const Dashboard = ({ setIsSubscriptionModalOpen }: any) => {
 
                 {/* MODAL FILTER TANGGAL GLASSMORPHISM */}
                 {isDateModalOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/30 backdrop-blur-md animate-fade-in">
+                    <div className="fixed inset-0 z-[1500] flex items-center justify-center p-4 bg-slate-900/30 backdrop-blur-md animate-fade-in">
                         <div className="bg-white/90 backdrop-blur-2xl rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden border border-white transform transition-all scale-in">
                             <div className="p-6 border-b border-gray-100/50 flex justify-between items-center bg-white/50">
                                 <h3 className="font-extrabold text-gray-900 text-lg flex items-center gap-2">
@@ -589,3 +485,21 @@ const Dashboard = ({ setIsSubscriptionModalOpen }: any) => {
         </MainLayout>
     );
 };
+
+export default function App() {
+    const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
+
+    return (
+        <div className="flex h-screen bg-[#f8fafc] font-sans selection:bg-emerald-200 selection:text-emerald-900 overflow-hidden relative">
+            {/* Dekorasi Background Blob */}
+            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-emerald-300/30 blur-[120px] pointer-events-none"></div>
+            <div className="absolute bottom-[-10%] right-[-5%] w-[50%] h-[50%] rounded-full bg-cyan-300/20 blur-[150px] pointer-events-none"></div>
+            <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] rounded-full bg-amber-300/20 blur-[100px] pointer-events-none"></div>
+
+            <main className="flex-1 overflow-x-hidden overflow-y-auto bg-transparent relative ">
+                <Dashboard setIsSubscriptionModalOpen={setIsSubscriptionModalOpen} />
+            </main>
+            {isSubscriptionModalOpen && <ModalSubscription onClose={() => setIsSubscriptionModalOpen(false)} />}
+        </div>
+    );
+}
