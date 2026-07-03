@@ -21,6 +21,7 @@ type Props = {}
 const BanksComponent = (props: Props) => {
     const [search, setSearch] = useState("");
     const [dateRangeText, setDateRangeText] = useState("");
+    console.log(dateRangeText)
     const [page, setPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -60,22 +61,20 @@ const BanksComponent = (props: Props) => {
         if (!dateRangeText.includes(" - ")) {
             return { start_date: "", end_date: "" };
         }
-
         const monthMap: Record<string, string> = {
-            Januari: "01",
-            Februari: "02",
-            Maret: "03",
-            April: "04",
-            Mei: "05",
-            Juni: "06",
-            Juli: "07",
-            Agustus: "08",
-            September: "09",
-            Oktober: "10",
-            November: "11",
-            Desember: "12",
+            Jan: "01",
+            Feb: "02",
+            Mar: "03",
+            Apr: "04",
+            Mei: "05", // 'Mei' tetap 3 huruf
+            Jun: "06",
+            Jul: "07",
+            Agt: "08", // Seringkali Agustus disingkat Agt atau Agu
+            Sep: "09",
+            Okt: "10",
+            Nov: "11",
+            Des: "12",
         };
-
         const formatDate = (dateStr: string) => {
             const [day, month, year] = dateStr.trim().split(" ");
 
