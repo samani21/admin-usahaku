@@ -1,4 +1,4 @@
-import { Calendar, Plus, Search, Undo2 } from 'lucide-react';
+import { Calendar, Plus, Search, Undo2, ChevronDown } from 'lucide-react';
 import React, { Dispatch, SetStateAction, useState } from 'react'
 import DateRangeModal from './DateRangeModal';
 
@@ -15,68 +15,117 @@ type Props = {
     hiddenAdd?: boolean
 }
 
-const FilterComponent = ({ search, setSearch, dateRangeText, itemsPerPage, setItemsPerPage, setPage, handleReset, setDateRangeText, setIsModalOpenForm, hiddenAdd }: Props) => {
-    const [isModalOpen, setIsModalOpen] = useState(false)
+const FilterComponent = ({
+    search,
+    setSearch,
+    dateRangeText,
+    itemsPerPage,
+    setItemsPerPage,
+    setPage,
+    handleReset,
+    setDateRangeText,
+    setIsModalOpenForm,
+    hiddenAdd
+}: Props) => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
     return (
         <>
-            <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm shadow-emerald-50 space-y-4">
+            <div className="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col gap-4 w-full animate-in fade-in duration-300">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+
+                    {/* --- Kolom Pencarian --- */}
                     <div className="relative flex-1">
-                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-400">
+                            <Search size={18} />
+                        </div>
                         <input
                             type="text"
-                            placeholder="Search by name, email, or role..."
+                            placeholder="Cari nama, email, atau peran..."
                             value={search}
                             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                            className="w-full bg-slate-100 border border-slate-100 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all duration-150"
+                            className="w-full text-sm font-semibold text-slate-800 pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 focus:border-emerald-500 focus:bg-white rounded-xl outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all placeholder:font-medium placeholder:text-slate-400"
                         />
                     </div>
-                    <div className="col-span-1">
-                        <div className="relative">
-                            <input readOnly onClick={() => setIsModalOpen(true)} value={dateRangeText} placeholder="Pilih rentang tanggal" className="w-full bg-slate-100 border border-slate-100 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all duration-150" />
-                            <button onClick={() => setIsModalOpen(true)} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-600" type="button">
-                                <Calendar className="w-5 h-5" />
-                            </button>
+
+                    {/* --- Kumpulan Filter & Aksi --- */}
+                    <div className="flex flex-col md:flex-row items-center gap-3">
+
+                        {/* Filter Rentang Tanggal */}
+                        <div className="relative w-full md:w-56">
+                            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-400">
+                                <Calendar size={18} />
+                            </div>
+                            <input
+                                readOnly
+                                onClick={() => setIsModalOpen(true)}
+                                value={dateRangeText}
+                                placeholder="Pilih rentang tanggal"
+                                className="w-full cursor-pointer text-sm font-semibold text-slate-800 pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 hover:border-emerald-300 focus:border-emerald-500 focus:bg-white rounded-xl outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all placeholder:font-medium placeholder:text-slate-400"
+                            />
                         </div>
-                    </div>
-                    <div className="col-span-1">
-                        <select value={itemsPerPage} onChange={(e) => { setItemsPerPage(Number(e.target.value)); setPage(1) }} className="w-full bg-slate-100 border border-slate-100 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all duration-150">
-                            {[10, 25, 50, 100].map((num) => (
-                                <option key={num} value={num}>{num} Data</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="flex items-end">
-                        <button onClick={handleReset} className="w-full py-2 px-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition shadow-sm flex items-center justify-center h-[40px] cursor-pointer">
-                            <Undo2 className="w-5 h-5 mr-1" /> Reset Filter
-                        </button>
-                    </div>
-                    <div className="flex items-end">
-                        {
-                            !hiddenAdd &&
-                            <button className="flex items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-xl shadow-lg transition duration-300 transform hover:scale-[1.02] active:scale-[0.98] h-[40px] cursor-pointer" onClick={() => setIsModalOpenForm(true)}>
-                                <Plus className='w-5 h-5 mr-2' />
-                                Tambah
+
+                        {/* Dropdown Jumlah Data */}
+                        <div className="relative w-full md:w-32">
+                            <select
+                                value={itemsPerPage}
+                                onChange={(e) => { setItemsPerPage(Number(e.target.value)); setPage(1) }}
+                                className="w-full appearance-none cursor-pointer text-sm font-semibold text-slate-800 pl-4 pr-10 py-3 bg-slate-50 border border-slate-200 focus:border-emerald-500 focus:bg-white rounded-xl outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all"
+                            >
+                                {[10, 25, 50, 100].map((num) => (
+                                    <option key={num} value={num}>{num} Data</option>
+                                ))}
+                            </select>
+                            <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400">
+                                <ChevronDown size={16} />
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 w-full md:w-auto">
+                            {/* Tombol Reset */}
+                            <button
+                                onClick={handleReset}
+                                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all active:scale-95"
+                            >
+                                <Undo2 size={18} />
+                                <span className="hidden md:inline">Reset</span>
+                                <span className="md:hidden">Reset Filter</span>
                             </button>
-                        }
+
+                            {/* Tombol Tambah */}
+                            {!hiddenAdd && (
+                                <button
+                                    onClick={() => setIsModalOpenForm(true)}
+                                    className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-500/25 transition-all active:scale-95"
+                                >
+                                    <Plus size={20} />
+                                    Tambah
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
+
             {/* Modal Rentang Tanggal */}
-            <DateRangeModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onApply={(dates) => {
-                if (dates.length === 2) {
-                    const start = dates[0].toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
-                    const end = dates[1].toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
-                    setDateRangeText(`${start} - ${end}`)
-                } else if (dates.length === 1) {
-                    const single = dates[0].toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
-                    setDateRangeText(single)
-                } else {
-                    setDateRangeText('')
-                }
-            }} />
+            <DateRangeModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onApply={(dates) => {
+                    if (dates.length === 2) {
+                        const start = dates[0].toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+                        const end = dates[1].toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+                        setDateRangeText(`${start} - ${end}`)
+                    } else if (dates.length === 1) {
+                        const single = dates[0].toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+                        setDateRangeText(single)
+                    } else {
+                        setDateRangeText('')
+                    }
+                }}
+            />
         </>
     )
 }
 
-export default FilterComponent
+export default FilterComponent;

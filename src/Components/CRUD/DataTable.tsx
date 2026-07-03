@@ -11,7 +11,6 @@ interface Column<T> {
     render?: (row: T, index: number) => React.ReactNode;
 }
 
-
 interface DataTableProps<T> {
     data: T[];
     columns: Column<T>[];
@@ -26,13 +25,13 @@ interface DataTableProps<T> {
 }
 
 const alignClass: Record<Align, string> = {
-    left: "text-left",
-    center: "text-center",
-    right: "text-right",
+    left: "text-left justify-start",
+    center: "text-center justify-center",
+    right: "text-right justify-end",
 };
 
 const SkeletonCell = () => (
-    <div className="h-4 bg-gray-200 rounded animate-pulse" />
+    <div className="h-4 bg-slate-200/70 rounded-full animate-pulse w-3/4" />
 );
 
 export default function DataTable<T>({
@@ -58,134 +57,30 @@ export default function DataTable<T>({
         : data.length;
 
     return (
-        // <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
-        //     <div className="overflow-x-auto">
-        //         <table className="w-full text-left border-collapse">
-        //             {/* HEADER */}
-        //             <thead className="bg-gray-50">
-        //                 <tr className="bg-slate-50/80 border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase tracking-wider select-none">
-        //                     {columns.map((col) => (
-        //                         <th
-        //                             key={String(col.key)}
-        //                             className={`px-6 py-3 text-xs font-medium uppercase tracking-wider text-gray-500 ${alignClass[col.align || "left"]
-        //                                 }`}
-        //                             style={{ width: col.width }}
-        //                         >
-        //                             {col.label}
-        //                         </th>
-        //                     ))}
-        //                 </tr>
-        //             </thead>
-
-        //             {/* BODY */}
-        //             <tbody className="divide-y divide-gray-200 bg-white">
-        //                 {error ? (
-        //                     <tr>
-        //                         <td
-        //                             colSpan={columns.length}
-        //                             className="text-center p-6 text-red-500 font-medium"
-        //                         >
-        //                             {error}
-        //                         </td>
-        //                     </tr>
-        //                 ) : loading ? (
-        //                     [...Array(itemsPerPage)].map((_, i) => (
-        //                         <tr key={i}>
-        //                             {columns.map((_, j) => (
-        //                                 <td key={j} className="px-6 py-4">
-        //                                     <SkeletonCell />
-        //                                 </td>
-        //                             ))}
-        //                         </tr>
-        //                     ))
-        //                 ) : data.length === 0 ? (
-        //                     <tr>
-        //                         <td
-        //                             colSpan={columns.length}
-        //                             className="text-center p-6 text-gray-500"
-        //                         >
-        //                             {emptyMessage}
-        //                         </td>
-        //                     </tr>
-        //                 ) : (
-        //                     data.map((row, index) => (
-        //                         <tr
-        //                             key={rowKey ? rowKey(row, index) : index}
-        //                             className="hover:bg-gray-50 transition"
-        //                         >
-        //                             {columns.map((col) => (
-        //                                 <td
-        //                                     key={String(col.key)}
-        //                                     className={`px-6 py-4 text-sm text-gray-700 ${alignClass[col.align || "left"]
-        //                                         }`}
-        //                                     style={{ width: col.width }}
-        //                                 >
-        //                                     {col.render
-        //                                         ? col.render(row, index)
-        //                                         : (row as any)[col.key]}
-        //                                 </td>
-        //                             ))}
-        //                         </tr>
-        //                     ))
-        //                 )}
-        //             </tbody>
-        //         </table>
-        //     </div>
-
-        //     {/* PAGINATION */}
-        //     {isPaginated && (
-        //         <div className="flex justify-between items-center p-4 border-t border-gray-300 text-sm text-gray-600">
-        //             <div>
-        //                 Menampilkan {from} - {to} dari {total}
-        //             </div>
-
-        //             <div className="flex items-center space-x-2">
-        //                 <button
-        //                     onClick={() => onPageChange?.(Math.max(1, page - 1))}
-        //                     disabled={page === 1}
-        //                     className="px-3 py-1 border rounded-lg bg-white disabled:opacity-50"
-        //                 >
-        //                     <ChevronLeft className="w-4 h-4" />
-        //                 </button>
-
-        //                 <span>
-        //                     {page} / {totalPages}
-        //                 </span>
-
-        //                 <button
-        //                     onClick={() =>
-        //                         onPageChange?.(Math.min(totalPages, page + 1))
-        //                     }
-        //                     disabled={page === totalPages}
-        //                     className="px-3 py-1 border rounded-lg bg-white disabled:opacity-50"
-        //                 >
-        //                     <ChevronRight className="w-4 h-4" />
-        //                 </button>
-        //             </div>
-        //         </div>
-        //     )}
-        // </div>
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm shadow-emerald-50 overflow-hidden">
+        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm shadow-emerald-500/5 overflow-hidden animate-in fade-in duration-300">
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-slate-50/80 border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase tracking-wider select-none">
+                        <tr className="bg-slate-50/80 border-b border-slate-100 text-xs font-bold text-slate-400 uppercase tracking-wider select-none">
                             {columns.map((col) => (
-                                <th key={String(col.key)} className="px-6 py-4 cursor-pointer hover:text-slate-800 transition-colors">
-                                    <div className="flex items-center gap-1">
+                                <th
+                                    key={String(col.key)}
+                                    className={`px-6 py-5 cursor-default transition-colors ${col.align ? alignClass[col.align].split(' ')[0] : 'text-left'}`}
+                                    style={{ width: col.width }}
+                                >
+                                    <div className={`flex items-center gap-1 ${col.align ? alignClass[col.align].split(' ')[1] : 'justify-start'}`}>
                                         {col.label}
                                     </div>
                                 </th>
-
                             ))}
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 text-sm">
+                    <tbody className="divide-y divide-slate-100 text-sm font-medium text-slate-600">
                         {error ? (
                             <tr>
                                 <td
                                     colSpan={columns.length}
-                                    className="px-6 py-12 text-center text-slate-400 font-medium"
+                                    className="px-6 py-16 text-center text-rose-500 bg-rose-50/30"
                                 >
                                     {error}
                                 </td>
@@ -194,7 +89,7 @@ export default function DataTable<T>({
                             [...Array(itemsPerPage)].map((_, i) => (
                                 <tr key={i}>
                                     {columns.map((_, j) => (
-                                        <td key={j} className="px-6 py-4">
+                                        <td key={j} className="px-6 py-5">
                                             <SkeletonCell />
                                         </td>
                                     ))}
@@ -204,7 +99,7 @@ export default function DataTable<T>({
                             <tr>
                                 <td
                                     colSpan={columns?.length}
-                                    className="px-6 py-12 text-center text-slate-400 font-medium"
+                                    className="px-6 py-16 text-center text-slate-400"
                                 >
                                     {emptyMessage}
                                 </td>
@@ -213,12 +108,15 @@ export default function DataTable<T>({
                             data.map((row, index) => (
                                 <tr
                                     key={rowKey ? rowKey(row, index) : index}
-                                    className="hover:bg-gray-50 transition"
+                                    className="hover:bg-emerald-50/30 transition-colors duration-200 group"
                                 >
                                     {columns.map((col, id) => (
-                                        <td key={id} className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="text-slate-800 hover:text-emerald-600 cursor-pointer">
+                                        <td
+                                            key={id}
+                                            className={`px-6 py-4 ${col.align ? alignClass[col.align].split(' ')[0] : 'text-left'}`}
+                                        >
+                                            <div className={`flex items-center gap-3 ${col.align ? alignClass[col.align].split(' ')[1] : 'justify-start'}`}>
+                                                <div className="text-slate-700 group-hover:text-emerald-700 transition-colors">
                                                     {col.render
                                                         ? col.render(row, index)
                                                         : (row as any)[col.key]}
@@ -232,53 +130,50 @@ export default function DataTable<T>({
                     </tbody>
                 </table>
             </div>
-            <div className="bg-slate-50 px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
 
+            {/* Footer / Pagination */}
+            <div className="bg-white px-6 py-5 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
                 {/* Total Indicator */}
-                <span className="text-xs text-slate-500">
-                    Showing <span className="font-semibold text-slate-700">{from}</span> to{' '}
-                    <span className="font-semibold text-slate-700">
-                        {to}
-                    </span>{' '}
-                    of <span className="font-semibold text-slate-700">{total}</span> entries
+                <span className="text-sm font-medium text-slate-400">
+                    Menampilkan <span className="font-bold text-slate-700">{from}</span> hingga{' '}
+                    <span className="font-bold text-slate-700">{to}</span>{' '}
+                    dari <span className="font-bold text-slate-700">{total}</span> data
                 </span>
 
                 {/* Pagination Controls */}
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
                     <button
                         disabled={page === 1}
                         onClick={() => onPageChange?.(Math.max(1, page - 1))}
-                        className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-50 disabled:hover:bg-white transition"
+                        className="p-2 rounded-xl border border-slate-200 bg-white hover:border-emerald-300 hover:bg-emerald-50 text-slate-600 disabled:opacity-50 disabled:hover:bg-white disabled:hover:border-slate-200 transition-all active:scale-95"
                     >
                         <ChevronLeft className="w-4 h-4" />
                     </button>
 
-                    {Array.from({ length: totalPages }).map((_, i) => (
-                        <button
-                            key={i}
-                            onClick={() =>
-                                onPageChange?.(Math.min(totalPages, i + 1))
-                            }
-                            className={`w-7.5 h-7.5 rounded-lg text-xs font-bold transition flex items-center justify-center ${page === i + 1
-                                ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/10'
-                                : 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-600'
-                                }`}
-                        >
-                            {i + 1}
-                        </button>
-                    ))}
+                    <div className="flex items-center gap-1">
+                        {Array.from({ length: totalPages }).map((_, i) => (
+                            <button
+                                key={i}
+                                onClick={() => onPageChange?.(Math.min(totalPages, i + 1))}
+                                className={`w-9 h-9 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center ${page === i + 1
+                                    ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/25 border border-emerald-500'
+                                    : 'border border-transparent bg-transparent hover:bg-slate-100 text-slate-600'
+                                    }`}
+                            >
+                                {i + 1}
+                            </button>
+                        ))}
+                    </div>
 
                     <button
                         disabled={page === totalPages || totalPages === 0}
                         onClick={() => onPageChange?.(Math.min(totalPages, page + 1))}
-                        className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-50 disabled:hover:bg-white transition"
+                        className="p-2 rounded-xl border border-slate-200 bg-white hover:border-emerald-300 hover:bg-emerald-50 text-slate-600 disabled:opacity-50 disabled:hover:bg-white disabled:hover:border-slate-200 transition-all active:scale-95"
                     >
                         <ChevronRight className="w-4 h-4" />
                     </button>
                 </div>
-
             </div>
         </div>
-
     );
 }
