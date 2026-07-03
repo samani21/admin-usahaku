@@ -9,10 +9,11 @@ import { Get } from '@/utils/Get';
 import { useCorrectPath } from '@/utils/useCorrectPath';
 import Cookies from 'js-cookie'
 type Props = {
-    children: React.ReactNode
+    children: React.ReactNode;
+    page?: string;
 }
 
-const MainLayout = ({ children }: Props) => {
+const MainLayout = ({ children, page }: Props) => {
     const token = getToken();
     const router = useRouter();
     const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
@@ -153,7 +154,7 @@ const MainLayout = ({ children }: Props) => {
                                     ))}
                                 </ol>
                             </nav>
-                            <h1 className="text-2xl font-black tracking-tight text-slate-900">{breadcrumb[breadcrumb.length - 1]}</h1>
+                            <h1 className="text-2xl font-black tracking-tight text-slate-900">{page}</h1>
                             {children}
                         </div>
                     </div>

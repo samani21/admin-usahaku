@@ -96,7 +96,7 @@ const useDashboardData = () => {
                 setBusiness(res.data.business || null);
             }
         } catch (e: any) {
-            console.error("Gagal memuat data dashboard", e);
+            // console.error("Gagal memuat data dashboard", e);
         } finally {
             setIsLoading(false);
         }

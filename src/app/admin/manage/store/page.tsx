@@ -6,7 +6,7 @@ type Props = {}
 
 function page({ }: Props) {
     return (
-        <MainLayout>
+        <MainLayout >
             <BusinessProfile />
         </MainLayout>
     )

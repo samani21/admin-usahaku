@@ -24,7 +24,13 @@ const SidebarComponent = ({ isSidebarOpen, setIsSidebarOpen, setLoading, user, b
     useEffect(() => {
         if (pathname) {
             const parts = pathname.split("/");
-            const basePath = parts.slice(0, 3).join("/");
+            let basePath = '';
+            if (getCorrectPath(pathname).split("/")[1] === 'admin') {
+                basePath = parts.slice(0, 3).join("/");
+            } else {
+                basePath = parts.slice(0, 2).join("/");
+            }
+
             const childbasePath = parts.slice(0, 4).join("/");
             setPathNameParent(basePath);
             setPathNameChild(childbasePath);
@@ -76,7 +82,6 @@ const SidebarComponent = ({ isSidebarOpen, setIsSidebarOpen, setLoading, user, b
                         {
                             menuSidebar?.map((ms, i) => {
                                 const isOpen = pathNameParent === getCorrectPath(`${ms?.href}`);
-
                                 const isLocked = ms?.label?.toLowerCase() === 'transaksi' && (
                                     business?.verified_status == 0 ||
                                     business?.subscription_status === 'expired' ||
