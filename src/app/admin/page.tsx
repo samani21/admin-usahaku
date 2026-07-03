@@ -252,7 +252,7 @@ const Dashboard = ({ setIsSubscriptionModalOpen }: { setIsSubscriptionModalOpen:
 
     return (
         <MainLayout>
-            <main className="p-4 sm:p-8 animate-fade-in relative z-100">
+            <main className={isDateModalOpen ? "p-4 sm:p-8 animate-fade-in relative z-100" : "p-4 sm:p-8 animate-fade-in relative z-10"}>
                 {/* Header Section */}
                 <div className="mb-8 flex flex-col xl:flex-row gap-6 items-start xl:items-center justify-between">
                     <div>

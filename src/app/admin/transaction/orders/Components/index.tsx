@@ -84,7 +84,7 @@ const OrdersComponent = (props: Props) => {
                 setOutlets(res?.data?.outlets || []);
             }
         } catch (e: any) {
-            console.error("Gagal memuat data pesanan", e);
+            // console.error("Gagal memuat data pesanan", e);
         } finally {
             setLoading(false);
         }

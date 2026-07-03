@@ -8,7 +8,7 @@ export const getUserInfo = () => {
         }
         return null;
     } catch (e) {
-        console.error("Error parsing user:", e);
+        // console.error("Error parsing user:", e);
         return null;
     }
 };
@@ -20,7 +20,7 @@ export const getCustomerInfo = () => {
         }
         return null;
     } catch (e) {
-        console.error("Error parsing user:", e);
+        // console.error("Error parsing user:", e);
         return null;
     }
 };
@@ -36,7 +36,7 @@ export const getToken = () => {
         }
         return null;
     } catch (e) {
-        console.error("Error getting token from cookies:", e);
+        // console.error("Error getting token from cookies:", e);
         return null;
     }
 };

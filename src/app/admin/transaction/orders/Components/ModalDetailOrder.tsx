@@ -27,7 +27,7 @@ const ModalDetailOrder = ({ onClose, token }: Props) => {
                 setData(res?.data)
             }
         } catch (e: any) {
-            console.error(e);
+            // console.error(e);
         } finally {
             setLoading(false)
         }

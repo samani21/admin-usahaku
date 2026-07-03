@@ -83,7 +83,7 @@ export default function PreviewView({ }: Props) {
                     if (data.summary?.color) updateCssVariables('summary', data.summary.color);
                 }
             } catch (error) {
-                console.error("Failed to fetch catalog:", error);
+                // console.error("Failed to fetch catalog:", error);
             } finally {
                 setLoading(false);
             }

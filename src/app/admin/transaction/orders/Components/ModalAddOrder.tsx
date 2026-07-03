@@ -97,7 +97,7 @@ const ModalAddOrder = ({ onClose, addToast, outlets, handleSubmit }: Props) => {
             const res = await Get<{ success: boolean, data: ProductsType[] }>(`orders/list-products?outlet=${newOrder.outletId}`);
             if (res?.success) setProducts(res?.data);
         } catch (e: any) {
-            console.error(e);
+            // console.error(e);
         } finally {
             setLoading(false);
         }

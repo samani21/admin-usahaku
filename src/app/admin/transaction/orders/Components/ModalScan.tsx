@@ -74,7 +74,7 @@ const ModalScan = ({ onClose, handleUpdateStatus }: Props) => {
                 if (html5Qrcode.isScanning) {
                     html5Qrcode.stop()
                         .then(() => setScannedQr(decodedText))
-                        .catch((err) => console.error("Gagal mematikan kamera:", err));
+                        .catch((err) => // console.error("Gagal mematikan kamera:", err));
                 } else {
                     setScannedQr(decodedText);
                 }
@@ -88,7 +88,7 @@ const ModalScan = ({ onClose, handleUpdateStatus }: Props) => {
             )
                 .then(() => setIsCameraReady(true))
                 .catch((err) => {
-                    console.error(err);
+                    // console.error(err);
                     setScanError("Tidak dapat mengakses kamera. Pastikan izin kamera diberikan.");
                 });
         }, 100);
@@ -98,7 +98,7 @@ const ModalScan = ({ onClose, handleUpdateStatus }: Props) => {
         startScanner();
         return () => {
             if (html5QrcodeRef.current && html5QrcodeRef.current.isScanning) {
-                html5QrcodeRef.current.stop().catch(console.error);
+                html5QrcodeRef.current.stop().catch(// console.error);
             }
         };
     }, []);

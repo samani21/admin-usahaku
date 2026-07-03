@@ -45,7 +45,7 @@ const ModalSubscription = ({ onClose }: Props) => {
                 }
             }
         } catch (e: any) {
-            console.error("Error fetching subscription:", e);
+            // console.error("Error fetching subscription:", e);
         } finally {
             setIsFetching(false);
         }
@@ -64,7 +64,7 @@ const ModalSubscription = ({ onClose }: Props) => {
                 setVaData(response.data);
             }
         } catch (error: any) {
-            console.error(error);
+            // console.error(error);
             setErrorMsg(error.response?.data?.message || 'Gagal terhubung ke server pembayaran.');
         } finally {
             setIsLoading(false);
@@ -87,7 +87,7 @@ const ModalSubscription = ({ onClose }: Props) => {
                 }
             }
         } catch (e: any) {
-            console.error("Error checking payment:", e);
+            // console.error("Error checking payment:", e);
             setErrorMsg('Gagal mengecek status pembayaran. Silakan coba lagi.');
         } finally {
             setIsChecking(false);

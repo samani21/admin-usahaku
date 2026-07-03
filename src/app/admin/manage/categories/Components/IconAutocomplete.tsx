@@ -39,7 +39,7 @@ export default function IconAutocomplete({
                 const data = await res.json()
                 setFiltered(data.icons || [])
             } catch (err) {
-                console.error(err)
+                // console.error(err)
             }
 
             setLoading(false)

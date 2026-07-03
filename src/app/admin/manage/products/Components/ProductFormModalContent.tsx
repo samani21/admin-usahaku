@@ -141,7 +141,7 @@ const ProductFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
                 setImageToCrop(null);
             }
         } catch (e) {
-            console.error(e);
+            // console.error(e);
         }
     };
     if (!isOpen) return null;
@@ -292,7 +292,7 @@ const ProductFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
         // setErrors(validationErrors);
 
         // if (!isValid) {
-        //     console.error("Validasi gagal. Periksa pesan kesalahan pada formulir.");
+        //     // console.error("Validasi gagal. Periksa pesan kesalahan pada formulir.");
         //     return;
         // }
 

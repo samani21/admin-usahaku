@@ -1,122 +1,137 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
 import { Get } from "@/utils/Get";
 import { BanksType } from "@/types/Admin/Banks";
 import ButtonSubmit from "@/Components/CRUD/FormInput/ButtonSubmit";
 import FormInput from "@/Components/CRUD/FormInput/FormInput";
 
+// --- TYPES ---
 type Props = {
     handleFormSubmit: (form: FormData, id: number | null) => void;
     data: BanksType | null;
-    onCancel?: () => void; // Tambahkan props untuk aksi batal
-}
+    onCancel?: () => void;
+};
 
 interface OptionsType {
     label: string;
     value: number;
 }
-const CreateOrUpdateBanks = ({ handleFormSubmit, data, onCancel }: Props) => {
-    const [form, setForm] = useState<any>({
-        account_name: "",
-        account_number: "",
-        master_bank_id: "",
-    });
 
-    const [error, setError] = useState<any>({
-        account_name: null,
-        account_number: null,
-        master_bank_id: null,
-    });
-    const [loading, setLoading] = useState(false);
-    const [banks, setBanks] = useState<OptionsType[]>()
+interface FormState {
+    account_name: string;
+    account_number: string;
+    master_bank_id: string | number;
+}
+
+interface FormErrors {
+    account_name?: string | null;
+    account_number?: string | null;
+    master_bank_id?: string | null;
+}
+
+// ==========================================
+// CUSTOM HOOK: Mengambil Data Master Bank
+// ==========================================
+const useMasterBanks = () => {
+    const [banks, setBanks] = useState<OptionsType[]>([]);
 
     useEffect(() => {
-        setForm({
-            account_name: '',
-            account_number: '',
-            master_bank_id: '',
-        })
-        if (data) {
-            setForm({
-                account_name: data?.account_name,
-                account_number: data?.account_number,
-                master_bank_id: data?.master_bank_id,
-            });
-        }
-        getBanks()
-    }, [])
+        const fetchBanks = async () => {
+            try {
+                const res = await Get<{ success: boolean; data: any[] }>('master-banks?limit=10000');
+                if (res?.success && res.data) {
+                    const formattedBanks = res.data.map((item) => ({
+                        label: item.name,
+                        value: item.id,
+                    }));
+                    setBanks(formattedBanks);
+                }
+            } catch (error) {
+                console.error("Gagal mengambil data bank:", error);
+            }
+        };
+
+        fetchBanks();
+    }, []);
+
+    return { banks };
+};
+
+// ==========================================
+// MAIN COMPONENT
+// ==========================================
+const CreateOrUpdateBanks = ({ handleFormSubmit, data, onCancel }: Props) => {
+    // Inisialisasi State langsung dari props (jika mode Update)
+    const [form, setForm] = useState<FormState>({
+        account_name: data?.account_name || "",
+        account_number: data?.account_number || "",
+        master_bank_id: data?.master_bank_id || "",
+    });
+
+    const [error, setError] = useState<FormErrors>({});
+    const [loading, setLoading] = useState(false);
+
+    // Ambil data options dari Custom Hook
+    const { banks } = useMasterBanks();
+
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
     ) => {
         const { name, value, type } = e.target;
-        const files = (e.target as HTMLInputElement).files;
         const checked = (e.target as HTMLInputElement).checked;
+        const files = (e.target as HTMLInputElement).files;
 
-        setForm((prev: any) => ({
+        setForm((prev) => ({
             ...prev,
-            [name]: type === "checkbox" || type === "checkbox" ? checked : files ? files[0] : value,
+            [name]: type === "checkbox" ? checked : type === "file" && files ? files[0] : value,
         }));
-    };
 
-    const getBanks = async () => {
-        try {
-            const res = await Get<{ success: Boolean, data: any }>('master-banks?limit=10000');
-            if (res?.success) {
-                console.log('res', res)
-                const banks = res?.data?.map((item: any) => ({
-                    label: item.name,   // sesuaikan dengan field API
-                    value: item.id,
-                })) ?? [];
-
-                setBanks(banks);
-            }
-        } catch (e) {
-
+        // Hapus error spesifik saat user mulai mengetik ulang
+        if (error[name as keyof FormErrors]) {
+            setError((prev) => ({ ...prev, [name]: null }));
         }
-    }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Validasi Sederhana
-        if (form?.account_name == '') {
-            setError({
-                account_name: "Nama harus diisi"
-            })
-            setLoading(false);
-            return;
-        }
-        if (form?.account_number == '') {
-            setError({
-                account_number: "Nomor Akun harus diisi"
-            })
-            setLoading(false);
-            return;
-        }
-        if (form?.master_bank_id == '') {
-            setError({
-                master_bank_id: "Bank Harus dipilih"
-            })
-            setLoading(false);
-            return;
-        }
-        setLoading(true); // Mulai loading (mencegah klik ganda)
+        // 1. Validasi Input
+        const newErrors: FormErrors = {};
+        let hasError = false;
 
+        if (!form.account_name) {
+            newErrors.account_name = "Nama Akun harus diisi";
+            hasError = true;
+        }
+        if (!form.account_number) {
+            newErrors.account_number = "Nomor Akun harus diisi";
+            hasError = true;
+        }
+        if (!form.master_bank_id) {
+            newErrors.master_bank_id = "Bank harus dipilih";
+            hasError = true;
+        }
+
+        if (hasError) {
+            setError(newErrors);
+            return;
+        }
+
+        // 2. Proses Submit
+        setLoading(true);
         try {
             const formData = new FormData();
-            // Append semua data yang diperlukan ke FormData
-            Object.keys(form).forEach((key) => {
-                if (form[key] !== null && form[key] !== undefined) {
-                    formData.append(key, form[key]);
+            Object.entries(form).forEach(([key, val]) => {
+                if (val !== null && val !== undefined && val !== "") {
+                    formData.append(key, String(val));
                 }
             });
 
-            // Jalankan fungsi submit dari props
             await handleFormSubmit(formData, data?.id ?? null);
         } catch (err) {
-            console.error(err);
+            console.error("Terjadi kesalahan saat menyimpan data bank:", err);
         } finally {
-            // Loading dihentikan setelah proses selesai (baik sukses/gagal)
             setLoading(false);
         }
     };
@@ -129,24 +144,20 @@ const CreateOrUpdateBanks = ({ handleFormSubmit, data, onCancel }: Props) => {
                 name="account_name"
                 value={form.account_name}
                 onChange={handleChange}
-                placeholder="Contoh: Budi"
-                error={error?.account_name}
+                placeholder="Contoh: Budi Santoso"
+                error={error.account_name ?? ''}
             />
 
-
-            {/* NUMBER */}
             <FormInput
                 type="number"
-                label="Nomor Akun"
+                label="Nomor Rekening"
                 name="account_number"
                 value={form.account_number}
                 onChange={handleChange}
-                placeholder="Type number"
-                error={error?.account_number}
+                placeholder="Contoh: 1234567890"
+                error={error.account_number ?? ''}
             />
 
-
-            {/* SELECT */}
             <FormInput
                 type="select"
                 label="Bank"
@@ -154,7 +165,7 @@ const CreateOrUpdateBanks = ({ handleFormSubmit, data, onCancel }: Props) => {
                 value={form.master_bank_id}
                 onChange={handleChange}
                 options={banks}
-                error={error.master_bank_id}
+                error={error.master_bank_id ?? ''}
             />
 
             <ButtonSubmit onClose={onCancel} isSubmitting={loading} />

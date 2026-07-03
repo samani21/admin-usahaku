@@ -60,7 +60,7 @@ const StoryManagementViews = () => {
                 setMeta(res.meta);
             }
         } catch (error) {
-            console.error(error);
+            // console.error(error);
             setShowAlert({
                 type: 'error',
                 message: 'Gagal memuat data story',
@@ -130,7 +130,7 @@ const StoryManagementViews = () => {
             setPage(1);
             loadStories(1);
         } catch (error) {
-            console.error(error);
+            // console.error(error);
             setShowAlert({
                 type: 'error',
                 message: 'Gagal membuat story',
@@ -159,7 +159,7 @@ const StoryManagementViews = () => {
                 isOpen: true
             });
         } catch (error) {
-            console.error(error);
+            // console.error(error);
         }
     };
 
