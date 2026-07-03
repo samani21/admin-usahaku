@@ -6,7 +6,7 @@ type Props = {}
 
 function CategoriesPage({ }: Props) {
     return (
-        <MainLayout>
+        <MainLayout page='Kelola Kategori'>
             <CategoriesComponent />
         </MainLayout>
     )

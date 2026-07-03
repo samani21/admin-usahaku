@@ -1,255 +1,228 @@
 "use client"
+
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { CategoriesType } from '@/types/Admin/CategoriesType'
+import { Edit, Trash2Icon } from 'lucide-react'
+import { Icon } from '@iconify/react'
+
 import { Meta } from '@/types/Public'
 import { Get } from '@/utils/Get'
 import { Post } from '@/utils/Post'
 import { Delete } from '@/utils/Delete'
 import { Column } from '@/types/Admin/CRUD'
-import { Icon } from '@iconify/react'
-import { Edit, Edit2, Trash2Icon } from 'lucide-react'
 import { AlertType } from '@/types/Alert'
+import { CategoriesType } from '@/types/Admin/CategoriesType'
+
 import FilterComponent from '@/Components/CRUD/FilterComponent'
 import DataTable from '@/Components/CRUD/DataTable'
 import ModalDelete from '@/Components/CRUD/ModalDelete'
 import ModalCrud from '@/Components/CRUD/ModalCrud'
 import CreateOrUpdateCategorie from './CreateOrUpdateCategorie'
-import Loading from '@/Components/Loading'
 import Alert from '@/Components/Alert'
 
-type Props = {}
-
-const CategoriesComponent = (props: Props) => {
+const CategoriesComponent = () => {
+    // --- FILTER & PAGINATION STATE ---
     const [search, setSearch] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState('');
     const [dateRangeText, setDateRangeText] = useState("");
     const [page, setPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [loading, setLoading] = useState<boolean>(true)
+    const [meta, setMeta] = useState<Meta>({ last_page: 1, limit: 10, page: 1, total: 0 });
+
+    // --- DATA & UI STATE ---
+    const [categoriesList, setCategoriesList] = useState<CategoriesType[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>('');
-    const [meta, setMeta] = useState<Meta>({
-        last_page: 1,
-        limit: 10,
-        page: 1,
-        total: 0,
-    });
-    const [debouncedSearch, setDebouncedSearch] = useState('');
-    const [showAlert, setShowAlert] = useState<AlertType | null>(null)
+    const [showAlert, setShowAlert] = useState<AlertType | null>(null);
 
-    const [dataUpdate, setDataUpdate] = useState<CategoriesType | null>(null)
-    const [deleteData, setDeleteData] = useState<CategoriesType | null>(null)
-    const [categorie, setCategorie] = useState<CategoriesType[]>([]);
+    // --- MODAL STATE ---
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [dataUpdate, setDataUpdate] = useState<CategoriesType | null>(null);
+    const [deleteData, setDeleteData] = useState<CategoriesType | null>(null);
 
+    // ==========================================
+    // EFFECTS & HELPERS
+    // ==========================================
+
+    // 1. Auto-hide Alert dengan Cleanup Timer
     useEffect(() => {
-        setTimeout(() => {
-            setShowAlert({
-                isOpen: false,
-                message: '',
-                type: 'success'
-            });
-        }, 5000)
-    }, [showAlert])
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedSearch(search);
-        }, 800);
+        if (showAlert?.isOpen) {
+            const timer = setTimeout(() => {
+                setShowAlert(null);
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [showAlert]);
 
+    // 2. Debounce Search
+    useEffect(() => {
+        const handler = setTimeout(() => setDebouncedSearch(search), 800);
         return () => clearTimeout(handler);
-
     }, [search]);
 
+    // 3. Reset Halaman ke 1 jika filter berubah
+    useEffect(() => {
+        setPage(1);
+    }, [debouncedSearch, dateRangeText, itemsPerPage]);
+
+    // 4. Parsing Format Tanggal
     const parsedDate = useMemo(() => {
         if (!dateRangeText.includes(" - ")) return { start_date: "", end_date: "" };
 
+        const monthMap: Record<string, string> = {
+            Jan: "01", Feb: "02", Mar: "03", Apr: "04", Mei: "05", Jun: "06",
+            Jul: "07", Agt: "08", Agu: "08", Sep: "09", Okt: "10", Nov: "11", Des: "12",
+        };
+
+        const formatDate = (dateStr: string) => {
+            const [day, month, year] = dateStr.trim().split(" ");
+            return `${year}-${monthMap[month]}-${day.padStart(2, "0")}`;
+        };
+
         const [start, end] = dateRangeText.split(" - ");
-
-        return {
-            start_date: new Date(start).toISOString().slice(0, 10),
-            end_date: new Date(end).toISOString().slice(0, 10),
-        };
+        return { start_date: formatDate(start), end_date: formatDate(end) };
     }, [dateRangeText]);
-
-
+    // 5. Query String Builder
     const queryString = useMemo(() => {
-        let pages = 0
-        if (debouncedSearch?.trim() != '') {
-            pages = 1
-            setPage(1)
-        }
-        const params = {
-            page: pages > 0 ? pages : page,
-            limit: itemsPerPage,
-            search: debouncedSearch,
-            start_date: parsedDate.start_date || "",
-            end_date: parsedDate.end_date || "",
-        };
+        const params = new URLSearchParams();
+        params.append("page", page.toString());
+        params.append("limit", itemsPerPage.toString());
 
-        return (
-            "?" +
-            Object.entries(params)
-                .map(([key, value]) => `${key}=${encodeURIComponent(value ?? "")}`)
-                .join("&")
-        );
+        if (debouncedSearch.trim()) params.append("search", debouncedSearch);
+        if (parsedDate.start_date) params.append("start_date", parsedDate.start_date);
+        if (parsedDate.end_date) params.append("end_date", parsedDate.end_date);
+
+        return `?${params.toString()}`;
     }, [parsedDate, page, debouncedSearch, itemsPerPage]);
 
+    // ==========================================
+    // API ACTIONS
+    // ==========================================
     const fetchCategorie = useCallback(async () => {
+        setLoading(true);
+        setError('');
         try {
-            setLoading(true)
-            const res = await Get<{ success: boolean; data: CategoriesType[]; meta: Meta }>(
-                `/categorie${queryString}`
-            );
-
+            const res = await Get<{ success: boolean; data: CategoriesType[]; meta: Meta }>(`/categorie${queryString}`);
             if (res?.success) {
-                setCategorie(res.data);
+                setCategoriesList(res.data);
                 setMeta(res.meta);
-                setLoading(false)
             }
         } catch (err: any) {
-            setError(err?.message)
-            setLoading(false)
+            setError(err?.message || "Gagal mengambil data");
+        } finally {
+            setLoading(false);
         }
-        setLoading(false)
     }, [queryString]);
 
     useEffect(() => {
         fetchCategorie();
-    }, [fetchCategorie, page]);
-
-    // Komponen (handleFormSubmit) (Perbaikan: Kirim formData asli)
+    }, [fetchCategorie]);
 
     const handleFormSubmit = async (formData: FormData, id: number | null) => {
         setLoading(true);
         try {
-            if (id) {
-                const res = await Post(`/categorie/${id}`, formData);
-                if (res) {
-                    fetchCategorie()
-                    setDataUpdate(null)
-                    setIsModalOpen(false);
-                    setShowAlert({
-                        type: 'success',
-                        message: 'Berhasil update data',
-                        isOpen: true
-                    })
-                    setLoading(false)
-                }
-            } else {
-                const res = await Post('/categorie', formData);
-                if (res) {
-                    fetchCategorie()
-                    setIsModalOpen(false);
-                    setShowAlert({
-                        type: 'success',
-                        message: 'Berhasil simpan data',
-                        isOpen: true
-                    })
-                    setLoading(false)
-                }
+            const endpoint = id ? `/categorie/${id}` : '/categorie';
+            const res = await Post(endpoint, formData);
+
+            if (res) {
+                fetchCategorie();
+                handleCloseModal();
+                setShowAlert({ type: 'success', message: id ? 'Berhasil update data' : 'Berhasil simpan data', isOpen: true });
             }
         } catch (err: any) {
-            setShowAlert({
-                type: 'error',
-                message: 'Gagal proses data ' + err.message,
-                isOpen: true
-            })
-            setLoading(false)
+            setShowAlert({ type: 'error', message: 'Gagal proses data: ' + err.message, isOpen: true });
+        } finally {
+            setLoading(false);
         }
     };
+
     const onDelete = async (id: number | null) => {
         setLoading(true);
-        setIsModalOpen(false)
-        setDeleteData(null)
         try {
             const res = await Delete(`/categorie/${id}`);
             if (res) {
                 fetchCategorie();
-                setDeleteData(null)
-                setIsModalOpen(false);
-                setShowAlert({
-                    type: 'success',
-                    message: 'Berhasil hapus data',
-                    isOpen: true
-                })
-                setLoading(false)
+                handleCloseModal();
+                setShowAlert({ type: 'success', message: 'Berhasil hapus data', isOpen: true });
             }
         } catch (err: any) {
-            setShowAlert({
-                type: 'error',
-                message: 'Gagal proses data ' + err.message,
-                isOpen: true
-            })
-            setLoading(false)
+            setShowAlert({ type: 'error', message: 'Gagal proses data: ' + err.message, isOpen: true });
+        } finally {
+            setLoading(false);
         }
     };
 
+    // ==========================================
+    // UI HANDLERS
+    // ==========================================
     const handleResetFilter = () => {
         setSearch("");
         setDateRangeText("");
     };
 
-    const handleEdit = (row: CategoriesType) => {
-        setIsModalOpen(true)
-        setDataUpdate(row)
-    }
-    const handleDelete = (row: CategoriesType) => {
-        setIsModalOpen(true)
-        setDeleteData(row)
-    }
-    const columns: Column<CategoriesType>[] = useMemo(
-        () => [
-            {
-                key: "icon",
-                label: "Icon",
-                width: "200px",
-                render: (row) =>
-                    row?.icon ? (
-                        row.icon.startsWith("http") ? (
-                            <img
-                                src={row.icon}
-                                alt={row.name}
-                                className="w-24 h-24 object-cover rounded-md"
-                            />
-                        ) : (
-                            <Icon icon={row?.icon} color={row?.color} className={`mr-2  w-24 h-24`} />
-                        )
-                    ) : (
-                        "-"
-                    )
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setTimeout(() => {
+            setDataUpdate(null);
+            setDeleteData(null);
+        }, 300); // Tunggu animasi tutup modal selesai
+    };
 
-            },
-            {
-                key: "name",
-                label: "Nama Kategori",
-            },
-            {
-                key: "actions",
-                label: "Aksi",
-                align: "center",
-                render: (row) => (
-                    <div className="flex justify-center gap-2">
-                        <button
-                            onClick={() => handleEdit(row)}
-                            className="text-blue-600 hover:text-blue-800"
-                        >
-                            <Edit size={18} />
-                        </button>
-                        <button
-                            onClick={() => handleDelete(row)}
-                            className="text-red-600 hover:text-red-800"
-                        >
-                            <Trash2Icon size={18} />
-                        </button>
+    const handleEdit = useCallback((row: CategoriesType) => {
+        setDataUpdate(row);
+        setIsModalOpen(true);
+    }, []);
+
+    const handleDelete = useCallback((row: CategoriesType) => {
+        setDeleteData(row);
+        setIsModalOpen(true);
+    }, []);
+
+    // ==========================================
+    // TABLE COLUMNS CONFIG
+    // ==========================================
+    const columns: Column<CategoriesType>[] = useMemo(() => [
+        {
+            key: "icon",
+            label: "Icon",
+            width: "120px",
+            render: (row) => {
+                if (!row?.icon) return <span className="text-slate-400">-</span>;
+
+                if (row.icon.startsWith("http")) {
+                    return (
+                        <div className="w-14 h-14 bg-slate-50 border border-slate-100 rounded-xl overflow-hidden shadow-sm flex items-center justify-center p-1">
+                            <img src={row.icon} alt={row.name} className="w-full h-full object-contain" />
+                        </div>
+                    );
+                }
+
+                return (
+                    <div className="w-12 h-12 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center shadow-sm">
+                        <Icon icon={row.icon} color={row.color || "#64748b"} className="text-3xl" />
                     </div>
-                ),
-            },
-        ],
-        [handleEdit, handleDelete]
-    );
-
-
+                );
+            }
+        },
+        { key: "name", label: "Nama Kategori" },
+        {
+            key: "actions",
+            label: "Aksi",
+            align: "center",
+            render: (row) => (
+                <div className="flex justify-center gap-2">
+                    <button onClick={() => handleEdit(row)} className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors">
+                        <Edit size={18} />
+                    </button>
+                    <button onClick={() => handleDelete(row)} className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors">
+                        <Trash2Icon size={18} />
+                    </button>
+                </div>
+            ),
+        },
+    ], [handleEdit, handleDelete]);
 
     return (
-        <div className='relative'>
+        <div className='relative space-y-6'>
             <FilterComponent
                 search={search}
                 setSearch={setSearch}
@@ -264,7 +237,7 @@ const CategoriesComponent = (props: Props) => {
 
             <div className="mt-6">
                 <DataTable<CategoriesType>
-                    data={categorie}
+                    data={categoriesList}
                     columns={columns}
                     page={page}
                     itemsPerPage={itemsPerPage}
@@ -276,29 +249,38 @@ const CategoriesComponent = (props: Props) => {
                 />
             </div>
 
-            {
-                deleteData ?
-                    <ModalDelete
-                        isOpen={isModalOpen}
-                        onClose={() => {
-                            setIsModalOpen(false)
-                            setDeleteData(null)
-                        }}
-                        deleteData={deleteData}
-                        handleDelete={onDelete} /> :
-                    <ModalCrud isOpen={isModalOpen} title={(dataUpdate ? "Edit" : "Tambah") + ' Kategori'} onClose={() => {
-                        setIsModalOpen(false)
-                        setDataUpdate(null)
-                    }}>
-                        <CreateOrUpdateCategorie handleFormSubmit={handleFormSubmit} data={dataUpdate} loading={loading} setLoading={setLoading} onCancel={() => setIsModalOpen(false)} />
-                    </ModalCrud>
-            }
+            {/* MODALS */}
+            {deleteData ? (
+                <ModalDelete
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                    deleteData={deleteData}
+                    handleDelete={onDelete}
+                />
+            ) : (
+                <ModalCrud
+                    isOpen={isModalOpen}
+                    title={dataUpdate ? "Edit Kategori" : "Tambah Kategori"}
+                    onClose={handleCloseModal}
+                >
+                    <CreateOrUpdateCategorie
+                        handleFormSubmit={handleFormSubmit}
+                        data={dataUpdate}
+                        loading={loading}
+                        setLoading={setLoading}
+                        onCancel={handleCloseModal}
+                    />
+                </ModalCrud>
+            )}
 
-            {loading && <Loading />}
-            {
-                showAlert?.isOpen &&
-                <Alert type={showAlert?.type} message={showAlert?.message} onClose={() => setShowAlert(null)} />
-            }
+            {/* ALERT */}
+            {showAlert?.isOpen && (
+                <Alert
+                    type={showAlert.type}
+                    message={showAlert.message}
+                    onClose={() => setShowAlert(null)}
+                />
+            )}
         </div>
     )
 }
