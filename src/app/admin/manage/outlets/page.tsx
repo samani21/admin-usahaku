@@ -6,7 +6,7 @@ type Props = {}
 
 function OutletsPage({ }: Props) {
     return (
-        <MainLayout>
+        <MainLayout page='Kelola Outlet'>
             <OutletsComponent />
         </MainLayout>
     )

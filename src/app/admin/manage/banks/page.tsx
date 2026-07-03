@@ -6,7 +6,7 @@ type Props = {}
 
 const page = (props: Props) => {
     return (
-        <MainLayout>
+        <MainLayout page='Kelola Akun Bank'>
             <BanksComponent />
         </MainLayout>
     )
