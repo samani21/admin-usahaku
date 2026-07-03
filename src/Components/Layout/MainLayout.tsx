@@ -124,7 +124,7 @@ const MainLayout = ({ children, page }: Props) => {
                     user={user}
                     business={business}
                 />
-                <main className="relative h-screen flex-1 flex flex-col lg:pr-4">
+                <main className="relative h-screen flex-1 flex flex-col lg:pr-4 overflow-hidden">
                     <Header
                         setIsSidebarOpen={setIsSidebarOpen}
                         isSidebarOpen={isSidebarOpen}
@@ -154,7 +154,7 @@ const MainLayout = ({ children, page }: Props) => {
                                     ))}
                                 </ol>
                             </nav>
-                            <h1 className="text-2xl font-black tracking-tight text-slate-900">{page}</h1>
+                            <h1 className="text-2xl font-black tracking-tight text-slate-900 mb-2">{page}</h1>
                             {children}
                         </div>
                     </div>

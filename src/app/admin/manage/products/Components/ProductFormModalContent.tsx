@@ -1,17 +1,20 @@
 "use client"
+
+import React, { ChangeEvent, Dispatch, FormEvent, SetStateAction, useCallback, useEffect, useState } from 'react';
+import Cropper, { Area } from 'react-easy-crop';
+import { AlertTriangle, Check, ImageIcon, PlusCircle, Scissors, Trash2, ScanBarcode } from 'lucide-react';
+
+import { CategoriesType } from '@/types/Admin/CategoriesType';
+import { initialProductState, ProductForm, ProductsType, Variant } from '@/types/Admin/ProductsType';
+import { getCroppedImg } from '@/utils/cropImage';
+import { Get } from '@/utils/Get';
+
 import ButtonSubmit from '@/Components/CRUD/FormInput/ButtonSubmit';
 import FormInput from '@/Components/CRUD/FormInput/FormInput';
 import ImagePreview from '@/Components/CRUD/FormInput/ImagePreview';
 import ToggleSwitch from '@/Components/ui/ToggleSwitch';
-import { CategoriesType } from '@/types/Admin/CategoriesType';
-import { Errors, initialErrors, initialProductState, ProductForm, ProductsType, Variant, VariantErrors } from '@/types/Admin/ProductsType';
-import { getCroppedImg } from '@/utils/cropImage';
-import { Get } from '@/utils/Get';
-import { AlertTriangle, Check, ImageIcon, NotebookPen, Plus, PlusCircle, Save, Scissors, Trash2, XCircle } from 'lucide-react';
-import React, { ChangeEvent, Dispatch, FormEvent, SetStateAction, useCallback, useEffect, useState } from 'react'
-import Cropper from 'react-easy-crop';
-import { json } from 'stream/consumers';
 
+// --- TYPES ---
 type Props = {
     isOpen: boolean;
     onClose: () => void;
@@ -20,99 +23,151 @@ type Props = {
     loading: boolean;
     setLoading: Dispatch<SetStateAction<boolean>>;
 }
+
 interface OptionsType {
     label: string;
     value: number;
 }
+
+interface FormErrors {
+    name?: string;
+    price?: string;
+    is_shared_stock?: string;
+    image?: string;
+    qrcode?: string;
+    variants?: { name?: string; price?: string }[];
+}
+
+const useParentStock = [
+    { label: "Satu kesatuan stok (Stok Induk)", value: "1" },
+    { label: "Stok terpisah per varian", value: "0" },
+];
+
+// --- HELPER FORMAT UANG ---
+const formatCurrency = (val: string | number) => {
+    if (!val) return "";
+    const numericStr = String(val).replace(/[^0-9]/g, ""); // Hanya sisakan angka
+    return numericStr.replace(/\B(?=(\d{3})+(?!\d))/g, "."); // Tambahkan titik setiap 3 digit
+};
+
 const ProductFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loading }: Props) => {
+    // --- MAIN STATE ---
     const [productData, setProductData] = useState<ProductForm>(initialProductState);
-    const [errors, setErrors] = useState<Errors>(initialErrors);
+    const [error, setError] = useState<FormErrors>({});
+    const [categories, setCategories] = useState<OptionsType[]>([]);
     const [deleteVariants, setDeleteVariants] = useState<number[]>([]);
+
+    // --- CROPPER STATE ---
     const [imageToCrop, setImageToCrop] = useState<string | null>(null);
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
-    const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
     const [isCropping, setIsCropping] = useState(false);
     const [idVariant, setIdVariant] = useState<number | null>(null);
-    const [categories, setCategories] = useState<OptionsType[]>();
-    const [error, setError] = useState<any>({
-        name: '',
-        image: '',
-        price: '',
-        is_shared_stock: ''
-    })
-    const useParentStock = [
-        {
-            label: "Satu kesatuan stok (Stok Induk)",
-            value: "1"
-        },
-        {
-            label: "Stok terpisah per varian",
-            value: "0"
-        },
-    ]
+
+    // ==========================================
+    // EFFECTS & HELPERS
+    // ==========================================
     const resetForm = useCallback(() => {
-        // Membersihkan URL pratinjau utama
         if (productData.imagePreviewUrl) URL.revokeObjectURL(productData.imagePreviewUrl);
-        // Membersihkan URL pratinjau varian
         productData.variants.forEach(v => {
             if (v.imagePreviewUrl) URL.revokeObjectURL(v.imagePreviewUrl);
         });
 
         setProductData(initialProductState);
-        setErrors(initialErrors);
+        setError({});
         setImageToCrop(null);
         setIsCropping(false);
+        setDeleteVariants([]);
     }, [productData.imagePreviewUrl, productData.variants]);
 
-    // Efek untuk membersihkan URL saat modal ditutup
-    useEffect(() => {
-        getCategories()
-        if (!isOpen) {
-            resetForm();
+    const fetchCategories = useCallback(async () => {
+        try {
+            const res = await Get<{ success: boolean, data: any[] }>('categorie?limit=10000');
+            if (res?.success) {
+                const formatted = res.data.map((item: any) => ({
+                    label: item.name,
+                    value: item.id,
+                }));
+                setCategories(formatted);
+            }
+        } catch (e) {
+            // console.error("Gagal mengambil kategori", e);
         }
-    }, [isOpen, resetForm]);
+    }, []);
 
     useEffect(() => {
-        if (dataUpdate) {
-            const mappedVariants: Variant[] = dataUpdate?.variants?.map((v) => ({
+        if (isOpen) {
+            fetchCategories();
+        } else {
+            resetForm();
+        }
+    }, [isOpen, fetchCategories, resetForm]);
+
+    useEffect(() => {
+        if (dataUpdate && isOpen) {
+            const mappedVariants: Variant[] = dataUpdate.variants?.map((v: any) => ({
                 name: v?.name || "",
                 price: v?.price ?? "",
                 id: v?.id ?? 0,
-                image: null, // saat edit, file belum di-upload ulang
+                image: null,
                 imagePreviewUrl: v?.image || null,
-                is_package: v?.qty_package > 1 ? true : false,
+                is_package: v?.qty_package > 1,
                 qty_package: v?.qty_package
             })) || [];
+
             setProductData({
-                name: dataUpdate?.name,
-                description: dataUpdate?.description,
-                price: dataUpdate?.price,
-                category: dataUpdate?.product_category_id ?? null,
+                name: dataUpdate.name,
+                description: dataUpdate.description,
+                price: dataUpdate.price,
+                category: dataUpdate.product_category_id ?? null,
                 image: null,
-                imagePreviewUrl: dataUpdate?.image,
-                has_variant: dataUpdate?.has_variant ? 1 : 0,
+                imagePreviewUrl: dataUpdate.image,
+                has_variant: dataUpdate.has_variant ? 1 : 0,
                 variants: mappedVariants,
-                is_qty: dataUpdate?.is_qty ?? false,
-                is_shared_stock: String(dataUpdate?.is_shared_stock)
-            })
+                is_qty: dataUpdate.is_qty ?? false,
+                is_shared_stock: String(dataUpdate.is_shared_stock),
+                qrcode: dataUpdate.qrcode ?? ''
+            });
         }
-    }, [dataUpdate])
-    const onCropComplete = useCallback((_area: any, areaPixels: any) => {
+    }, [dataUpdate, isOpen]);
+
+    // ==========================================
+    // HANDLERS: CROPPER
+    // ==========================================
+    const handleFileChange = (e: ChangeEvent<HTMLInputElement>, targetVariantId: number | null) => {
+        const file = e.target.files ? e.target.files[0] : null;
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                setImageToCrop(reader.result as string);
+                setIsCropping(true);
+                setIdVariant(targetVariantId);
+            };
+            reader.readAsDataURL(file);
+        }
+        e.target.value = '';
+    };
+
+    const onCropComplete = useCallback((_area: Area, areaPixels: Area) => {
         setCroppedAreaPixels(areaPixels);
     }, []);
 
-    const handleApplyCrop = async (idVariant: number | null) => {
+    const handleApplyCrop = async () => {
         try {
             if (imageToCrop && croppedAreaPixels) {
                 const croppedBlob = await getCroppedImg(imageToCrop, croppedAreaPixels);
                 const croppedFile = new File([croppedBlob], "product_image.jpg", { type: 'image/jpeg' });
                 const newPreviewUrl = URL.createObjectURL(croppedBlob);
+
                 if (idVariant) {
-                    console.log('idVariant', idVariant - 1, newPreviewUrl)
                     setProductData(prev => {
                         const newVariants = [...prev.variants];
                         const currentVariant = newVariants[idVariant - 1];
+
+                        if (currentVariant.imagePreviewUrl && !currentVariant.imagePreviewUrl.startsWith('http')) {
+                            URL.revokeObjectURL(currentVariant.imagePreviewUrl);
+                        }
 
                         newVariants[idVariant - 1] = {
                             ...currentVariant,
@@ -122,83 +177,60 @@ const ProductFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
 
                         return { ...prev, variants: newVariants };
                     });
-
-                    setIdVariant(null)
+                    setIdVariant(null);
                 } else {
                     setProductData(prev => {
-                        // Hapus URL pratinjau lama jika ada
-                        if (prev.imagePreviewUrl) URL.revokeObjectURL(prev.imagePreviewUrl);
-
-                        const newState: ProductForm = {
+                        if (prev.imagePreviewUrl && !prev.imagePreviewUrl.startsWith('http')) {
+                            URL.revokeObjectURL(prev.imagePreviewUrl);
+                        }
+                        return {
                             ...prev,
                             image: croppedFile,
                             imagePreviewUrl: newPreviewUrl,
                         };
-                        return newState;
                     });
                 }
                 setIsCropping(false);
                 setImageToCrop(null);
             }
         } catch (e) {
-            // console.error(e);
+            // console.error("Gagal memotong gambar:", e);
         }
     };
-    if (!isOpen) return null;
 
-    // Penanganan Input Dasar (text/number/textarea)
+    // ==========================================
+    // HANDLERS: INPUT
+    // ==========================================
     const handleProductChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
+        let newValue: string | number | boolean = value;
 
-        let newValue: string | number = value;
-        if (type === 'number') {
-            // Simpan sebagai string kosong jika input kosong
-            newValue = value === '' ? '' : value;
+        // Custom formatting untuk price agar hanya menyimpan angka murni
+        if (name === 'price') {
+            newValue = value.replace(/[^0-9]/g, "");
+        } else if (type === 'number') {
+            newValue = value === '' ? '' : Number(value);
+        } else if (type === 'checkbox') {
+            newValue = (e.target as HTMLInputElement).checked;
         }
 
-        setProductData(prev => ({
-            ...prev,
-            [name]: newValue,
-        }));
-        setError((prev: any) => ({ ...prev, [name]: '' }));
-        // HANYA hapus error untuk bidang ini
-        setErrors(prev => ({
-            ...prev,
-            [name as keyof Errors]: '',
-        }));
+        setProductData(prev => ({ ...prev, [name]: newValue }));
+
+        if (error[name as keyof FormErrors]) {
+            setError(prev => ({ ...prev, [name]: undefined }));
+        }
     };
 
-    // Penanganan Toggle Switch
     const handleVariantToggle = (isChecked: boolean) => {
         const newValue = isChecked ? 1 : 0;
         setProductData(prev => ({
             ...prev,
             has_variant: newValue,
-            // Jika diaktifkan, tambahkan varian pertama
             variants: newValue === 1 ? [{ name: '', price: '', image: null, imagePreviewUrl: null, is_package: false }] : []
         }));
-
-        // Reset semua error karena struktur form berubah
-        setErrors(initialErrors);
+        setError(prev => ({ ...prev, is_shared_stock: undefined }));
     };
 
-    // Penanganan Input File Utama
-    const handleFileChange = (e: ChangeEvent<HTMLInputElement>, idVariant: number | null) => {
-        const file = e.target.files ? e.target.files[0] : null;
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = () => {
-                setImageToCrop(reader.result as string);
-                setIsCropping(true); // Buka UI cropper
-                if (idVariant) {
-                    setIdVariant(idVariant)
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    // Penanganan Input Varian (termasuk file varian)
     const handleVariantChange = (index: number, e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
 
@@ -206,24 +238,13 @@ const ProductFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
             const newVariants = [...prev.variants];
             const currentVariant = newVariants[index];
 
-            let newPreviewUrl: string | null = currentVariant.imagePreviewUrl;
-
-            if (type === 'file') {
-                const file = (e.target as HTMLInputElement).files?.[0] || null;
-
-                // Hapus URL pratinjau lama jika ada
-                if (newPreviewUrl) URL.revokeObjectURL(newPreviewUrl);
-                newPreviewUrl = file ? URL.createObjectURL(file) : null;
-
-                newVariants[index] = {
-                    ...currentVariant,
-                    [name]: file,
-                    imagePreviewUrl: newPreviewUrl
-                } as Variant;
-
+            // Custom formatting untuk price varian
+            if (name === 'price') {
+                newVariants[index] = { ...currentVariant, [name]: value.replace(/[^0-9]/g, "") } as Variant;
             } else if (type === 'number') {
-                const numericValue = value === '' ? '' : value;
-                newVariants[index] = { ...currentVariant, [name]: numericValue } as Variant;
+                newVariants[index] = { ...currentVariant, [name]: value === '' ? '' : value } as Variant;
+            } else if (type === 'checkbox') {
+                newVariants[index] = { ...currentVariant, [name]: (e.target as HTMLInputElement).checked } as Variant;
             } else {
                 newVariants[index] = { ...currentVariant, [name]: value } as Variant;
             }
@@ -231,18 +252,17 @@ const ProductFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
             return { ...prev, variants: newVariants };
         });
 
-        // HANYA hapus error untuk bidang varian ini
-        setErrors(prev => {
-            const newVariantErrors = [...prev.variants];
-            if (!newVariantErrors[index]) {
-                newVariantErrors[index] = { name: '', price: '', stock: '' };
-            }
-            (newVariantErrors[index] as VariantErrors)[name as keyof VariantErrors] = '';
-            return { ...prev, variants: newVariantErrors };
-        });
+        if (error.variants && error.variants[index] && error.variants[index][name as keyof { name: string; price: string }]) {
+            setError(prev => {
+                const newVariantErrors = [...(prev.variants || [])];
+                if (newVariantErrors[index]) {
+                    newVariantErrors[index] = { ...newVariantErrors[index], [name]: undefined };
+                }
+                return { ...prev, variants: newVariantErrors };
+            });
+        }
     };
 
-    // Penambahan/Penghapusan Varian
     const addVariant = () => {
         setProductData(prev => ({
             ...prev,
@@ -253,156 +273,142 @@ const ProductFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
     const removeVariant = (index: number) => {
         setProductData(prev => {
             const variantToRemove = prev.variants[index];
-            // Hapus URL pratinjau untuk varian yang dihapus
-            if (variantToRemove.imagePreviewUrl) URL.revokeObjectURL(variantToRemove.imagePreviewUrl);
-
-            const newVariants = prev.variants.filter((_, i) => i !== index);
-            return { ...prev, variants: newVariants };
+            if (variantToRemove.imagePreviewUrl && !variantToRemove.imagePreviewUrl.startsWith('http')) {
+                URL.revokeObjectURL(variantToRemove.imagePreviewUrl);
+            }
+            return { ...prev, variants: prev.variants.filter((_, i) => i !== index) };
         });
 
-        // Perbarui array error varian
-        setErrors(prev => {
-            const newVariantErrors = prev.variants.filter((_, i) => i !== index);
-            return { ...prev, variants: newVariantErrors };
-        });
+        const idToRemove = productData.variants[index]?.id;
+        if (idToRemove) {
+            setDeleteVariants(prev => [...prev, idToRemove]);
+        }
     };
 
-    // Penanganan Submit
+    // ==========================================
+    // HANDLERS: SUBMIT
+    // ==========================================
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        if (productData?.name === '') {
-            setError((prev: any) => ({ ...prev, name: 'Isi nama produk' }));
-            return;
-        }
-        if (productData?.price === '') {
-            setError((prev: any) => ({ ...prev, price: 'Isi harga' }));
-            return;
-        }
-        if (productData?.is_shared_stock === '') {
-            setError((prev: any) => ({ ...prev, is_shared_stock: 'Pilih salah satu' }));
-            return;
-        }
-        if (!productData?.image && !productData?.imagePreviewUrl) {
-            setError((prev: any) => ({ ...prev, image: 'Upload gambar produk' }));
-            return;
-        }
-        // Validasi Penuh HANYA dijalankan saat submit
-        // const { isValid, errors: validationErrors } = validateForm(productData);
-        // setErrors(validationErrors);
+        // 1. Batch Validation
+        const newErrors: FormErrors = {};
+        let hasError = false;
 
-        // if (!isValid) {
-        //     // console.error("Validasi gagal. Periksa pesan kesalahan pada formulir.");
-        //     return;
-        // }
+        if (!productData.name) { newErrors.name = 'Isi nama produk'; hasError = true; }
+        if (productData.price === '' || productData.price === null) { newErrors.price = 'Isi harga utama'; hasError = true; }
+        if (!productData.image && !productData.imagePreviewUrl) { newErrors.image = 'Upload gambar produk'; hasError = true; }
 
-        // Lanjutkan jika valid: Konversi ke FormData
+        if (productData.has_variant === 1) {
+            if (productData.is_shared_stock === '' || productData.is_shared_stock === null) {
+                newErrors.is_shared_stock = 'Pilih sistem manajemen stok varian';
+                hasError = true;
+            }
+
+            const variantErrors: any[] = [];
+            productData.variants.forEach((v, i) => {
+                const vErr: any = {};
+                if (!v.name) { vErr.name = "Isi nama varian"; hasError = true; }
+                // Validasi harga varian dihilangkan, karena otomatis ambil harga utama
+                variantErrors[i] = Object.keys(vErr).length > 0 ? vErr : null;
+            });
+            if (variantErrors.some(err => err !== null)) {
+                newErrors.variants = variantErrors;
+            }
+        }
+
+        if (hasError) {
+            setError(newErrors);
+            return;
+        }
+
+        // 2. Prepare FormData
         const formData = new FormData();
-
-        // Tambahkan field produk dasar
         formData.append('name', productData.name);
         formData.append('description', productData.description ?? '');
-        if (productData.category) {
-            formData.append('product_category_id', String(productData.category));
-        }
+        if (productData.category) formData.append('product_category_id', String(productData.category));
         formData.append('price', (productData.price === '' ? 0 : productData.price).toString());
         formData.append('has_variant', productData.has_variant.toString());
         formData.append('is_qty', productData.is_qty ? "1" : "0");
-        formData.append('is_shared_stock', productData.is_shared_stock ? "1" : "0");
+        formData.append('qrcode', productData.qrcode ?? '');
 
-        // Tambahkan gambar utama (jika ada)
+        const finalSharedStock = productData.has_variant === 1 ? (productData.is_shared_stock || "0") : "0";
+        formData.append('is_shared_stock', finalSharedStock);
+
         if (productData.image) {
             formData.append('image', productData.image, productData.image.name);
         }
 
-        // Tambahkan data varian
         if (productData.has_variant === 1) {
-            for (let i = 0; i < productData?.variants?.length; i++) {
-                if (productData?.variants[i]?.id) {
-                    formData.append(`variants[${i}][id]`, String(productData?.variants[i]?.id));
-                }
-                formData.append(`variants[${i}][name]`, productData?.variants[i]?.name);
-                formData.append(`variants[${i}][price]`, String(productData?.variants[i]?.price));
-                formData.append(`variants[${i}][qty_package]`, String(productData?.variants[i]?.qty_package));
-                if (productData?.variants[i]?.image) {
-                    // formData.append(`image`, productData?.variants[i]?.image, productData?.variants[i]?.image.name);
-                    formData.append(`variants[${i}][image]`, productData?.variants[i]?.image as File);
-                }
-            }
-            for (let d = 0; d < deleteVariants?.length; d++) {
-                formData.append(`delete_variants[${d}]`, String(deleteVariants[d]));
+            productData.variants.forEach((variant, i) => {
+                if (variant.id) formData.append(`variants[${i}][id]`, String(variant.id));
+                formData.append(`variants[${i}][name]`, variant.name);
 
-            }
+                // Fallback: Jika harga varian kosong, gunakan harga produk utama
+                const finalVariantPrice = variant.price ? variant.price : (productData.price || 0);
+                formData.append(`variants[${i}][price]`, String(finalVariantPrice));
+
+                formData.append(`variants[${i}][qty_package]`, String(variant.qty_package || 1));
+                if (variant.image) {
+                    formData.append(`variants[${i}][image]`, variant.image as File);
+                }
+            });
+
+            deleteVariants.forEach((id, i) => {
+                formData.append(`delete_variants[${i}]`, String(id));
+            });
         }
 
         onSubmit(formData, dataUpdate?.id ?? null);
     };
 
-    const getCategories = async () => {
-        try {
-            const res = await Get<{ success: Boolean, data: any }>('categorie?limit=10000');
-            if (res?.success) {
-                console.log('res', res)
-                const categories = res?.data?.map((item: any) => ({
-                    label: item.name,   // sesuaikan dengan field API
-                    value: item.id,
-                })) ?? [];
-
-                setCategories(categories);
-            }
-        } catch (e) {
-
-        }
-    }
+    if (!isOpen) return null;
 
     const hasVariants = productData.has_variant === 1;
     const isSaveDisabled = hasVariants && productData.variants.length === 0;
 
-
     return (
         <>
             {isCropping && imageToCrop ? (
-                <div className="inset-0 z-[100] h-[80vh] bg-zinc-900 flex flex-col">
-                    <div className="p-4 bg-zinc-800 text-white flex justify-between items-center">
-                        <span className="flex items-center gap-2"><Scissors size={18} /> Potong Gambar</span>
+                <div className="inset-0 z-[100] h-[80vh] bg-zinc-900 flex flex-col rounded-2xl overflow-hidden shadow-2xl">
+                    <div className="p-4 bg-zinc-800 text-white flex justify-between items-center shadow-md">
+                        <span className="flex items-center gap-2 font-bold"><Scissors size={18} /> Potong Gambar</span>
                         <div className="flex gap-2">
-                            <button onClick={() => setIsCropping(false)} className="px-3 py-1 bg-gray-600 rounded">Batal</button>
-                            <button onClick={() => handleApplyCrop(idVariant)} className="px-3 py-1 bg-blue-600 rounded flex items-center gap-1">
+                            <button onClick={() => setIsCropping(false)} className="px-4 py-2 text-sm font-semibold bg-zinc-600 hover:bg-zinc-500 rounded-lg transition">Batal</button>
+                            <button onClick={handleApplyCrop} className="px-4 py-2 text-sm font-semibold bg-blue-600 hover:bg-blue-500 rounded-lg flex items-center gap-1 transition">
                                 <Check size={16} /> Gunakan
                             </button>
                         </div>
                     </div>
-                    <div className="relative flex-1 bg-zinc-900">
+                    <div className="relative flex-1 bg-black">
                         <Cropper
                             image={imageToCrop}
                             crop={crop}
                             zoom={zoom}
-                            aspect={1 / 1} // Atur aspek ratio (1:1 untuk kotak)
+                            aspect={1}
                             onCropChange={setCrop}
                             onCropComplete={onCropComplete}
                             onZoomChange={setZoom}
                         />
                     </div>
-                    <div className="p-6 bg-zinc-800">
+                    <div className="p-6 bg-zinc-800 z-10">
                         <input
                             type="range"
                             value={zoom}
                             min={1}
                             max={3}
                             step={0.1}
-                            aria-labelledby="Zoom"
                             onChange={(e) => setZoom(Number(e.target.value))}
-                            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                            className="w-full h-2 bg-zinc-600 rounded-lg appearance-none cursor-pointer accent-blue-500"
                         />
-                        <p className="text-center text-white text-xs mt-2">Geser untuk Zoom</p>
+                        <p className="text-center text-zinc-400 text-xs mt-3 font-medium">Geser untuk Zoom</p>
                     </div>
                 </div>
-            ) :
+            ) : (
                 <form onSubmit={handleSubmit} className="space-y-8">
-
-                    {/* Bagian Informasi Produk Dasar */}
+                    {/* INFO PRODUK DASAR */}
                     <section className="space-y-4">
-                        <div className="grid grid-cols-1 gap-6 rounded-xl">
+                        <div className="grid grid-cols-1 gap-6">
                             <FormInput
                                 label="Nama Produk"
                                 type="text"
@@ -412,14 +418,30 @@ const ProductFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
                                 error={error?.name}
                                 required
                             />
+
+                            {/* INPUT QR CODE */}
+                            <div className="relative">
+                                <FormInput
+                                    label="Barcode / QR Code Kemasan (Opsional)"
+                                    type="text"
+                                    name="qrcode"
+                                    value={productData.qrcode ?? ''}
+                                    onChange={handleProductChange}
+                                    error={error?.qrcode}
+                                    placeholder="Klik di sini, lalu scan barcode..."
+                                    information="Klik kolom ini lalu gunakan alat Barcode Scanner fisik, atau kamu bisa mengetik angkanya secara manual."
+                                />
+                                <ScanBarcode size={20} className="absolute right-4 top-10 text-slate-400 pointer-events-none" />
+                            </div>
+
+                            {/* HARGA UTAMA DENGAN FORMAT UANG */}
                             <FormInput
                                 label="Harga Utama (Rp)"
-                                type="price"
+                                type="text" // Diubah ke text agar bisa menampilkan titik
                                 name="price"
-                                value={productData.price ?? 0}
+                                value={formatCurrency(productData.price || '')}
                                 onChange={handleProductChange}
                                 error={error?.price}
-                                min={0}
                                 required
                             />
                             <FormInput
@@ -430,52 +452,37 @@ const ProductFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
                                 onChange={handleProductChange}
                                 options={categories}
                             />
-                            <FormInput
-                                type="radio"
-                                label="MANAJEMEN STOK"
-                                name="is_shared_stock"
-                                value={productData.is_shared_stock ?? null}
-                                onChange={handleProductChange}
-                                options={useParentStock}
-                                required
-                                error={error?.is_shared_stock}
-                            />
 
-                            {/* Input Gambar Utama + Pratinjau */}
-                            <div className="flex flex-col space-y-1">
-                                <label htmlFor="image" className="text-sm font-medium text-gray-800 flex items-center">
-                                    <ImageIcon size={16} className="mr-1 text-zinc-500" /> Gambar Utama (Opsional)
+                            {/* GAMBAR UTAMA */}
+                            <div className="flex flex-col space-y-2">
+                                <label htmlFor="image" className="text-sm font-bold text-slate-700 flex items-center">
+                                    <ImageIcon size={18} className="mr-1.5 text-slate-400" /> Gambar Utama
                                 </label>
                                 <input
                                     id="image"
                                     type="file"
                                     onChange={(e) => handleFileChange(e, null)}
-                                    className="w-full p-3 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-zinc-200 file:text-zinc-800 hover:file:bg-zinc-300 transition duration-150"
+                                    className="w-full p-2 border border-slate-300 rounded-xl file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-emerald-100 file:text-emerald-700 hover:file:bg-emerald-200 transition bg-slate-50 text-sm cursor-pointer"
                                     accept="image/*"
                                 />
                                 <ImagePreview imageUrl={productData.imagePreviewUrl} fileName={productData.image?.name} />
-                                {
-                                    error?.image && (
-                                        <p className="text-xs text-red-500 flex items-center mt-1">
-                                            <AlertTriangle size={14} className="mr-1" />
-                                            {error?.image}
-                                        </p>
-                                    )
-                                }
+                                {error?.image && (
+                                    <p className="text-xs text-rose-500 font-medium flex items-center mt-1">
+                                        <AlertTriangle size={14} className="mr-1" /> {error.image}
+                                    </p>
+                                )}
                             </div>
 
-                            <div className="col-span-1">
-                                <FormInput
-                                    label="Deskripsi"
-                                    type="wysiwyg"
-                                    name="description"
-                                    value={productData.description ?? ''}
-                                    onChange={handleProductChange}
-                                />
-                            </div>
+                            <FormInput
+                                label="Deskripsi"
+                                type="wysiwyg"
+                                name="description"
+                                value={productData.description ?? ''}
+                                onChange={handleProductChange}
+                            />
                             <FormInput
                                 type="switch"
-                                label="Aktifkan Fitur Quantity"
+                                label="Aktifkan Fitur Quantity (Hitung Stok)"
                                 name="is_qty"
                                 value={productData.is_qty}
                                 onChange={handleProductChange}
@@ -483,136 +490,145 @@ const ProductFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
                         </div>
                     </section>
 
-                    {/* Pemilih Varian - TOGGLE SWITCH */}
+                    {/* TOGGLE VARIAN & MANAJEMEN STOK */}
                     <section className="space-y-4">
-                        <h3 className="text-xl font-bold text-zinc-700 border-b-2 border-zinc-300 pb-2">
+                        <h3 className="text-xl font-bold text-slate-700 border-b-2 border-slate-200 pb-2">
                             Opsi Varian
                         </h3>
-                        <div className="p-4 bg-zinc-100 rounded-xl border border-zinc-300">
+                        <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
                             <ToggleSwitch
                                 label="Produk ini memiliki varian?"
                                 checked={productData.has_variant === 1}
                                 onChange={handleVariantToggle}
                             />
+
+                            {/* MANAJEMEN STOK PINDAH KE SINI: Hanya muncul jika ada varian */}
+                            {productData.has_variant === 1 && (
+                                <div className="pt-4 border-t border-slate-200">
+                                    <FormInput
+                                        type="radio"
+                                        label="Sistem Manajemen Stok Varian"
+                                        name="is_shared_stock"
+                                        value={productData.is_shared_stock ?? null}
+                                        onChange={handleProductChange}
+                                        options={useParentStock}
+                                        required
+                                        error={error?.is_shared_stock}
+                                        information="Pilih 'Stok Induk' jika semua varian memotong stok dari satu sumber yang sama (misal: jualan kopi, beda level gula tapi kopinya sama). Pilih 'Stok Terpisah' jika tiap varian punya sisa stok barang fisik yang berbeda-beda."
+                                    />
+                                </div>
+                            )}
                         </div>
                     </section>
 
-                    {/* Bagian Varian (Hanya Tampil Jika has_variant = 1) */}
+                    {/* LIST VARIAN */}
                     {productData.has_variant === 1 && (
                         <section className="space-y-4">
-                            <div className="md:flex justify-between items-center">
-                                <h3 className="text-xl font-bold text-zinc-700">Detail Varian Produk ({productData.variants.length})</h3>
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-lg font-bold text-slate-700">Detail Varian ({productData.variants.length})</h3>
                                 <button
                                     type="button"
                                     onClick={addVariant}
-                                    className="flex items-center space-x-2 px-4 py-2 bg-zinc-700 text-white font-semibold rounded-full shadow-md hover:bg-zinc-800 transition duration-200 disabled:opacity-50"
-                                    disabled={productData.variants.length >= 10} // Batasan varian
+                                    disabled={productData.variants.length >= 10}
+                                    className="flex items-center gap-1.5 px-4 py-2 bg-slate-800 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-slate-700 transition disabled:opacity-50"
                                 >
-                                    <PlusCircle size={18} />
-                                    <span>Tambah Varian</span>
+                                    <PlusCircle size={16} /> Tambah Varian
                                 </button>
                             </div>
 
-                            {productData.variants.map((variant, index) => (
-                                <div
-                                    key={index}
-                                    className="p-5 border border-zinc-400 rounded-xl bg-zinc-100 relative transition duration-200 ease-in-out hover:shadow-lg hover:shadow-zinc-200"
-                                >
-                                    <div className="flex justify-between items-center mb-4">
-                                        <h4 className="font-extrabold text-lg text-zinc-800">Varian: {variant.name || `Varian #${index + 1}`}</h4>
-
-                                        {/* Tombol Hapus Varian */}
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                removeVariant(index)
-                                                const id = variant?.id;
-                                                if (!id) return;
-                                                setDeleteVariants((prev) => [...prev, id]);
-
-                                            }}
-                                            className="p-2 text-red-500 bg-red-100 rounded-full hover:bg-red-200 hover:text-red-700 transition"
-                                            aria-label={`Hapus Varian ${index + 1}`}
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 gap-4">
-                                        {/* Input Nama Varian */}
-                                        <FormInput
-                                            label="Nama Varian"
-                                            type="text"
-                                            name="name"
-                                            value={variant.name}
-                                            onChange={(e) => handleVariantChange(index, e)}
-                                            error={errors.variants[index]?.name}
-                                            required
-                                        />
-                                        {/* Input Harga Varian */}
-                                        <FormInput
-                                            label="Harga (Rp)"
-                                            type="price"
-                                            name="price"
-                                            value={variant.price}
-                                            onChange={(e) => handleVariantChange(index, e)}
-                                            error={errors.variants[index]?.price}
-                                            min={0}
-                                            required
-                                        />
-                                        <FormInput
-                                            label="Package Variant"
-                                            type="switch"
-                                            name="is_package"
-                                            value={variant?.is_package}
-                                            onChange={(e) => handleVariantChange(index, e)}
-                                            information="Aktifkan opsi ini jika varian merupakan harga paket (bundle), misalnya paket isi 5 pcs dengan harga yang lebih murah dari satuan."
-                                        />
-                                        {
-                                            variant?.is_package &&
-                                            <FormInput
-                                                label="Kuantitas Paket"
-                                                type="number"
-                                                name="qty_package"
-                                                value={variant?.qty_package}
-                                                onChange={(e) => handleVariantChange(index, e)}
-                                            />
-                                        }
-                                        {/* Input Gambar Varian (File) + Pratinjau */}
-                                        <div className="flex flex-col space-y-1">
-                                            <label htmlFor={`variant-image-${index}`} className="text-sm font-medium text-gray-800 flex items-center">
-                                                <ImageIcon size={16} className="mr-1 text-zinc-500" /> Gambar Varian (Opsional)
-                                            </label>
-
-                                            <input
-                                                id={`variant-image-${index}`}
-                                                type="file"
-                                                name="image"
-                                                onChange={(e) => handleFileChange(e, index + 1)}
-                                                className="w-full p-3 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-zinc-200 file:text-zinc-800 hover:file:bg-zinc-300 transition duration-150"
-                                                accept="image/*"
-                                            />
-                                            <ImagePreview imageUrl={variant.imagePreviewUrl} fileName={variant.image?.name} />
+                            <div className="space-y-4">
+                                {productData.variants.map((variant, index) => (
+                                    <div
+                                        key={index}
+                                        className="p-5 border border-slate-200 rounded-2xl bg-white shadow-sm hover:shadow-md transition"
+                                    >
+                                        <div className="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+                                            <h4 className="font-extrabold text-slate-700">Varian #{index + 1}</h4>
+                                            <button
+                                                type="button"
+                                                onClick={() => removeVariant(index)}
+                                                className="p-2 text-rose-500 bg-rose-50 rounded-lg hover:bg-rose-100 hover:text-rose-700 transition"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
                                         </div>
 
-                                    </div>
-                                </div>
-                            ))}
+                                        <div className="grid grid-cols-1 gap-5">
+                                            <FormInput
+                                                label="Nama Varian"
+                                                type="text"
+                                                name="name"
+                                                value={variant.name}
+                                                onChange={(e) => handleVariantChange(index, e)}
+                                                error={error?.variants?.[index]?.name}
+                                                required
+                                            />
 
+                                            {/* HARGA VARIAN DENGAN FORMAT UANG & FALLBACK */}
+                                            <FormInput
+                                                label="Harga Varian (Rp)"
+                                                type="text" // Diubah ke text
+                                                name="price"
+                                                value={formatCurrency(variant.price || '')}
+                                                onChange={(e) => handleVariantChange(index, e)}
+                                                error={error?.variants?.[index]?.price}
+                                                placeholder={productData.price ? `Ikut harga utama: Rp ${formatCurrency(productData.price)}` : 'Harga sama dengan utama'}
+                                                information="Kosongkan kolom ini jika harga varian sama dengan harga utama produk."
+                                            />
+
+                                            <FormInput
+                                                label="Package Variant"
+                                                type="switch"
+                                                name="is_package"
+                                                value={variant?.is_package}
+                                                onChange={(e) => handleVariantChange(index, e)}
+                                                information="Aktifkan opsi ini jika varian merupakan harga paket (bundle), misalnya paket isi 5 pcs dengan harga yang lebih murah dari satuan."
+                                            />
+
+                                            {variant?.is_package && (
+                                                <FormInput
+                                                    label="Kuantitas Paket"
+                                                    type="number"
+                                                    name="qty_package"
+                                                    value={variant?.qty_package ?? ''}
+                                                    onChange={(e) => handleVariantChange(index, e)}
+                                                />
+                                            )}
+
+                                            {/* GAMBAR VARIAN */}
+                                            <div className="flex flex-col space-y-2 mt-2">
+                                                <label htmlFor={`variant-image-${index}`} className="text-sm font-bold text-slate-700 flex items-center">
+                                                    <ImageIcon size={16} className="mr-1.5 text-slate-400" /> Gambar Varian (Opsional)
+                                                </label>
+                                                <input
+                                                    id={`variant-image-${index}`}
+                                                    type="file"
+                                                    name="image"
+                                                    onChange={(e) => handleFileChange(e, index + 1)}
+                                                    className="w-full p-2 border border-slate-300 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 transition text-sm cursor-pointer"
+                                                    accept="image/*"
+                                                />
+                                                <ImagePreview imageUrl={variant.imagePreviewUrl} fileName={variant.image?.name} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </section>
                     )}
 
-                    {/* Footer Form / Tombol Submit */}
-                    <ButtonSubmit onClose={onClose} isSubmitting={loading} />
-
-                    {isSaveDisabled && (
-                        <p className="text-sm text-red-500 text-right mt-2 font-semibold">
-                            *Harap tambahkan minimal satu varian jika fitur varian diaktifkan.
-                        </p>
-                    )}
-                </form>}
+                    <div className="pt-4 border-t border-slate-200">
+                        <ButtonSubmit onClose={onClose} isSubmitting={loading} />
+                        {isSaveDisabled && (
+                            <p className="text-sm text-rose-500 text-right mt-3 font-semibold flex justify-end items-center gap-1">
+                                <AlertTriangle size={16} /> Harap tambahkan minimal satu varian jika fitur varian diaktifkan.
+                            </p>
+                        )}
+                    </div>
+                </form>
+            )}
         </>
     );
 };
 
-export default ProductFormModalContent
+export default ProductFormModalContent;

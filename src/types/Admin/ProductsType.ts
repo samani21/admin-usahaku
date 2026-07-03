@@ -23,7 +23,8 @@ export interface ProductForm {
     variants: Variant[];
     category?: number | null
     is_qty: boolean;
-    is_shared_stock: string
+    is_shared_stock: string;
+    qrcode: string;
 }
 
 /** Tipe untuk Objek Error Validasi */
@@ -51,6 +52,7 @@ export const initialProductState: ProductForm = {
     variants: [],
     is_qty: true,
     is_shared_stock: '',
+    qrcode: '',
 };
 
 export const initialErrors: Errors = {

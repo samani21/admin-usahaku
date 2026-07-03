@@ -1,379 +1,343 @@
-"use client"
+"use client";
+
+import React, { useState, useMemo, useEffect, useCallback } from "react";
+import { Edit, Trash2Icon } from "lucide-react";
+
 import { ProductsType } from "@/types/Admin/ProductsType";
 import { Meta } from "@/types/Public";
 import { Delete } from "@/utils/Delete";
 import { Get } from "@/utils/Get";
 import { Post } from "@/utils/Post";
-import React, { useState, useMemo, useEffect, useCallback, ReactElement } from "react";
-import ProductFormModalContent from "./ProductFormModalContent";
 import { AlertType } from "@/types/Alert";
 import { Column } from "@/types/Admin/CRUD";
-import { Edit, Trash2Icon } from "lucide-react";
+import { OutletsType } from "@/types/Admin/OutletType";
+
+import ProductFormModalContent from "./ProductFormModalContent";
 import ModalConfirmPromo from "./ModalConfirmPromo";
 import ConfirmPromo from "./ConfirmPromo";
-import { QRCodeCanvas } from "qrcode.react";
-import { OutletsType } from "@/types/Admin/OutletType";
-import GlassCard from "@/Components/Layout/GlassCard";
 import ModalDetailQRCode from "./ModalDetailQRCode";
+import GlassCard from "@/Components/Layout/GlassCard";
 import FormInput from "@/Components/CRUD/FormInput/FormInput";
 import FilterComponent from "@/Components/CRUD/FilterComponent";
 import DataTable from "@/Components/CRUD/DataTable";
 import ModalDelete from "@/Components/CRUD/ModalDelete";
 import ModalCrud from "@/Components/CRUD/ModalCrud";
-import Loading from "@/Components/Loading";
 import Alert from "@/Components/Alert";
 
-interface datatype {
+interface ProductResponse {
     data: ProductsType[];
     outlets: OutletsType[];
 }
+
 export default function ListProductPage() {
+    // --- FILTER & PAGINATION STATE ---
     const [search, setSearch] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState('');
     const [dateRangeText, setDateRangeText] = useState("");
     const [page, setPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [loading, setLoading] = useState<boolean>(true)
-    const [dataUpdate, setDataUpdate] = useState<ProductsType | null>(null)
-    const [deleteData, setDeleteData] = useState<ProductsType | null>(null)
+    const [selectOutlet, setSelectOutlet] = useState<string>('Semua');
+    const [meta, setMeta] = useState<Meta>({ last_page: 1, limit: 10, page: 1, total: 0 });
+
+    // --- DATA & UI STATE ---
     const [products, setProducts] = useState<ProductsType[]>([]);
     const [outlets, setOutlets] = useState<OutletsType[]>([]);
-    const [selectOutlet, setSelectOutlet] = useState<string>('Semua');
+    const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>('');
-    const [openModalConfirm, setOpenModalConfirm] = useState<ProductsType | null>(null);
+    const [showAlert, setShowAlert] = useState<AlertType | null>(null);
     const [stepsPromo, setStepsPromo] = useState<number | null>(null);
-    const [openModalQRCode, setOpenModalQRCode] = useState<ProductsType | null>(null)
-    const [meta, setMeta] = useState<Meta>({
-        last_page: 1,
-        limit: 10,
-        page: 1,
-        total: 0,
-    });
-    const [debouncedSearch, setDebouncedSearch] = useState('');
 
-    const [showAlert, setShowAlert] = useState<AlertType | null>(null)
+    // --- MODAL STATE ---
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [dataUpdate, setDataUpdate] = useState<ProductsType | null>(null);
+    const [deleteData, setDeleteData] = useState<ProductsType | null>(null);
+    const [openModalConfirm, setOpenModalConfirm] = useState<ProductsType | null>(null);
+    const [openModalQRCode, setOpenModalQRCode] = useState<ProductsType | null>(null);
+
+    // ==========================================
+    // EFFECTS & HELPERS
+    // ==========================================
+
+    // 1. Auto-hide Alert dengan Cleanup Timer
     useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedSearch(search);
-        }, 800);
+        if (showAlert?.isOpen) {
+            const timer = setTimeout(() => setShowAlert(null), 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [showAlert]);
 
+    // 2. Debounce Search
+    useEffect(() => {
+        const handler = setTimeout(() => setDebouncedSearch(search), 800);
         return () => clearTimeout(handler);
-
     }, [search]);
 
+    // 3. Reset Halaman ke 1 jika filter berubah
+    useEffect(() => {
+        setPage(1);
+    }, [debouncedSearch, dateRangeText, itemsPerPage, selectOutlet]);
+
+    // 4. Parsing Format Tanggal
     const parsedDate = useMemo(() => {
-        if (!dateRangeText.includes(" - ")) {
-            return { start_date: "", end_date: "" };
-        }
+        if (!dateRangeText.includes(" - ")) return { start_date: "", end_date: "" };
 
         const monthMap: Record<string, string> = {
-            Januari: "01",
-            Februari: "02",
-            Maret: "03",
-            April: "04",
-            Mei: "05",
-            Juni: "06",
-            Juli: "07",
-            Agustus: "08",
-            September: "09",
-            Oktober: "10",
-            November: "11",
-            Desember: "12",
+            Januari: "01", Februari: "02", Maret: "03", April: "04", Mei: "05", Juni: "06",
+            Juli: "07", Agustus: "08", September: "09", Oktober: "10", November: "11", Desember: "12",
         };
 
         const formatDate = (dateStr: string) => {
             const [day, month, year] = dateStr.trim().split(" ");
-
             return `${year}-${monthMap[month]}-${day.padStart(2, "0")}`;
         };
 
         const [start, end] = dateRangeText.split(" - ");
-
-        return {
-            start_date: formatDate(start),
-            end_date: formatDate(end),
-        };
+        return { start_date: formatDate(start), end_date: formatDate(end) };
     }, [dateRangeText]);
 
-
+    // 5. Query String Builder
     const queryString = useMemo(() => {
-        let pages = 0
-        if (debouncedSearch?.trim() != '') {
-            pages = 1
-            setPage(1)
-        }
-        const params = {
-            page: pages > 0 ? pages : page,
-            limit: itemsPerPage,
-            search: debouncedSearch,
-            start_date: parsedDate.start_date || "",
-            end_date: parsedDate.end_date || "",
-        };
+        const params = new URLSearchParams();
+        params.append("page", page.toString());
+        params.append("limit", itemsPerPage.toString());
 
-        return (
-            "?" +
-            Object.entries(params)
-                .map(([key, value]) => `${key}=${encodeURIComponent(value ?? "")}`)
-                .join("&") + `&outlet=${selectOutlet == 'Semua' ? "" : selectOutlet}`
-        );
+        if (debouncedSearch.trim()) params.append("search", debouncedSearch);
+        if (parsedDate.start_date) params.append("start_date", parsedDate.start_date);
+        if (parsedDate.end_date) params.append("end_date", parsedDate.end_date);
+        if (selectOutlet !== 'Semua') params.append("outlet", selectOutlet);
+
+        return `?${params.toString()}`;
     }, [parsedDate, page, debouncedSearch, itemsPerPage, selectOutlet]);
 
+    // ==========================================
+    // API ACTIONS
+    // ==========================================
     const fetchProducts = useCallback(async () => {
+        setLoading(true);
+        setError('');
         try {
-            setLoading(true);
-            const res = await Get<{ success: boolean; data: datatype; meta: Meta }>(
-                `/products${queryString}`
-            );
-
+            const res = await Get<{ success: boolean; data: ProductResponse; meta: Meta }>(`/products${queryString}`);
             if (res?.success) {
-                setProducts(res.data?.data);
-                setOutlets(res.data?.outlets);
+                setProducts(res.data?.data || []);
+                setOutlets(res.data?.outlets || []);
                 setMeta(res.meta);
-                setLoading(false)
             }
         } catch (err: any) {
-            setError(err?.message)
-            setLoading(false)
+            setError(err?.message || "Gagal mengambil data");
+        } finally {
+            setLoading(false);
         }
-        setLoading(false)
     }, [queryString]);
 
     useEffect(() => {
         fetchProducts();
-    }, [fetchProducts, page, selectOutlet]);
-
-    // Komponen (handleFormSubmit) (Perbaikan: Kirim formData asli)
+    }, [fetchProducts]);
 
     const handleFormSubmit = async (formData: FormData, id: number | null) => {
-        setLoading(true)
+        setLoading(true);
         try {
-            if (id) {
-                const res = await Post(`/products/${id}`, formData);
-                if (res) {
-                    fetchProducts()
-                    setDataUpdate(null)
-                    setIsModalOpen(false);
-                    setShowAlert({
-                        type: 'success',
-                        message: 'Berhasil update data',
-                        isOpen: true
-                    })
-                    setLoading(false)
-                }
-            } else {
-                const res = await Post('/products', formData);
-                if (res) {
-                    fetchProducts()
-                    setIsModalOpen(false);
-                    setShowAlert({
-                        type: 'success',
-                        message: 'Berhasil simpan data',
-                        isOpen: true
-                    })
-                    setLoading(false)
-                }
+            const endpoint = id ? `/products/${id}` : '/products';
+            const res = await Post(endpoint, formData);
+
+            if (res) {
+                fetchProducts();
+                handleCloseModal();
+                setShowAlert({ type: 'success', message: id ? 'Berhasil update data' : 'Berhasil simpan data', isOpen: true });
             }
         } catch (err: any) {
-            setShowAlert({
-                type: 'error',
-                message: 'Gagal proses data ' + err.message,
-                isOpen: true
-            })
-            setLoading(false)
-            console.log(err.message || "Gagal mengambil data");
+            setShowAlert({ type: 'error', message: 'Gagal proses data: ' + err.message, isOpen: true });
+        } finally {
+            setLoading(false);
         }
     };
+
     const onDelete = async (id: number | null) => {
-        setLoading(true)
-        setIsModalOpen(false)
-        setDeleteData(null)
+        setLoading(true);
         try {
             const res = await Delete(`/products/${id}`);
             if (res) {
                 fetchProducts();
-                setDeleteData(null)
-                setIsModalOpen(false);
-                setShowAlert({
-                    type: 'success',
-                    message: 'Berhasil hapus data',
-                    isOpen: true
-                })
-
-                setLoading(false)
+                handleCloseModal();
+                setShowAlert({ type: 'success', message: 'Berhasil hapus data', isOpen: true });
             }
         } catch (err: any) {
-            setShowAlert({
-                type: 'error',
-                message: 'Gagal proses data ' + err.message,
-                isOpen: true
-            })
-            setLoading(false)
-            console.log(err.message || "Gagal mengambil data");
+            setShowAlert({ type: 'error', message: 'Gagal proses data: ' + err.message, isOpen: true });
+        } finally {
+            setLoading(false);
         }
     };
 
+    // ==========================================
+    // UI HANDLERS
+    // ==========================================
     const handleResetFilter = () => {
         setSearch("");
         setDateRangeText("");
+        setSelectOutlet("Semua");
     };
 
-    const handleEdit = (row: ProductsType) => {
-        setIsModalOpen(true)
-        setDataUpdate(row)
-    }
-    const handleDelete = (row: ProductsType) => {
-        setIsModalOpen(true)
-        setDeleteData(row)
-    }
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setTimeout(() => {
+            setDataUpdate(null);
+            setDeleteData(null);
+        }, 300);
+    };
 
-    const columns: Column<ProductsType>[] = useMemo(
-        () => [
-            {
-                key: "image",
-                label: "Gambar",
-                width: "200px",
-                render: (row) =>
-                    <img src={row.image} className="w-32 rounded-md" />,
-            },
-            {
-                key: "name",
-                label: "Nama Produk",
-            },
-            {
-                key: "category",
-                label: "Nama Kategori",
-                render: (row) => row?.category ?? ''
-            },
-            {
-                key: "description",
-                label: "Deskripsi",
-                render: (row) => {
-                    // 1. Ambil string HTML dari description
-                    const htmlContent = row.description || "";
+    const handleEdit = useCallback((row: ProductsType) => {
+        setDataUpdate(row);
+        setIsModalOpen(true);
+    }, []);
 
-                    // 2. Hilangkan semua tag HTML menggunakan Regex
-                    const plainText = htmlContent.replace(/<[^>]*>/g, "");
+    const handleDelete = useCallback((row: ProductsType) => {
+        setDeleteData(row);
+        setIsModalOpen(true);
+    }, []);
 
-                    // 3. Cek panjang teks yang sudah bersih
-                    if (!plainText || plainText.trim() === "") return "-";
-
-                    return plainText.length > 50
-                        ? plainText.slice(0, 50) + "..."
-                        : plainText;
-                }
-            },
-            {
-                key: "has_variant",
-                label: "Varian :stock",
-                render: (row) =>
-                    row.variants?.map((v, i) => (
-                        <b key={i}>
-                            {v.name} : {v?.product_variant_stock ?? 0}
-                            {row.variants.length !== i + 1 && <br />}
-                        </b>
-                    )),
-            },
-
-            {
-                key: "price",
-                label: "Harga",
-                align: "right",
-                width: "200",
-                render: (row) => `Rp ${row.price.toLocaleString("id-ID")}`,
-            },
-
-            {
-                key: "stock",
-                label: "Stok",
-                render: (row) => (row.product_stock ?? 0).toLocaleString("id-ID"),
-            },
-            {
-                key: "qrcode",
-                label: "qrcode",
-                width: "200",
-                render: (row) => (
-                    <div className="font-semibold" onClick={() => setOpenModalQRCode(row)}>
-                        Lihat Qr Code Produk
+    // ==========================================
+    // TABLE COLUMNS CONFIG
+    // ==========================================
+    const columns: Column<ProductsType>[] = useMemo(() => [
+        {
+            key: "image",
+            label: "Gambar",
+            width: "150px",
+            render: (row) => (
+                <img src={row.image} alt={row.name} className="w-24 h-24 object-cover rounded-xl bg-slate-50 border border-slate-100" />
+            ),
+        },
+        { key: "name", label: "Nama Produk" },
+        { key: "category", label: "Kategori", render: (row) => row?.category || '-' },
+        {
+            key: "description",
+            label: "Deskripsi",
+            render: (row) => {
+                const htmlContent = row.description || "";
+                const plainText = htmlContent.replace(/<[^>]*>/g, "");
+                if (!plainText || plainText.trim() === "") return "-";
+                return plainText.length > 50 ? plainText.slice(0, 50) + "..." : plainText;
+            }
+        },
+        {
+            key: "has_variant",
+            label: "Varian & Stok",
+            render: (row) => {
+                if (!row.variants || row.variants.length === 0) return <span className="text-slate-400">-</span>;
+                return (
+                    <div className="space-y-1">
+                        {row.variants.map((v, i) => (
+                            <div key={i} className="text-sm">
+                                <span className="font-semibold text-slate-700">{v.name}</span> :{" "}
+                                <span className="text-emerald-600 font-bold">{v?.product_variant_stock ?? 0}</span>
+                            </div>
+                        ))}
                     </div>
-                ),
+                );
             },
-            {
-                key: "is_active",
-                label: "Status",
-                align: "center",
-                render: (row: any) => {
-                    const statusColor =
-                        row.is_active === 1
-                            ? "bg-green-100 text-green-800"
-                            : row.is_active === 2
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-red-100 text-red-800"
+        },
+        {
+            key: "price",
+            label: "Harga",
+            align: "right",
+            width: "150",
+            render: (row) => <span className="font-bold text-slate-700">Rp {row.price.toLocaleString("id-ID")}</span>,
+        },
+        {
+            key: "stock",
+            label: "Stok Total",
+            render: (row) => <span className="font-bold">{(row.product_stock ?? 0).toLocaleString("id-ID")}</span>,
+        },
+        {
+            key: "qrcode",
+            label: "QR Code",
+            align: "center",
+            width: "150",
+            render: (row) => (
+                <button
+                    onClick={() => setOpenModalQRCode(row)}
+                    className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors"
+                >
+                    Lihat QR
+                </button>
+            ),
+        },
+        {
+            key: "is_active",
+            label: "Status",
+            align: "center",
+            render: (row) => {
+                const statusConfig =
+                    row.is_active ? { color: "bg-emerald-100 text-emerald-700", text: "Aktif" } :
+                        { color: "bg-rose-100 text-rose-700", text: "Tidak Aktif" };
 
-                    return (
-                        <span className={`px-3 py-1 text-xs font-semibold rounded-full ${statusColor}`}>
-                            {row.is_active === 1 ? "Active" : row.is_active === 2 ? "Diblokir" : "Tidak Aktif"}
-                        </span>
-                    )
-                }
-            },
-            {
-                key: "is_promo",
-                label: "Promo",
-                align: "center",
-                render: (row) => (
-                    <FormInput
-                        type="switch"
-                        label=""
-                        name="is_active"
-                        value={row?.discount_price}
-                        onChange={() => setOpenModalConfirm(row)}
-                    />
-                ),
-            },
-            {
-                key: "is_available",
-                label: "Tersedia",
-                align: "center",
-                render: (row) => (
-                    <FormInput
-                        type="switch"
-                        label=""
-                        name="is_active"
-                        value={true}
-                        onChange={() => { }}
-                    />
-                ),
-            },
-            {
-                key: "actions",
-                label: "Aksi",
-                align: "center",
-                render: (row) => (
-                    <div className="flex justify-center gap-2">
-                        <button
-                            onClick={() => handleEdit(row)}
-                            className="text-blue-600 hover:text-blue-800"
-                        >
-                            <Edit size={18} />
-                        </button>
-                        <button
-                            onClick={() => handleDelete(row)}
-                            className="text-red-600 hover:text-red-800"
-                        >
-                            <Trash2Icon size={18} />
-                        </button>
-                    </div>
-                ),
-            },
-        ],
-        [handleEdit, handleDelete]
-    );
+                return (
+                    <span className={`px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider rounded-full ${statusConfig.color}`}>
+                        {statusConfig.text}
+                    </span>
+                );
+            }
+        },
+        {
+            key: "is_promo",
+            label: "Promo",
+            align: "center",
+            render: (row) => (
+                <FormInput
+                    type="switch"
+                    label=""
+                    name="is_promo"
+                    value={Boolean(row?.discount_price)}
+                    onChange={() => setOpenModalConfirm(row)}
+                />
+            ),
+        },
+        {
+            key: "is_available",
+            label: "Tersedia",
+            align: "center",
+            render: (row) => (
+                <FormInput
+                    type="switch"
+                    label=""
+                    name="is_available"
+                    value={true}
+                    onChange={() => { }} // Placeholder fungsi
+                />
+            ),
+        },
+        {
+            key: "actions",
+            label: "Aksi",
+            align: "center",
+            render: (row) => (
+                <div className="flex justify-center gap-2">
+                    <button onClick={() => handleEdit(row)} className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors">
+                        <Edit size={18} />
+                    </button>
+                    <button onClick={() => handleDelete(row)} className="p-2 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg transition-colors">
+                        <Trash2Icon size={18} />
+                    </button>
+                </div>
+            ),
+        },
+    ], [handleEdit, handleDelete]);
 
+    // --- PROMO WORKFLOW ---
     if (stepsPromo === 2) {
-        return <ConfirmPromo productInfo={openModalConfirm} onBack={() => { setStepsPromo(1), setOpenModalConfirm(null) }} fetchProducts={fetchProducts} />
+        return (
+            <ConfirmPromo
+                productInfo={openModalConfirm}
+                onBack={() => {
+                    setStepsPromo(1);
+                    setOpenModalConfirm(null);
+                }}
+                fetchProducts={fetchProducts}
+            />
+        );
     }
+
     return (
-        <div className="space-y-4">
+        <div className="space-y-6">
             <FilterComponent
                 search={search}
                 setSearch={setSearch}
@@ -385,26 +349,27 @@ export default function ListProductPage() {
                 handleReset={handleResetFilter}
                 setIsModalOpenForm={setIsModalOpen}
             />
+
+            {/* Kategori Outlet Filter */}
             <GlassCard className="p-3 w-full">
-                {/* Tambahkan class [&::-webkit-scrollbar]:hidden agar scrollbar tidak terlihat tapi tetap bisa di-scroll */}
                 <div className="flex items-center gap-2 overflow-x-auto text-slate-600 [&::-webkit-scrollbar]:hidden">
                     <button
                         onClick={() => setSelectOutlet("Semua")}
-                        className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ease-in-out flex-shrink-0 ${selectOutlet === 'Semua'
-                            ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30'
+                        className={`ml-2 whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ease-in-out flex-shrink-0 ${selectOutlet === 'Semua'
+                            ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/30 scale-105'
                             : 'bg-transparent hover:bg-emerald-50 hover:text-emerald-700'
                             }`}
                     >
-                        Semua
+                        Semua Outlet
                     </button>
 
                     {outlets?.map((o, i) => (
                         <button
                             key={i}
                             onClick={() => setSelectOutlet(o?.name)}
-                            className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ease-in-out flex-shrink-0 ${selectOutlet === o?.name
-                                ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30'
-                                : 'bg-transparent hover:bg-emerald-50 hover:text-emerald-700'
+                            className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ease-in-out flex-shrink-0 ${selectOutlet === o?.name
+                                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/30 scale-105'
+                                : 'bg-transparent hover:bg-emerald-50 hover:text-emerald-700 border border-transparent hover:border-emerald-100'
                                 }`}
                         >
                             {o?.name}
@@ -412,6 +377,7 @@ export default function ListProductPage() {
                     ))}
                 </div>
             </GlassCard>
+
             <div className="mt-6">
                 <DataTable
                     data={products}
@@ -419,53 +385,62 @@ export default function ListProductPage() {
                     page={page}
                     itemsPerPage={itemsPerPage}
                     total={meta.total}
-                    onPageChange={(p) => setPage(p)}
+                    onPageChange={setPage}
                     loading={loading}
                     error={error}
                 />
             </div>
-            {
-                deleteData ?
-                    <ModalDelete
-                        isOpen={isModalOpen}
-                        onClose={() => {
-                            setIsModalOpen(false)
-                            setDeleteData(null)
-                        }}
-                        deleteData={deleteData}
-                        handleDelete={onDelete} /> :
-                    <ModalCrud isOpen={isModalOpen} title={(dataUpdate ? "Edit" : "Tambah") + ' Produk'} onClose={() => {
-                        setIsModalOpen(false)
-                        setDataUpdate(null)
-                    }}>
-                        <ProductFormModalContent
-                            isOpen={isModalOpen}
-                            onClose={() => {
-                                setIsModalOpen(false)
-                                setDataUpdate(null)
-                            }}
-                            onSubmit={handleFormSubmit}
-                            dataUpdate={dataUpdate}
-                            loading={loading}
-                            setLoading={setLoading}
-                        />
-                    </ModalCrud>
-            }
 
-            {
-                openModalConfirm && <ModalConfirmPromo isOpen={openModalConfirm} closeModal={() => setOpenModalConfirm(null)} confirmAction={() => setStepsPromo(2)} />
-            }
-            {
-                loading && <Loading />
-            }
-            {
-                showAlert?.isOpen &&
-                <Alert type={showAlert?.type} message={showAlert?.message} onClose={() => setShowAlert(null)} />
-            }
-            {
-                openModalQRCode && <ModalDetailQRCode onClose={() => setOpenModalQRCode(null)} product={openModalQRCode} selectOutlet={selectOutlet} outlets={outlets} />
-            }
+            {/* MODALS */}
+            {deleteData ? (
+                <ModalDelete
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                    deleteData={deleteData}
+                    handleDelete={onDelete}
+                />
+            ) : (
+                <ModalCrud
+                    isOpen={isModalOpen}
+                    title={dataUpdate ? "Edit Produk" : "Tambah Produk"}
+                    onClose={handleCloseModal}
+                >
+                    <ProductFormModalContent
+                        isOpen={isModalOpen}
+                        onClose={handleCloseModal}
+                        onSubmit={handleFormSubmit}
+                        dataUpdate={dataUpdate}
+                        loading={loading}
+                        setLoading={setLoading}
+                    />
+                </ModalCrud>
+            )}
+
+            {openModalConfirm && (
+                <ModalConfirmPromo
+                    isOpen={openModalConfirm}
+                    closeModal={() => setOpenModalConfirm(null)}
+                    confirmAction={() => setStepsPromo(2)}
+                />
+            )}
+
+            {openModalQRCode && (
+                <ModalDetailQRCode
+                    onClose={() => setOpenModalQRCode(null)}
+                    product={openModalQRCode}
+                    selectOutlet={selectOutlet}
+                    outlets={outlets}
+                />
+            )}
+
+            {/* ALERT */}
+            {showAlert?.isOpen && (
+                <Alert
+                    type={showAlert.type}
+                    message={showAlert.message}
+                    onClose={() => setShowAlert(null)}
+                />
+            )}
         </div>
     );
-};
-
+}
