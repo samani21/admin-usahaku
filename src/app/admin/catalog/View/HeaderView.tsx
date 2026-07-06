@@ -8,6 +8,7 @@ import { CatalogHeaderType } from '@/types/Admin/Catalog/Header';
 import HeaderConfig from '@/Components/Catalog/Header';
 import Alert from '@/Components/Alert';
 import Loading from '@/Components/Loading';
+import { formatImage } from '@/utils/formatImage';
 
 const BUSINESS_THEMES = [
     {
@@ -125,7 +126,9 @@ export default function HeaderView({ themeDark, setThemeDark, headerData, getCal
     useEffect(() => {
         if (headerData) {
             setHeaderLayout(headerData.layout_header);
-            setLogo(headerData.logo);
+            if (headerData?.logo) {
+                setLogo(formatImage(headerData?.logo) ?? null);
+            }
             if (headerData.span_one) {
                 setSpanOne(headerData.span_one);
             }
@@ -598,7 +601,8 @@ export default function HeaderView({ themeDark, setThemeDark, headerData, getCal
                                             spanOne={spanOne}
                                             spanTwo={spanTwo}
                                             displayMode={displayMode}
-                                            isConfigHeader={true} />
+                                            isConfigHeader={true}
+                                            openScan={() => { }} />
                                     </div>
                                 ))
                             }
@@ -610,7 +614,9 @@ export default function HeaderView({ themeDark, setThemeDark, headerData, getCal
             </div>
             {
                 showAlert?.isOpen &&
-                <Alert type={showAlert?.type} message={showAlert?.message} onClose={() => setShowAlert(null)} />
+                <div className='fixed z-1001 top-0 w-full right-0 md:right-10 bg-red-400'>
+                    <Alert type={showAlert?.type} message={showAlert?.message} onClose={() => setShowAlert(null)} />
+                </div>
             }
             {loading && <Loading title='Sedang Proses' />}
         </div>

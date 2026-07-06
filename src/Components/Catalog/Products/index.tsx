@@ -15,15 +15,27 @@ import Fourteen from './FourTeen';
 import Fiveteen from './Fiveteen';
 import { ProductsType, Variants } from '@/types/Admin/ProductsType';
 import { OutletsType } from '@/types/Admin/OutletType';
+import { formatImage } from '@/utils/formatImage';
 type Props = {
     theme: number;
-    products: ProductsType[];
+    dataProducts: ProductsType[];
     isDarkMode: boolean;
     handleCart?: (p: ProductsType | null, v: Variants | null, qty: number) => void;
 }
 
-const ProductConfig = ({ theme, products, isDarkMode, handleCart }: Props) => {
-
+const ProductConfig = ({ theme, dataProducts, isDarkMode, handleCart }: Props) => {
+    const products = dataProducts?.map((p) => {
+        return {
+            ...p,
+            image: formatImage(p.image) ?? '',
+            variants: p?.variants?.length > 0 ? p?.variants?.map((v) => {
+                return {
+                    ...v,
+                    image: formatImage(v?.image ?? '')
+                }
+            }) : []
+        };
+    });
     const commonProps = {
         products,
         isDarkMode,

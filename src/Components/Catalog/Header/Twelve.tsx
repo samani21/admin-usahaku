@@ -16,9 +16,10 @@ type Props = {
     logoImage: string | null;
     isBuild?: boolean;
     displayMode: string;
+    openScan: () => void;
 }
 
-const Twelve = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode }: Props) => {
+const Twelve = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode, openScan }: Props) => {
     const isDarkMode = useMemo(() => themeMode === 'dark', [themeMode]);
 
     // Navigasi & URL Logic
@@ -30,7 +31,6 @@ const Twelve = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameThem
 
     // State Local
     const [isTerminalMenuOpen, setIsTerminalMenuOpen] = useState(false);
-    const [isOpenScan, setIsOpenScan] = useState(false);
 
     // Kunci scroll body saat Terminal Menu terbuka
     useEffect(() => {
@@ -85,7 +85,7 @@ const Twelve = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameThem
                         </Link>
 
                         <button
-                            onClick={() => setIsOpenScan(true)}
+                            onClick={() => openScan()}
                             className="flex items-center gap-2 px-6 py-2 ml-2 rounded-lg font-black tracking-widest uppercase transition-all duration-300 active:scale-95 border-2 border-[var(--header-primary-color)] bg-[var(--header-primary-color)]/10 text-[var(--header-primary-color)] hover:bg-[var(--header-primary-color)] hover:text-white shadow-[inset_0_0_10px_var(--header-primary-color)]"
                         >
                             <ScanBarcode className="w-4 h-4" />
@@ -163,7 +163,7 @@ const Twelve = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameThem
                             </Link>
 
                             <button
-                                onClick={() => { setIsOpenScan(true); setIsTerminalMenuOpen(false); }}
+                                onClick={() => { openScan(); setIsTerminalMenuOpen(false); }}
                                 className="w-full flex items-center justify-center gap-3 mt-2 p-4 rounded-lg border-2 border-[var(--header-primary-color)] bg-[var(--header-primary-color)] text-white shadow-[0_0_15px_var(--header-primary-color)] active:scale-95 transition-all"
                             >
                                 <ScanBarcode className="w-5 h-5 animate-pulse" />

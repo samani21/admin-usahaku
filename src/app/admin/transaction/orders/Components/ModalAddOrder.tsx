@@ -1,6 +1,7 @@
 "use client"
 import { OutletsType } from '@/types/Admin/OutletType';
 import { ProductsType, Variants } from '@/types/Admin/ProductsType';
+import { formatImage } from '@/utils/formatImage';
 import { Get } from '@/utils/Get';
 import { Post } from '@/utils/Post';
 import {
@@ -312,7 +313,7 @@ const ModalAddOrder = ({ onClose, addToast, outlets, handleSubmit }: Props) => {
                                             {/* Image & Basic Info */}
                                             {currentProduct ? (
                                                 <div className="w-16 h-16 bg-white border border-slate-100 rounded-lg p-1.5 flex items-center justify-center shrink-0 shadow-sm">
-                                                    <img src={currentProduct.image} alt={currentProduct.name} className="max-w-full max-h-full object-contain" />
+                                                    <img src={formatImage(currentProduct.image)} alt={currentProduct.name} className="max-w-full max-h-full object-contain" />
                                                 </div>
                                             ) : (
                                                 <div className="w-16 h-16 bg-slate-100 border border-dashed border-slate-300 rounded-lg flex items-center justify-center shrink-0">

@@ -12,6 +12,8 @@ import ProductConfig from '@/Components/Catalog/Products';
 import SummaryConfig from '@/Components/Catalog/Summary';
 import HeaderConfig from '@/Components/Catalog/Header';
 import { useRouter } from 'next/navigation';
+import { formatImage } from '@/utils/formatImage';
+import { useCorrectPath } from '@/utils/useCorrectPath';
 
 // Helpers
 const getContrastColor = (hex: string | undefined) => {
@@ -47,6 +49,7 @@ export default function PreviewView({ }: Props) {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [cart, setCart] = useState<CartState>({ item: 0, amount: 0 });
     const [toastMessage, setToastMessage] = useState<string | null>(null);
+    const { getCorrectPath } = useCorrectPath()
     // CSS Variables Updater
     const updateCssVariables = useCallback((type: 'header' | 'hero' | 'category' | 'product' | 'summary', color: string) => {
         // Mencegah error SSR di Next.js saat mengakses document
@@ -133,7 +136,7 @@ export default function PreviewView({ }: Props) {
                         <HeaderConfig
                             layout={header.layout_header}
                             themeMode={isDarkModeActive ? "dark" : "light"}
-                            logoImage={header.logo}
+                            logoImage={formatImage(header.logo) ?? ''}
                             frameType={header.type_frame}
                             frameTheme={header.color_frame}
                             toggleTheme={() => setIsDarkTheme(!isDarkTheme)}
@@ -141,6 +144,7 @@ export default function PreviewView({ }: Props) {
                             spanTwo={header.span_two}
                             displayMode={header.mode}
                             isBuild={true}
+                            openScan={() => { }}
                         />
                     )}
                 </div>
@@ -166,7 +170,7 @@ export default function PreviewView({ }: Props) {
                             </div>
                             <div className="flex items-center gap-2 w-full md:w-auto">
                                 <button
-                                    onClick={() => route?.back()}
+                                    onClick={() => route?.push(getCorrectPath('/catalog'))}
                                     className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-xl transition-all active:scale-95 shadow-md"
                                 >
                                     <ArrowLeft size={18} />
@@ -185,7 +189,7 @@ export default function PreviewView({ }: Props) {
                                 headline={hero.headline}
                                 subHeadline={hero.sub_headline}
                                 ctaText={hero.cta}
-                                imageHero={hero.image ?? null}
+                                imageHero={formatImage(hero.image) ?? null}
                                 title={hero.title}
                             />
                         </div>
@@ -195,7 +199,7 @@ export default function PreviewView({ }: Props) {
                     {categories && category && (
                         <CategorieConfig
                             theme={category.layout_categories}
-                            categories={categories}
+                            dataCategories={categories}
                             isDarkMode={category.mode === 'light' ? false : isDarkTheme || category.mode === 'dark'}
                             onClick={setSelectedCategory}
                         />
@@ -206,7 +210,7 @@ export default function PreviewView({ }: Props) {
                         <div id='product-section' className={`${(productConfig.mode !== "light" && isDarkTheme) || productConfig.mode === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                             <ProductConfig
                                 theme={productConfig.layout_products}
-                                products={filteredProducts}
+                                dataProducts={filteredProducts}
                                 isDarkMode={productConfig.mode === 'light' ? false : isDarkTheme || productConfig.mode === 'dark'}
                                 handleCart={handleCart}
                             />

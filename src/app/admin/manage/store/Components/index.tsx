@@ -21,6 +21,7 @@ import { CardContent } from "@/Components/ui/Outlite";
 import Alert from "@/Components/Alert";
 import ModalSubscription from "@/Components/Layout/ModalSubscription";
 import { useCorrectPath } from "@/utils/useCorrectPath";
+import { formatImage } from "@/utils/formatImage";
 
 export default function BusinessProfile() {
     const [loadingButton, setLoadingButton] = useState<boolean>(false);
@@ -209,7 +210,7 @@ export default function BusinessProfile() {
                                     <div className="w-full h-full rounded-[1.5rem] bg-slate-100 flex items-center justify-center overflow-hidden relative">
                                         {logoPreview ? (
                                             <img
-                                                src={logoPreview}
+                                                src={formatImage(logoPreview)}
                                                 alt="Logo Toko"
                                                 className={`w-full h-full object-cover ${isExpired ? 'grayscale-[40%]' : ''}`}
                                             />

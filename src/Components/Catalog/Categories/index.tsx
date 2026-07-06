@@ -15,16 +15,24 @@ import Thirteen from './Thirteen';
 import FourTen from './FourTen';
 import Fiften from './Fifteen';
 import { CategoriesType } from '@/types/Admin/CategoriesType';
+import { formatImage } from '@/utils/formatImage';
 
 type Props = {
     theme: number;
-    categories: CategoriesType[];
+    dataCategories: CategoriesType[];
     isDarkMode: boolean;
     onClick?: (v: string | null) => void;
 }
 
-const CategorieConfig = ({ theme, categories, isDarkMode, onClick }: Props) => {
-
+const CategorieConfig = ({ theme, dataCategories, isDarkMode, onClick }: Props) => {
+    const categories = dataCategories?.map((c) => {
+        return {
+            ...c,
+            icon: c?.icon?.startsWith("usahaku")
+                ? formatImage(c.icon)
+                : c?.icon,
+        };
+    });
     const commonProps = {
         categories,
         isDarkMode,

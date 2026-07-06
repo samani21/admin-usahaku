@@ -16,9 +16,10 @@ type Props = {
     logoImage: string | null;
     isBuild?: boolean;
     displayMode: string;
+    openScan: () => void;
 }
 
-const Eight = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode }: Props) => {
+const Eight = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode, openScan }: Props) => {
     const isDarkMode = useMemo(() => themeMode === 'dark', [themeMode]);
 
     // Navigasi & URL Logic
@@ -30,8 +31,6 @@ const Eight = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme
 
     // State Local
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [isOpenScan, setIsOpenScan] = useState(false);
-
     return (
         <header className={`${!isBuild ? 'absolute top-0 md:top-3 left-0 pt-4 md:pt-2 px-4 md:px-6' : 'relative p-4 md:p-6'} z-[60] w-full flex justify-center pointer-events-none transition-all duration-300`}>
 
@@ -81,7 +80,7 @@ const Eight = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme
 
                         {/* Slanted Button (Tombol Miring Khas Sport/Racing) */}
                         <button
-                            onClick={() => setIsOpenScan(true)}
+                            onClick={() => openScan()}
                             className="group relative flex items-center justify-center ml-2 px-6 py-2.5 overflow-hidden transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
                         >
                             {/* Background miring */}
@@ -139,7 +138,7 @@ const Eight = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme
                             </Link>
 
                             <button
-                                onClick={() => { setIsOpenScan(true); setIsMobileMenuOpen(false); }}
+                                onClick={() => { openScan(); setIsMobileMenuOpen(false); }}
                                 className="group relative w-full overflow-hidden rounded-lg mt-2 transition-transform active:scale-95"
                             >
                                 {/* Slanted Background untuk Mobile */}

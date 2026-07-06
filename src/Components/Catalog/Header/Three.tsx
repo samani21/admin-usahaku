@@ -16,9 +16,10 @@ type Props = {
     logoImage: string | null;
     isBuild?: boolean;
     displayMode: string;
+    openScan: () => void;
 }
 
-const Three = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode }: Props) => {
+const Three = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode, openScan }: Props) => {
     const isDarkMode = useMemo(() => themeMode === 'dark', [themeMode]);
 
     // Navigasi & URL Logic
@@ -30,7 +31,6 @@ const Three = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme
 
     // State Local
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    const [isOpenScan, setIsOpenScan] = useState(false);
 
     // Kunci scroll body saat drawer terbuka
     useEffect(() => {
@@ -96,7 +96,7 @@ const Three = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme
 
                         {/* Delicate Outlined Button untuk "Scan" (Khas Boutique/Fashion) */}
                         <button
-                            onClick={() => setIsOpenScan(true)}
+                            onClick={() => openScan()}
                             className={`flex items-center gap-2 px-5 py-1.5 rounded-full border-[0.5px] transition-all duration-300
                                 ${isDarkMode
                                     ? 'border-slate-500 text-slate-200 hover:bg-white hover:text-slate-900'
@@ -180,7 +180,7 @@ const Three = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme
                         {/* Drawer Footer Action (Scan) */}
                         <div className="mt-auto p-6">
                             <button
-                                onClick={() => { setIsOpenScan(true); setIsDrawerOpen(false); }}
+                                onClick={() => { openScan(); setIsDrawerOpen(false); }}
                                 className={`w-full flex items-center justify-center gap-3 py-3.5 rounded-none border-[0.5px] transition-all
                                     ${isDarkMode
                                         ? 'border-slate-600 hover:bg-white hover:text-slate-900'

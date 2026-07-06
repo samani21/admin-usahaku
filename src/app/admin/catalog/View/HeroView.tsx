@@ -8,6 +8,7 @@ import { HeroType } from '@/types/Admin/Catalog/Hero';
 import HeroConfig from '@/Components/Catalog/Hero';
 import Alert from '@/Components/Alert';
 import Loading from '@/Components/Loading';
+import { formatImage } from '@/utils/formatImage';
 
 const BUSINESS_THEMES = [
     {
@@ -129,7 +130,7 @@ export default function HeroView({ heroData, isDarkMode, setIsDarkMode, getCalog
             if (heroData?.color) {
                 setSelectedColor(heroData?.color);
             }
-            setImageHero(heroData?.image ?? null)
+            setImageHero(formatImage(heroData?.image) ?? null)
             if (heroData?.title) {
                 setTitle(heroData?.title ?? '')
             }
@@ -348,8 +349,8 @@ export default function HeroView({ heroData, isDarkMode, setIsDarkMode, getCalog
                                             setActiveTab(theme.id);
                                         }}
                                         className={`min-w-[200px] flex items-center gap-3 p-3 rounded-2xl border transition-all duration-200 ease-in-out ${activeTab === theme.id
-                                                ? 'border-emerald-500 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] ring-1 ring-emerald-500'
-                                                : 'border-slate-200 bg-white hover:bg-slate-50 hover:shadow-sm hover:border-slate-300'
+                                            ? 'border-emerald-500 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] ring-1 ring-emerald-500'
+                                            : 'border-slate-200 bg-white hover:bg-slate-50 hover:shadow-sm hover:border-slate-300'
                                             }`}
                                     >
                                         <div
@@ -478,8 +479,8 @@ export default function HeroView({ heroData, isDarkMode, setIsDarkMode, getCalog
                                                     setIsDarkMode(false);
                                                 }}
                                                 className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold transition-all ${displayMode === 'light'
-                                                        ? 'bg-white text-amber-500 shadow-sm'
-                                                        : 'text-slate-500 hover:bg-slate-200/50'
+                                                    ? 'bg-white text-amber-500 shadow-sm'
+                                                    : 'text-slate-500 hover:bg-slate-200/50'
                                                     }`}
                                             >
                                                 <Sun size={15} /> Light
@@ -490,8 +491,8 @@ export default function HeroView({ heroData, isDarkMode, setIsDarkMode, getCalog
                                                     setIsDarkMode(true);
                                                 }}
                                                 className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold transition-all ${displayMode === 'dark'
-                                                        ? 'bg-white text-emerald-600 shadow-sm'
-                                                        : 'text-slate-500 hover:bg-slate-200/50'
+                                                    ? 'bg-white text-emerald-600 shadow-sm'
+                                                    : 'text-slate-500 hover:bg-slate-200/50'
                                                     }`}
                                             >
                                                 <Moon size={15} /> Dark
@@ -502,8 +503,8 @@ export default function HeroView({ heroData, isDarkMode, setIsDarkMode, getCalog
                                                     setIsDarkMode(false); // Atau biarkan sistem mendeteksi
                                                 }}
                                                 className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold transition-all ${displayMode === 'auto'
-                                                        ? 'bg-white text-slate-800 shadow-sm'
-                                                        : 'text-slate-500 hover:bg-slate-200/50'
+                                                    ? 'bg-white text-slate-800 shadow-sm'
+                                                    : 'text-slate-500 hover:bg-slate-200/50'
                                                     }`}
                                             >
                                                 <SunMoon size={15} /> Auto
@@ -546,10 +547,10 @@ export default function HeroView({ heroData, isDarkMode, setIsDarkMode, getCalog
                                         key={i}
                                         onClick={() => setHeroLayout(lh?.id)}
                                         className={`whitespace-nowrap text-sm font-medium px-4 py-2.5 rounded-xl flex items-center gap-2.5 transition-all duration-200 border ${lh?.id === heroLayout
-                                                ? 'bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm'
-                                                : isDarkMode
-                                                    ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
-                                                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:border-slate-300'
+                                            ? 'bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm'
+                                            : isDarkMode
+                                                ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
+                                                : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:border-slate-300'
                                             }`}
                                     >
                                         {lh?.id === heroLayout ? (

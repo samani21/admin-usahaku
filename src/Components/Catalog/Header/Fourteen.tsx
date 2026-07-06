@@ -16,9 +16,10 @@ type Props = {
     logoImage: string | null;
     isBuild?: boolean;
     displayMode: string;
+    openScan: () => void;
 }
 
-const Fourteen = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode }: Props) => {
+const Fourteen = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode, openScan }: Props) => {
     const isDarkMode = useMemo(() => themeMode === 'dark', [themeMode]);
 
     // Navigasi & URL Logic
@@ -30,11 +31,10 @@ const Fourteen = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTh
 
     // State Local
     const [isPlaqueMenuOpen, setIsPlaqueMenuOpen] = useState(false);
-    const [isOpenScan, setIsOpenScan] = useState(false);
 
     return (
         <header className={`${!isBuild ? 'absolute top-0 md:top-4 left-0 px-4 md:px-6' : 'relative p-4 md:p-6'} z-[60] w-full flex justify-center pointer-events-none transition-all duration-500`}>
-            
+
             {/* Wrapper utama untuk menjaga proporsi dropdown */}
             <div className="relative w-full max-w-7xl pointer-events-auto">
 
@@ -58,27 +58,27 @@ const Fourteen = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTh
 
                     {/* --- KANAN: Logo & Navigation Group --- */}
                     <div className="flex items-center gap-4 md:gap-6">
-                        
+
                         {/* Desktop Nav Icons */}
                         <div className="hidden md:flex items-center gap-3">
                             {displayMode === 'auto' && (
-                                <button 
-                                    onClick={toggleTheme} 
+                                <button
+                                    onClick={toggleTheme}
                                     className={`p-2 rounded transition-colors duration-300 ${isDarkMode ? 'text-slate-400 hover:text-amber-400 hover:bg-slate-800' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200'}`}
                                 >
                                     {isDarkMode ? <Sun className="w-5 h-5 stroke-[1.5]" /> : <Moon className="w-5 h-5 stroke-[1.5]" />}
                                 </button>
                             )}
-                            
-                            <Link 
-                                href={historyLink} 
+
+                            <Link
+                                href={historyLink}
                                 className={`p-2 rounded transition-colors duration-300 ${isDarkMode ? 'text-slate-400 hover:text-[var(--header-primary-color)] hover:bg-slate-800' : 'text-slate-500 hover:text-[var(--header-primary-color)] hover:bg-slate-200'}`}
                             >
                                 <History className="w-5 h-5 stroke-[1.5]" />
                             </Link>
 
-                            <button 
-                                onClick={() => setIsOpenScan(true)}
+                            <button
+                                onClick={() => openScan()}
                                 className={`flex items-center gap-2 px-5 py-2 rounded-sm font-serif font-bold italic tracking-widest text-xs uppercase transition-transform active:scale-95 shadow-sm
                                     ${isDarkMode ? 'bg-[var(--header-primary-color)] text-slate-900' : 'bg-[var(--header-primary-color)] text-white'}`}
                             >
@@ -124,7 +124,7 @@ const Fourteen = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTh
 
                             <div className="flex flex-col gap-4 mt-2">
                                 {displayMode === 'auto' && (
-                                    <button 
+                                    <button
                                         onClick={() => { toggleTheme(); setIsPlaqueMenuOpen(false); }}
                                         className={`flex items-center justify-between w-full pb-3 border-b transition-colors group
                                             ${isDarkMode ? 'border-slate-800 text-slate-300 hover:text-amber-400' : 'border-slate-200 text-slate-600 hover:text-slate-900'}`}
@@ -134,8 +134,8 @@ const Fourteen = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTh
                                     </button>
                                 )}
 
-                                <Link 
-                                    href={historyLink} 
+                                <Link
+                                    href={historyLink}
                                     onClick={() => setIsPlaqueMenuOpen(false)}
                                     className={`flex items-center justify-between w-full pb-3 border-b transition-colors group
                                         ${isDarkMode ? 'border-slate-800 text-slate-300 hover:text-[var(--header-primary-color)]' : 'border-slate-200 text-slate-600 hover:text-[var(--header-primary-color)]'}`}
@@ -144,8 +144,8 @@ const Fourteen = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTh
                                     <History className="w-4 h-4 stroke-[1.5]" />
                                 </Link>
 
-                                <button 
-                                    onClick={() => { setIsOpenScan(true); setIsPlaqueMenuOpen(false); }}
+                                <button
+                                    onClick={() => { openScan(); setIsPlaqueMenuOpen(false); }}
                                     className={`w-full flex items-center justify-between p-3 mt-2 rounded-sm transition-transform active:scale-95 shadow-md
                                         ${isDarkMode ? 'bg-[var(--header-primary-color)] text-slate-900' : 'bg-[var(--header-primary-color)] text-white'}`}
                                 >

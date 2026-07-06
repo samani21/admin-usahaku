@@ -16,9 +16,10 @@ type Props = {
     logoImage: string | null;
     isBuild?: boolean;
     displayMode: string;
+    openScan: () => void;
 }
 
-const Thirteen = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode }: Props) => {
+const Thirteen = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode, openScan }: Props) => {
     const isDarkMode = useMemo(() => themeMode === 'dark', [themeMode]);
 
     // Navigasi & URL Logic
@@ -30,7 +31,6 @@ const Thirteen = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTh
 
     // State Local
     const [isBubbleMenuOpen, setIsBubbleMenuOpen] = useState(false);
-    const [isOpenScan, setIsOpenScan] = useState(false);
 
     return (
         <header className={`${!isBuild ? 'absolute top-2 md:top-5 left-0 px-3 md:px-5' : 'relative p-4 md:p-6'} z-[60] w-full flex justify-center pointer-events-none transition-all duration-500`}>
@@ -80,7 +80,7 @@ const Thirteen = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTh
 
                         {/* Plush Action Button */}
                         <button
-                            onClick={() => setIsOpenScan(true)}
+                            onClick={() => openScan()}
                             className="flex items-center gap-2 px-6 py-2.5 ml-1.5 rounded-full font-bold tracking-wide transition-all duration-300 active:scale-95 bg-[var(--header-primary-color)] text-white shadow-[0_8px_20px_-6px_var(--header-primary-color)] hover:shadow-[0_12px_25px_-6px_var(--header-primary-color)]"
                         >
                             <ScanBarcode className="w-5 h-5" />
@@ -133,7 +133,7 @@ const Thirteen = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTh
                             </Link>
 
                             <button
-                                onClick={() => { setIsOpenScan(true); setIsBubbleMenuOpen(false); }}
+                                onClick={() => { openScan(); setIsBubbleMenuOpen(false); }}
                                 className="w-full flex items-center justify-center gap-3 p-5 mt-2 rounded-full bg-[var(--header-primary-color)] text-white shadow-[0_10px_25px_-8px_var(--header-primary-color)] active:scale-95 transition-transform"
                             >
                                 <ScanBarcode className="w-6 h-6" />

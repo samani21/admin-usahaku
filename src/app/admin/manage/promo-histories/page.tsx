@@ -32,6 +32,7 @@ import ModalCrud from '@/Components/CRUD/ModalCrud';
 import { Delete } from '@/utils/Delete';
 import { AlertType } from '@/types/Alert';
 import Alert from '@/Components/Alert';
+import { formatImage } from '@/utils/formatImage';
 
 export default function PromoManagement() {
     // --- STATE PENCARIAN & FILTER ---
@@ -334,7 +335,7 @@ export default function PromoManagement() {
                                                                     <div className="flex items-center justify-between">
                                                                         <div className="flex items-center gap-3 min-w-0">
                                                                             <img
-                                                                                src={prod.image}
+                                                                                src={formatImage(prod.image)}
                                                                                 alt={prod.name}
                                                                                 className={`w-10 h-10 rounded-xl object-cover bg-white shrink-0 border border-slate-100 ${!promo.status && 'opacity-50 grayscale'}`}
                                                                             />

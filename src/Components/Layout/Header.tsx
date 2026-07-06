@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { menuSidebar } from '@/lib/MenuSidebar';
 import { Get } from '@/utils/Get';
 import ModalSubscription from './ModalSubscription';
+import { formatImage } from '@/utils/formatImage';
 
 type Props = {
   setIsSidebarOpen: Dispatch<SetStateAction<boolean>>;
@@ -173,7 +174,7 @@ const Header = ({ setIsSidebarOpen, user, business, isSidebarOpen, setIsMobileAc
               className="flex items-center gap-3 pl-1 group cursor-pointer select-none relative"
               onClick={() => setProfileOpen(!profileOpen)}
             >
-              <div className="text-right hidden sm:block">
+              <div className="text-right hidden md:block">
                 <p className="text-xs font-bold text-slate-800 group-hover:text-emerald-600 transition-colors flex items-center justify-end gap-1">
                   {user?.name} <ChevronDown size={12} className={`text-slate-400 group-hover:text-emerald-500 transition-transform duration-300 ${profileOpen ? 'rotate-180' : ''}`} />
                 </p>
@@ -193,9 +194,10 @@ const Header = ({ setIsSidebarOpen, user, business, isSidebarOpen, setIsMobileAc
                 }`}>
                 {
                   business?.logo_url ?
-                    <img src={business?.logo_url} className='rounded-2xl w-full h-full object-cover' /> :
+                    <img src={formatImage(business?.logo_url)} className='rounded-2xl w-full h-full object-cover' /> :
                     <Store size={24} className={`${planType === 'premium' ? 'text-slate-300' : "text-slate-100"}`} />
                 }
+                
                 {/* Indikator Bintang (Premium Aktif) atau Tanda Seru (Habis) */}
                 {planStatus === 'expired' || planStatus === 'canceled' ? (
                   <span className="absolute -top-1 -right-1 w-3 h-3 bg-rose-500 rounded-full flex items-center justify-center text-[7px] text-white border border-white font-black shadow-sm">!</span>

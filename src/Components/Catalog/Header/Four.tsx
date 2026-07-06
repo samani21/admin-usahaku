@@ -17,9 +17,10 @@ type Props = {
     isBuild?: boolean;
     displayMode: string;
     isConfigHeader: boolean;
+    openScan: () => void;
 }
 
-const Four = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode, isConfigHeader }: Props) => {
+const Four = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode, isConfigHeader, openScan }: Props) => {
     // Navigasi & URL Logic
     const pathname = usePathname();
     const { outlet } = useParams();
@@ -27,8 +28,6 @@ const Four = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme,
     const currentFirstSegment = segments[0];
     const historyLink = isBuild ? "#" : `${segments?.length > 0 && currentFirstSegment != outlet ? `/${currentFirstSegment}` : ""}/history`;
 
-    // State Local
-    const [isOpenScan, setIsOpenScan] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // State untuk Modal Mobile
 
     // Karena tema ini mengusung gaya Tech/Dark secara default di containernya
@@ -88,7 +87,7 @@ const Four = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme,
                         </Link>
 
                         <button
-                            onClick={() => setIsOpenScan(true)}
+                            onClick={() => openScan()}
                             className="flex items-center gap-2 px-4 py-1.5 ml-1 rounded-lg bg-[var(--header-primary-color)] text-slate-950 hover:opacity-90 transition-all active:scale-95 font-bold uppercase tracking-wider text-xs shadow-[0_0_15px_var(--header-primary-color)]"
                         >
                             <ScanBarcode className="w-4 h-4" />
@@ -164,7 +163,7 @@ const Four = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme,
                             {/* Tombol Scan (Dibuat paling menonjol) */}
                             <button
                                 onClick={() => {
-                                    setIsOpenScan(true);
+                                    openScan();
                                     setIsMobileMenuOpen(false);
                                 }}
                                 className="flex items-center justify-center gap-2 p-3 mt-2 rounded-xl bg-[var(--header-primary-color)] text-slate-950 hover:opacity-90 transition-all active:scale-95 font-bold uppercase tracking-wider shadow-[0_0_20px_var(--header-primary-color)]"

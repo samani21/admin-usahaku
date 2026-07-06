@@ -8,6 +8,7 @@ import {
 import React, { useEffect, useState } from 'react'
 import { QRCodeCanvas } from "qrcode.react";
 import { StatusOrder } from '@/types/StatusOrder';
+import { formatImage } from '@/utils/formatImage';
 
 type Props = {
     onClose: () => void;
@@ -190,7 +191,7 @@ const ModalDetailOrder = ({ onClose, token }: Props) => {
                                             {/* Foto Produk */}
                                             <div className="w-14 h-14 bg-white border border-slate-100 rounded-lg p-1 flex items-center justify-center shrink-0 shadow-sm">
                                                 {item?.iamge_product ? (
-                                                    <img src={item.iamge_product} alt={item.product_name} className="max-w-full max-h-full object-contain rounded-md" />
+                                                    <img src={formatImage(item.iamge_product)} alt={item.product_name} className="max-w-full max-h-full object-contain rounded-md" />
                                                 ) : (
                                                     <Package size={20} className="text-slate-300" />
                                                 )}

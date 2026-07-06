@@ -25,6 +25,7 @@ import { ItemProduct, ProductPromoType, ProductVariantPromoType, PromoType } fro
 import { Post } from '@/utils/Post';
 import Alert from '@/Components/Alert';
 import { AlertType } from '@/types/Alert';
+import { formatImage } from '@/utils/formatImage';
 
 // Tipe data untuk menyimpan konfigurasi masing-masing item
 type PromoConfig = {
@@ -469,7 +470,7 @@ export default function CreateOrUpdatePromo({ onClose, editPromo }: Props) {
                                                             <div className="w-5 h-5 shrink-0 flex items-center justify-center text-emerald-500">
                                                                 {isParentSelected ? <CheckCircle2 size={20} /> : isParentIndeterminate ? <CheckSquare size={18} className="text-emerald-400" /> : <Circle size={20} className="text-slate-300" />}
                                                             </div>
-                                                            <img src={prod.image} alt={prod.name} className="w-10 h-10 rounded-xl object-cover border border-slate-100" />
+                                                            <img src={formatImage(prod.image)} alt={prod.name} className="w-10 h-10 rounded-xl object-cover border border-slate-100" />
                                                             <div>
                                                                 <h4 className="text-sm font-bold text-slate-800">{prod.name}</h4>
                                                                 {!hasVariants && (

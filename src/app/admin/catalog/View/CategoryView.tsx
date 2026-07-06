@@ -269,8 +269,8 @@ export default function CategoriesView({ categoriesData, categories, isDarkMode,
                                                     setIsDarkMode(false);
                                                 }}
                                                 className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold transition-all ${displayMode === 'light'
-                                                        ? 'bg-white text-amber-500 shadow-sm'
-                                                        : 'text-slate-500 hover:bg-slate-200/50'
+                                                    ? 'bg-white text-amber-500 shadow-sm'
+                                                    : 'text-slate-500 hover:bg-slate-200/50'
                                                     }`}
                                             >
                                                 <Sun size={15} /> Light
@@ -281,8 +281,8 @@ export default function CategoriesView({ categoriesData, categories, isDarkMode,
                                                     setIsDarkMode(true);
                                                 }}
                                                 className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold transition-all ${displayMode === 'dark'
-                                                        ? 'bg-white text-emerald-600 shadow-sm'
-                                                        : 'text-slate-500 hover:bg-slate-200/50'
+                                                    ? 'bg-white text-emerald-600 shadow-sm'
+                                                    : 'text-slate-500 hover:bg-slate-200/50'
                                                     }`}
                                             >
                                                 <Moon size={15} /> Dark
@@ -293,8 +293,8 @@ export default function CategoriesView({ categoriesData, categories, isDarkMode,
                                                     setIsDarkMode(false);
                                                 }}
                                                 className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold transition-all ${displayMode === 'auto'
-                                                        ? 'bg-white text-slate-800 shadow-sm'
-                                                        : 'text-slate-500 hover:bg-slate-200/50'
+                                                    ? 'bg-white text-slate-800 shadow-sm'
+                                                    : 'text-slate-500 hover:bg-slate-200/50'
                                                     }`}
                                             >
                                                 <SunMoon size={15} /> Auto
@@ -322,10 +322,10 @@ export default function CategoriesView({ categoriesData, categories, isDarkMode,
                                             key={i}
                                             onClick={() => setCategorieLayout(lc?.id)}
                                             className={`whitespace-nowrap text-sm font-medium px-4 py-2.5 rounded-xl flex items-center gap-2.5 transition-all duration-200 border ${lc?.id === categorieLayout
-                                                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm'
-                                                    : isDarkMode
-                                                        ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
-                                                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:border-slate-300'
+                                                ? 'bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm'
+                                                : isDarkMode
+                                                    ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
+                                                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:border-slate-300'
                                                 }`}
                                         >
                                             {lc?.id === categorieLayout ? (
@@ -348,7 +348,7 @@ export default function CategoriesView({ categoriesData, categories, isDarkMode,
                                         categorie &&
                                         <CategorieConfig
                                             theme={categorieLayout}
-                                            categories={categorie}
+                                            dataCategories={categorie}
                                             isDarkMode={isDarkMode} />
                                     }
                                 </>
@@ -371,7 +371,7 @@ export default function CategoriesView({ categoriesData, categories, isDarkMode,
                                             categorie &&
                                             <CategorieConfig
                                                 theme={lh?.id}
-                                                categories={categorie}
+                                                dataCategories={categorie}
                                                 isDarkMode={isDarkMode} />
                                         }
                                     </div>

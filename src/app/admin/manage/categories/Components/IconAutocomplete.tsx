@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import { Icon } from '@iconify/react'
+import { formatImage } from '@/utils/formatImage'
 
 type Props = {
     value?: string
@@ -104,11 +105,14 @@ export default function IconAutocomplete({
                     <div className='flex items-center justify-between p-3 mt-1 bg-emerald-50 border border-emerald-100 rounded-xl'>
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm text-emerald-600">
-                                <Icon icon={value} width={20} />
+                                {
+                                    value?.startsWith('usahaku') ? <img src={formatImage(value)} /> :
+                                        <Icon icon={value} width={20} />
+                                }
                             </div>
                             <div>
                                 <p className="text-[10px] font-bold text-emerald-600/70 uppercase tracking-widest">Icon Aktif</p>
-                                <p className="text-sm font-bold text-slate-700 leading-none mt-0.5">{value}</p>
+                                <p className="text-sm font-bold text-slate-700 leading-none mt-0.5">{!value?.startsWith('usahaku') && value}</p>
                             </div>
                         </div>
                         <button

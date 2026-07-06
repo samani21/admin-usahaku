@@ -133,6 +133,7 @@ export default function PreviewTheme({ }) {
                             spanTwo={header.span_two}
                             displayMode={header.mode}
                             isBuild={true}
+                            openScan={() => { }}
                         />
                     )}
                 </div>
@@ -222,7 +223,7 @@ export default function PreviewTheme({ }) {
                     {categories && category && (
                         <CategorieConfig
                             theme={category.layout_categories}
-                            categories={categories}
+                            dataCategories={categories}
                             isDarkMode={category.mode === 'light' ? false : isDarkTheme || category.mode === 'dark'}
                             onClick={setSelectedCategory}
                         />
@@ -233,7 +234,7 @@ export default function PreviewTheme({ }) {
                         <div id='product-section' className={`${(productConfig.mode !== "light" && isDarkTheme) || productConfig.mode === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                             <ProductConfig
                                 theme={productConfig.layout_products}
-                                products={filteredProducts}
+                                dataProducts={filteredProducts}
                                 isDarkMode={productConfig.mode === 'light' ? false : isDarkTheme || productConfig.mode === 'dark'}
                                 handleCart={handleCart}
                             />

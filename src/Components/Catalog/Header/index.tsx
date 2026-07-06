@@ -28,9 +28,12 @@ type Props = {
     spanTwo?: string;
     displayMode: string;
     isConfigHeader?: boolean;
+    openScan: () => void;
 }
 
-const HeaderConfig = ({ layout, themeMode, isBuild, logoImage, frameType, frameTheme, toggleTheme, spanOne, spanTwo, displayMode, isConfigHeader = false }: Props) => {
+const HeaderConfig = ({ layout, themeMode, isBuild, logoImage, frameType, frameTheme, toggleTheme, spanOne, spanTwo, displayMode, isConfigHeader = false,
+    openScan
+}: Props) => {
     const component = {
         themeMode,
         isBuild,
@@ -41,7 +44,8 @@ const HeaderConfig = ({ layout, themeMode, isBuild, logoImage, frameType, frameT
         spanOne,
         spanTwo,
         displayMode,
-        isConfigHeader
+        isConfigHeader,
+        openScan
     }
     switch (layout) {
         case 1:

@@ -17,6 +17,7 @@ import DataTable from '@/Components/CRUD/DataTable'
 import ModalDelete from '@/Components/CRUD/ModalDelete'
 import ModalCrud from '@/Components/CRUD/ModalCrud'
 import Alert from '@/Components/Alert'
+import { formatImage } from '@/utils/formatImage'
 
 const BanksComponent = () => {
     // --- FILTER & PAGINATION STATE ---
@@ -181,7 +182,7 @@ const BanksComponent = () => {
             width: "200px",
             render: (row) => (
                 <img
-                    src={row.master_bank?.logo}
+                    src={formatImage(row.master_bank?.logo)}
                     alt={row.master_bank?.name}
                     className="w-24 h-12 rounded-md object-contain bg-white border border-slate-100 p-1"
                 />

@@ -16,9 +16,10 @@ type Props = {
     logoImage: string | null;
     isBuild?: boolean;
     displayMode: string;
+    openScan: () => void;
 }
 
-const Nine = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode }: Props) => {
+const Nine = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode, openScan }: Props) => {
     const isDarkMode = useMemo(() => themeMode === 'dark', [themeMode]);
 
     // Navigasi & URL Logic
@@ -30,7 +31,6 @@ const Nine = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme,
 
     // State Local
     const [isInvitationModalOpen, setIsInvitationModalOpen] = useState(false);
-    const [isOpenScan, setIsOpenScan] = useState(false);
 
     // Kunci scroll body saat VIP Modal terbuka
     useEffect(() => {
@@ -90,7 +90,7 @@ const Nine = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme,
 
                         {/* Elegant Scan Button */}
                         <button
-                            onClick={() => setIsOpenScan(true)}
+                            onClick={() => openScan()}
                             className={`flex items-center gap-2 px-5 py-2 ml-1.5 rounded-full font-serif font-medium text-xs tracking-widest uppercase transition-all duration-500 active:scale-95
                                 ${isDarkMode
                                     ? 'bg-[var(--header-primary-color)] text-slate-900 hover:brightness-110'
@@ -177,7 +177,7 @@ const Nine = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme,
                             </Link>
 
                             <button
-                                onClick={() => { setIsOpenScan(true); setIsInvitationModalOpen(false); }}
+                                onClick={() => { openScan(); setIsInvitationModalOpen(false); }}
                                 className={`mt-4 flex items-center justify-center gap-3 w-full py-4 rounded-2xl font-serif font-medium uppercase tracking-widest text-sm transition-transform active:scale-95 shadow-lg
                                     ${isDarkMode ? 'bg-[var(--header-primary-color)] text-slate-900' : 'bg-[var(--header-primary-color)] text-white'}`}
                             >

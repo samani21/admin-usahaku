@@ -16,9 +16,10 @@ type Props = {
     logoImage: string | null;
     isBuild?: boolean;
     displayMode: string;
+    openScan: () => void;
 }
 
-const Elevent = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode }: Props) => {
+const Elevent = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode, openScan }: Props) => {
     const isDarkMode = useMemo(() => themeMode === 'dark', [themeMode]);
 
     // Navigasi & URL Logic
@@ -30,7 +31,6 @@ const Elevent = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameThe
 
     // State Local
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [isOpenScan, setIsOpenScan] = useState(false);
 
     // Lock scroll saat menu tirai terbuka
     useEffect(() => {
@@ -101,7 +101,7 @@ const Elevent = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameThe
 
                         {/* Solid Block Button (Sharp Corners) */}
                         <button
-                            onClick={() => setIsOpenScan(true)}
+                            onClick={() => openScan()}
                             className={`flex items-center gap-2 px-6 py-2.5 ml-2 transition-all duration-300 active:scale-95
                                 ${isDarkMode
                                     ? 'bg-[var(--header-primary-color)] text-slate-900 hover:bg-white'
@@ -168,7 +168,7 @@ const Elevent = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameThe
                             <div className={`w-full border-b border-dashed my-2 opacity-30 ${isDarkMode ? 'border-slate-500' : 'border-slate-600'}`} />
 
                             <button
-                                onClick={() => { setIsOpenScan(true); setIsMobileMenuOpen(false); }}
+                                onClick={() => { openScan(); setIsMobileMenuOpen(false); }}
                                 className={`w-full flex items-center justify-center gap-3 py-4 mt-2 transition-transform active:scale-95
                                     ${isDarkMode ? 'bg-[var(--header-primary-color)] text-slate-900' : 'bg-[var(--header-primary-color)] text-white'}`}
                             >

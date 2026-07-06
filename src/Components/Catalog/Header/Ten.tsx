@@ -15,10 +15,11 @@ type Props = {
     frameTheme: FrameTheme;
     logoImage: string | null;
     isBuild?: boolean;
+    openScan: () => void;
     displayMode: string
 }
 
-const Ten = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode }: Props) => {
+const Ten = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode, openScan }: Props) => {
     const isDarkMode = useMemo(() => themeMode === 'dark', [themeMode]);
 
     // Navigasi & URL Logic
@@ -30,7 +31,6 @@ const Ten = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, 
 
     // State Local
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [isOpenScan, setIsOpenScan] = useState(false);
 
     return (
         <header className={`${!isBuild ? 'absolute top-3 md:top-5 left-0 px-4 md:px-6' : 'relative p-4 md:p-6'} z-[60] w-full flex justify-center pointer-events-none transition-all duration-500`}>
@@ -98,7 +98,7 @@ const Ten = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, 
 
                         {/* Primary Scan Halo Button */}
                         <button
-                            onClick={() => setIsOpenScan(true)}
+                            onClick={() => openScan()}
                             className="relative flex items-center justify-center gap-2 h-10 px-5 ml-2 rounded-full font-bold uppercase tracking-widest text-xs transition-all duration-300 hover:ring-4 hover:ring-[var(--header-primary-color)]/30 active:scale-95 bg-[var(--header-primary-color)] text-white shadow-lg"
                         >
                             <ScanBarcode className="w-4 h-4" />
@@ -152,7 +152,7 @@ const Ten = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, 
                         <div className={`h-px w-full my-1 opacity-50 ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
 
                         <button
-                            onClick={() => { setIsOpenScan(true); setIsMobileMenuOpen(false); }}
+                            onClick={() => { openScan(); setIsMobileMenuOpen(false); }}
                             className="w-full relative flex items-center justify-between p-1.5 pl-5 mt-1 rounded-full bg-[var(--header-primary-color)] text-white shadow-lg active:scale-95 transition-transform"
                         >
                             <span className="font-extrabold uppercase tracking-widest text-xs">Mulai Scan</span>

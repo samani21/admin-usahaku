@@ -3,6 +3,7 @@ import { OrderType } from '@/types/Admin/Catalog/Order';
 import { CheckIcon, XIcon, Wallet, RefreshCw, AlertCircle, QrCode, Ban } from 'lucide-react';
 import React, { useState } from 'react'
 import { QRCodeCanvas } from 'qrcode.react';
+import { formatImage } from '@/utils/formatImage';
 
 type Props = {
     onClose: () => void;
@@ -170,7 +171,7 @@ const ModalPayment = ({ onClose, activeVerifyOrder, handleAcceptPayment, handleR
                                     {activeVerifyOrder?.payment_proof ? (
                                         <div className='flex-1 flex items-center justify-center w-full bg-white border border-emerald-200 rounded-xl p-2 shadow-sm relative overflow-hidden'>
                                             <div className="absolute top-2 right-2 bg-emerald-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded uppercase shadow-sm">Uploaded</div>
-                                            <img src={activeVerifyOrder?.payment_proof} alt="Bukti Pembayaran" className='max-h-36 w-auto rounded-lg object-contain' />
+                                            <img src={formatImage(activeVerifyOrder?.payment_proof)} alt="Bukti Pembayaran" className='max-h-36 w-auto rounded-lg object-contain' />
                                         </div>
                                     ) : (
                                         <div className="flex-1 flex flex-col items-center justify-center p-4 bg-white border border-dashed border-slate-300 rounded-xl">

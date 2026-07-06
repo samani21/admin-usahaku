@@ -16,9 +16,10 @@ type Props = {
     spanOne?: string;
     spanTwo?: string;
     displayMode: string;
+    openScan: () => void;
 }
 
-const One = ({ isBuild, themeMode, logoImage, frameType, frameTheme, toggleTheme, spanOne, spanTwo, displayMode }: Props) => {
+const One = ({ isBuild, themeMode, logoImage, frameType, frameTheme, toggleTheme, spanOne, spanTwo, displayMode, openScan }: Props) => {
     // Navigasi & URL Logic
     const pathname = usePathname();
     const { outlet } = useParams();
@@ -28,7 +29,6 @@ const One = ({ isBuild, themeMode, logoImage, frameType, frameTheme, toggleTheme
 
     // State Local untuk Menu & Scan
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [isOpenScan, setIsOpenScan] = useState(false); // Bisa dihubungkan dengan komponen modal aslimu nanti
 
     return (
         <header className={`${!isBuild ? 'absolute top-3 md:top-5 left-0 px-4 md:px-8' : 'relative p-4 md:p-6'} z-[60] w-full flex justify-center transition-all duration-300`}>
@@ -71,7 +71,7 @@ const One = ({ isBuild, themeMode, logoImage, frameType, frameTheme, toggleTheme
                     </Link>
 
                     <button
-                        onClick={() => setIsOpenScan(true)}
+                        onClick={() => openScan()}
                         className={`flex items-center gap-2 px-4 py-2 ml-2 rounded-full transition-all active:scale-95 ${themeMode === 'dark' ? 'bg-white text-slate-900 hover:bg-slate-200' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
                     >
                         <ScanBarcode className="w-4 h-4" />
@@ -119,7 +119,7 @@ const One = ({ isBuild, themeMode, logoImage, frameType, frameTheme, toggleTheme
                             <div className={`h-px w-full my-1 ${themeMode === 'dark' ? 'bg-slate-800' : 'bg-slate-200'}`} />
 
                             <button
-                                onClick={() => { setIsOpenScan(true); setIsMobileMenuOpen(false); }}
+                                onClick={() => { openScan(); setIsMobileMenuOpen(false); }}
                                 className={`flex items-center gap-3 p-3 rounded-xl transition-colors ${themeMode === 'dark' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-900'}`}
                             >
                                 <ScanBarcode className="w-5 h-5" />

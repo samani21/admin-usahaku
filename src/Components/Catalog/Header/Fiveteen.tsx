@@ -16,9 +16,10 @@ type Props = {
     logoImage: string | null;
     isBuild?: boolean;
     displayMode: string;
+    openScan: () => void;
 }
 
-const Fiveteen = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode }: Props) => {
+const Fiveteen = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode, openScan }: Props) => {
     const isDarkMode = useMemo(() => themeMode === 'dark', [themeMode]);
 
     // Navigasi & URL Logic
@@ -30,7 +31,6 @@ const Fiveteen = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTh
 
     // State Local
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [isOpenScan, setIsOpenScan] = useState(false);
 
     // Kunci scroll body saat menu terbuka (opsional, bisa dihapus jika ingin user tetap bisa scroll)
     useEffect(() => {
@@ -96,7 +96,7 @@ const Fiveteen = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTh
 
                         {/* Hairline Ghost Button for Scan (Director's Frame) */}
                         <button
-                            onClick={() => setIsOpenScan(true)}
+                            onClick={() => openScan()}
                             className={`relative flex items-center gap-3 px-6 py-2 transition-all duration-500 overflow-hidden group
                                 ${isDarkMode ? 'text-slate-200 hover:text-[var(--header-primary-color)]' : 'text-slate-800 hover:text-[var(--header-primary-color)]'}`}
                         >
@@ -152,7 +152,7 @@ const Fiveteen = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTh
 
                         <div className="p-6">
                             <button
-                                onClick={() => { setIsOpenScan(true); setIsMenuOpen(false); }}
+                                onClick={() => { openScan(); setIsMenuOpen(false); }}
                                 className={`flex items-center justify-between w-full p-4 transition-transform active:scale-95
                                     ${isDarkMode ? 'bg-white text-slate-950' : 'bg-slate-950 text-white'}`}
                             >

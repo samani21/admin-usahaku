@@ -23,6 +23,7 @@ import DataTable from "@/Components/CRUD/DataTable";
 import ModalDelete from "@/Components/CRUD/ModalDelete";
 import ModalCrud from "@/Components/CRUD/ModalCrud";
 import Alert from "@/Components/Alert";
+import { formatImage } from "@/utils/formatImage";
 
 interface ProductResponse {
     data: ProductsType[];
@@ -202,7 +203,7 @@ export default function ListProductPage() {
             label: "Gambar",
             width: "150px",
             render: (row) => (
-                <img src={row.image} alt={row.name} className="w-24 h-24 object-cover rounded-xl bg-slate-50 border border-slate-100" />
+                <img src={formatImage(row.image)} alt={row.name} className="w-24 h-24 object-cover rounded-xl bg-slate-50 border border-slate-100" />
             ),
         },
         { key: "name", label: "Nama Produk" },

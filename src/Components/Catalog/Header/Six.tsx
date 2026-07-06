@@ -16,9 +16,10 @@ type Props = {
     logoImage: string | null;
     isBuild?: boolean;
     displayMode: string;
+    openScan: () => void;
 }
 
-const Six = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode }: Props) => {
+const Six = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode, openScan }: Props) => {
     const isDarkMode = useMemo(() => themeMode === 'dark', [themeMode]);
 
     // Navigasi & URL Logic
@@ -30,7 +31,6 @@ const Six = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, 
 
     // State Local
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [isOpenScan, setIsOpenScan] = useState(false);
 
     return (
         <header className={`${!isBuild ? 'absolute top-0 left-0 pt-4 md:pt-6 px-4 md:px-6' : 'relative p-4 md:p-6'} z-[60] w-full flex justify-center pointer-events-none transition-all duration-300`}>
@@ -85,7 +85,7 @@ const Six = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, 
 
                         {/* Tombol Scan Solid */}
                         <button
-                            onClick={() => setIsOpenScan(true)}
+                            onClick={() => openScan()}
                             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm tracking-wide transition-all active:scale-95 shadow-sm
                                 ${isDarkMode
                                     ? 'bg-[var(--header-primary-color)] text-slate-900 hover:brightness-110'
@@ -145,7 +145,7 @@ const Six = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, 
                             <div className={`h-px w-full my-2 ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'}`} />
 
                             <button
-                                onClick={() => { setIsOpenScan(true); setIsMobileMenuOpen(false); }}
+                                onClick={() => { openScan(); setIsMobileMenuOpen(false); }}
                                 className={`flex items-center justify-center gap-2 w-full p-4 rounded-xl font-bold text-sm tracking-wide transition-transform active:scale-95 shadow-sm mt-1
                                     ${isDarkMode ? 'bg-[var(--header-primary-color)] text-slate-900' : 'bg-[var(--header-primary-color)] text-white'}`}
                             >

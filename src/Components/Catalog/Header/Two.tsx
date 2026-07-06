@@ -16,9 +16,10 @@ type Props = {
     logoImage: string | null
     isBuild?: boolean;
     displayMode: string;
+    openScan: () => void;
 }
 
-const Two = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode }: Props) => {
+const Two = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode, openScan }: Props) => {
     const isDarkMode = useMemo(() => themeMode === 'dark', [themeMode])
 
     // Navigasi & URL Logic
@@ -30,7 +31,6 @@ const Two = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, 
 
     // State Local untuk Mobile Menu & Scan
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [isOpenScan, setIsOpenScan] = useState(false);
 
     // Kunci scroll saat menu terbuka
     useEffect(() => {
@@ -90,7 +90,7 @@ const Two = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, 
                         <div className={`w-px h-5 mx-1 ${isDarkMode ? 'bg-white/20' : 'bg-slate-300'}`} />
 
                         <button
-                            onClick={() => setIsOpenScan(true)}
+                            onClick={() => openScan()}
                             className={`flex items-center gap-2 px-4 py-1.5 ml-1 rounded-full transition-transform active:scale-95 ${isDarkMode ? 'bg-white text-slate-900 hover:bg-slate-200' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
                         >
                             <ScanBarcode className="w-4 h-4" />
@@ -151,7 +151,7 @@ const Two = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, 
                         </Link>
 
                         <button
-                            onClick={() => { setIsOpenScan(true); setIsMobileMenuOpen(false); }}
+                            onClick={() => { openScan(); setIsMobileMenuOpen(false); }}
                             className="flex items-center justify-center gap-2 w-full mt-1 p-4 rounded-[1.5rem] font-bold tracking-widest uppercase text-xs transition-transform active:scale-95 shadow-md bg-[var(--header-primary-color)] text-white"
                         >
                             <ScanBarcode className="w-5 h-5" />

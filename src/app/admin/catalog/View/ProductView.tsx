@@ -347,14 +347,14 @@ export default function ProductView({ productData, productsData, isDarkMode, set
                                     <div className='hidden md:grid'>
                                         <ProductConfig
                                             theme={productLayout}
-                                            products={products?.slice(0, 4) ?? []}
+                                            dataProducts={products?.slice(0, 4) ?? []}
                                             isDarkMode={isDarkMode}
                                             handleCart={handleCart} />
                                     </div>
                                     <div className='md:hidden'>
                                         <ProductConfig
                                             theme={productLayout}
-                                            products={products?.slice(1, 3) ?? []}
+                                            dataProducts={products?.slice(1, 3) ?? []}
                                             isDarkMode={isDarkMode}
                                             handleCart={handleCart} />
                                     </div>
@@ -378,14 +378,14 @@ export default function ProductView({ productData, productsData, isDarkMode, set
                                         <div className='hidden md:grid'>
                                             <ProductConfig
                                                 theme={lh?.id}
-                                                products={products?.slice(0, 4) ?? []}
+                                                dataProducts={products?.slice(0, 4) ?? []}
                                                 isDarkMode={isDarkMode}
                                                 handleCart={handleCart} />
                                         </div>
                                         <div className='md:hidden'>
                                             <ProductConfig
                                                 theme={lh?.id}
-                                                products={products?.slice(1, 3) ?? []}
+                                                dataProducts={products?.slice(1, 3) ?? []}
                                                 isDarkMode={isDarkMode}
                                                 handleCart={handleCart} />
                                         </div>

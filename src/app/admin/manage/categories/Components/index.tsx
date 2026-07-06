@@ -18,6 +18,7 @@ import ModalDelete from '@/Components/CRUD/ModalDelete'
 import ModalCrud from '@/Components/CRUD/ModalCrud'
 import CreateOrUpdateCategorie from './CreateOrUpdateCategorie'
 import Alert from '@/Components/Alert'
+import { formatImage } from '@/utils/formatImage'
 
 const CategoriesComponent = () => {
     // --- FILTER & PAGINATION STATE ---
@@ -188,10 +189,10 @@ const CategoriesComponent = () => {
             render: (row) => {
                 if (!row?.icon) return <span className="text-slate-400">-</span>;
 
-                if (row.icon.startsWith("http")) {
+                if (row.icon.startsWith("usahaku")) {
                     return (
                         <div className="w-14 h-14 bg-slate-50 border border-slate-100 rounded-xl overflow-hidden shadow-sm flex items-center justify-center p-1">
-                            <img src={row.icon} alt={row.name} className="w-full h-full object-contain" />
+                            <img src={formatImage(row.icon)} alt={row.name} className="w-full h-full object-contain" />
                         </div>
                     );
                 }

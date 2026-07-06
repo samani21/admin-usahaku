@@ -16,9 +16,10 @@ type Props = {
     logoImage: string | null;
     isBuild?: boolean;
     displayMode: string;
+    openScan: () => void;
 }
 
-const Sevent = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode }: Props) => {
+const Sevent = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameTheme, logoImage, isBuild, displayMode, openScan }: Props) => {
     const isDarkMode = useMemo(() => themeMode === 'dark', [themeMode]);
 
     // Navigasi & URL Logic
@@ -30,7 +31,6 @@ const Sevent = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameThem
 
     // State Local
     const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
-    const [isOpenScan, setIsOpenScan] = useState(false);
 
     // Kunci scroll saat Bottom Sheet terbuka
     useEffect(() => {
@@ -87,7 +87,7 @@ const Sevent = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameThem
 
                         {/* Soft Pastel Button untuk Scan (Sangat elegan) */}
                         <button
-                            onClick={() => setIsOpenScan(true)}
+                            onClick={() => openScan()}
                             className="flex items-center gap-2 px-5 py-2.5 ml-2 rounded-full font-semibold text-xs tracking-wide transition-all active:scale-95 bg-[var(--header-primary-color)]/10 text-[var(--header-primary-color)] hover:bg-[var(--header-primary-color)] hover:text-white"
                         >
                             <ScanBarcode className="w-4 h-4" />
@@ -172,7 +172,7 @@ const Sevent = ({ themeMode, spanOne, spanTwo, toggleTheme, frameType, frameThem
 
                         {/* Primary Action Button (Bottom Sheet Footer) */}
                         <button
-                            onClick={() => { setIsOpenScan(true); setIsBottomSheetOpen(false); }}
+                            onClick={() => { openScan(); setIsBottomSheetOpen(false); }}
                             className="mt-6 w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-[var(--header-primary-color)] text-white font-semibold text-base shadow-lg shadow-[var(--header-primary-color)]/30 active:scale-[0.98] transition-transform"
                         >
                             <ScanBarcode className="w-5 h-5" />
