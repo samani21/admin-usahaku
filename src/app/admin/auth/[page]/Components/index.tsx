@@ -100,8 +100,8 @@ function AuthView({ page }: Props) {
     }
     return (
         <div className={`min-h-screen ${themeStyles.bg} flex flex-col items-center justify-center p-4 md:p-8 font-sans overflow-x-hidden relative transition-colors duration-500`}>
-            <div className={`absolute top-0 right-1/4 w-[450px] h-[450px] rounded-full blur-[140px] opacity-25 pointer-events-none transition-all duration-1000 bg-emerald-600`}></div>
-            <div className="absolute bottom-0 left-10 w-[350px] h-[350px] rounded-full blur-[120px] opacity-10 bg-blue-600 pointer-events-none"></div>
+            {/* <div className={`absolute top-0 right-1/4 w-[450px] h-[450px] rounded-full blur-[140px] opacity-25 pointer-events-none transition-all duration-1000 bg-emerald-600`}></div>
+            <div className="absolute bottom-0 left-10 w-[350px] h-[350px] rounded-full blur-[120px] opacity-10 bg-blue-600 pointer-events-none"></div> */}
             <div className="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full">
                 {toasts.map((toast: any) => (
                     <div key={toast.id} className={`flex items-start gap-3 p-4 rounded-2xl shadow-2xl border backdrop-blur-xl animate-slideIn ${toast.type === 'error'
