@@ -165,7 +165,7 @@ const CreateOrUpdateCategorie = ({ handleFormSubmit, data, loading, setLoading, 
             return; // Berhenti langsung jika ada bentrok media
         }
 
-        if (icon && !form.color) {
+        if (icon && !form.color && !icon?.startsWith('usahaku')) {
             newErrors.color = "Warna icon harus dipilih";
             hasError = true;
         }
