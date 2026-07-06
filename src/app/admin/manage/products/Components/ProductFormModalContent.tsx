@@ -13,6 +13,7 @@ import ButtonSubmit from '@/Components/CRUD/FormInput/ButtonSubmit';
 import FormInput from '@/Components/CRUD/FormInput/FormInput';
 import ImagePreview from '@/Components/CRUD/FormInput/ImagePreview';
 import ToggleSwitch from '@/Components/ui/ToggleSwitch';
+import { formatImage } from '@/utils/formatImage';
 
 // --- TYPES ---
 type Props = {
@@ -465,7 +466,7 @@ const ProductFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
                                     className="w-full p-2 border border-slate-300 rounded-xl file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-emerald-100 file:text-emerald-700 hover:file:bg-emerald-200 transition bg-slate-50 text-sm cursor-pointer"
                                     accept="image/*"
                                 />
-                                <ImagePreview imageUrl={productData.imagePreviewUrl} fileName={productData.image?.name} />
+                                <ImagePreview imageUrl={formatImage(productData.imagePreviewUrl ?? '') ?? ''} fileName={productData.image?.name} />
                                 {error?.image && (
                                     <p className="text-xs text-rose-500 font-medium flex items-center mt-1">
                                         <AlertTriangle size={14} className="mr-1" /> {error.image}
