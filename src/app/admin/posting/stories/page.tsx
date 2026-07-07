@@ -7,6 +7,7 @@ import { AlertType } from '@/types/Alert';
 import Alert from '@/Components/Alert';
 import { Get } from '@/utils/Get';
 import { Delete } from '@/utils/Delete';
+import { formatImage } from '@/utils/formatImage';
 
 // --- Tipe Data ---
 export interface Meta {
@@ -234,10 +235,16 @@ const StoryManagementViews = () => {
                                                         {story.caption}
                                                     </p>
                                                 ) : story.media_type === 'image' ? (
-                                                    <img src={story.media_path!} alt="Story" className="w-full h-full object-cover" />
+                                                    <img src={formatImage(story.media_path ?? '')} alt="Story" className="w-full h-full object-cover" />
                                                 ) : (
                                                     <div className="w-full h-full bg-slate-800 flex items-center justify-center">
-                                                        <Video className="text-white/50" size={32} />
+                                                        <video
+                                                            src={`${formatImage(story.media_path ?? '')}#t=0.001`}
+                                                            className="w-full h-full object-cover rounded-2xl bg-black"
+                                                            controls
+                                                            preload="metadata"
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        />
                                                     </div>
                                                 )}
 
