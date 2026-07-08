@@ -81,7 +81,7 @@ const Sevent = ({ products, isDarkMode, handleCart }: Props) => {
 
                                 {/* Promo Label (Glassmorphism Pill) */}
                                 {label && is_available && (
-                                    <div className="absolute top-4 left-4 bg-white/20 backdrop-blur-md border border-white/40 text-white px-3.5 py-1.5 rounded-full text-[10px] font-black uppercase flex items-center gap-1.5 shadow-lg z-10">
+                                    <div className="absolute top-4 left-4 bg-rose-500 backdrop-blur-md border border-white/40 text-white px-3.5 py-1.5 rounded-full text-[10px] font-black uppercase flex items-center gap-1.5 shadow-lg z-10">
                                         <Zap size={12} fill="currentColor" /> {label}
                                     </div>
                                 )}

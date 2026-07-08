@@ -3,19 +3,17 @@ import ModalWrapper from './ModalWrapper';
 import { useEffect, useMemo, useState } from 'react';
 import QtySelector from './QtySelector';
 import VariantPicker from './VariantPicker';
-import { Minus, Package, Plus, Sparkles, X, ShoppingBag, Fingerprint } from 'lucide-react';
+import { Minus, Plus, ShoppingBag, X, Tag, ArrowRight, Check } from 'lucide-react';
 import AlertWrapper from './AlertWrapper';
 import { ProductsType, Variants } from '@/types/Admin/ProductsType';
 import { formatIDR } from '@/types/FormtRupiah';
 import ExpandableHTML from './ExpandableHTML';
 import { getPromoDetails, Promo } from './PromoType';
-import { OutletsType } from '@/types/Admin/OutletType';
 
 type Props = {
     products: ProductsType[];
     isDarkMode: boolean;
     handleCart?: (p: ProductsType | null, v: Variants | null, qty: number) => void;
-
 }
 
 const Fourteen = ({ products, isDarkMode, handleCart }: Props) => {
@@ -27,16 +25,6 @@ const Fourteen = ({ products, isDarkMode, handleCart }: Props) => {
         if (!product) return true;
         return product?.variants?.length > 0 && !selectedVariant;
     }, [product, selectedVariant]);
-
-    const mockItem = useMemo(() => {
-        return {
-            name: product?.name,
-            price: product?.final_price,
-            image: product?.image,
-            category: product?.category,
-            quantity: quantity
-        }
-    }, [product, quantity])
 
     useEffect(() => {
         document.body.style.overflow = product ? 'hidden' : 'unset';
@@ -58,11 +46,11 @@ const Fourteen = ({ products, isDarkMode, handleCart }: Props) => {
         if (selectedVariant?.product_variant_stock && selectedVariant?.product_variant_stock < quantity) {
             setQuantity(selectedVariant?.product_variant_stock);
         }
-    }, [selectedVariant, quantity])
+    }, [selectedVariant, quantity]);
 
     return (
         <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 p-4 md:p-8 
-            ${isDarkMode ? 'text-zinc-100' : 'text-slate-900'}`}>
+            ${isDarkMode ? 'text-zinc-100' : 'text-slate-800'}`}>
 
             {products?.map((p, i) => {
                 const { finalPrice, label } = getPromoDetails(p);
@@ -72,102 +60,77 @@ const Fourteen = ({ products, isDarkMode, handleCart }: Props) => {
                     <div
                         key={i}
                         onClick={() => is_available && setProduct(p)}
-                        className={`group relative flex flex-col rounded-[2.5rem] overflow-hidden transition-all duration-500 border-2
+                        className={`group relative flex flex-col rounded-[2rem] p-3 transition-all duration-500
                             ${is_available
-                                ? `cursor-pointer hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:-translate-y-2
-                                   ${isDarkMode ? 'bg-[#121212] border-zinc-800 hover:border-zinc-600' : 'bg-white border-slate-200 hover:border-slate-400'}`
-                                : `cursor-not-allowed 
-                                   ${isDarkMode ? 'bg-[#0a0a0a] border-zinc-900 opacity-70 grayscale-[0.8]' : 'bg-slate-50 border-slate-200 opacity-70 grayscale-[0.8]'}`
+                                ? `cursor-pointer hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)]
+                                   ${isDarkMode ? 'bg-[#18181b] border border-white/5 hover:border-white/10' : 'bg-white border border-slate-100 hover:border-slate-200 shadow-sm'}`
+                                : `cursor-not-allowed opacity-60 grayscale-[0.5]
+                                   ${isDarkMode ? 'bg-[#121212] border border-white/5' : 'bg-slate-50 border border-slate-100'}`
                             }`}
                     >
-                        {/* Image Section with Urban/Tech Overlay */}
-                        <div className={`relative aspect-[4/5] sm:aspect-square overflow-hidden
-                            ${isDarkMode ? 'bg-zinc-900' : 'bg-slate-100'}`}>
+                        {/* Image Section - Minimalist Floating Style */}
+                        <div className={`relative aspect-square rounded-[1.5rem] overflow-hidden mb-5
+                            ${isDarkMode ? 'bg-[#0f0f11]' : 'bg-slate-100/50'}`}>
 
                             <img
                                 src={p.image}
-                                className={`w-full h-full object-cover transition-transform duration-[1.5s] ease-[cubic-bezier(0.25,1,0.5,1)] 
-                                    ${is_available ? "group-hover:scale-110" : "opacity-40"}`}
+                                className={`w-full h-full object-cover transition-transform duration-[2s] ease-[cubic-bezier(0.2,0.8,0.2,1)] 
+                                    ${is_available ? "group-hover:scale-110" : ""}`}
                                 alt={p.name}
                             />
 
-                            {/* Tech-Scanline Overlay (Muncul saat hover) */}
-                            {is_available && (
-                                <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.1)_50%)] bg-[length:100%_4px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-                            )}
+                            {/* Elegant Gradient Overlay for Text Visibility */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                            {/* Overlay Gradient */}
-                            <div className={`absolute inset-0 bg-gradient-to-t transition-opacity duration-500
-                                ${isDarkMode ? 'from-[#121212] via-transparent to-transparent' : 'from-white/90 via-transparent to-transparent'}
-                                ${is_available ? "opacity-90 group-hover:opacity-60" : "opacity-100"}`}
-                            />
-
-                            {/* Status Badge */}
-                            {is_available ? (
-                                label && (
-                                    <div className="absolute top-5 left-5 bg-[#eab308] text-black text-[10px] font-black px-4 py-1.5 rounded-sm uppercase tracking-widest shadow-lg -skew-x-12 group-hover:skew-x-0 transition-transform duration-300">
-                                        {label}
+                            {/* Status Badge - Pill Style */}
+                            <div className="absolute top-4 left-4 right-4 flex justify-between items-start pointer-events-none">
+                                {is_available ? (
+                                    label && (
+                                        <div className="bg-white/90 backdrop-blur-md text-slate-900 text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm">
+                                            {label}
+                                        </div>
+                                    )
+                                ) : (
+                                    <div className="bg-black/70 backdrop-blur-md text-white text-[10px] font-medium px-3 py-1.5 rounded-full">
+                                        Sold Out
                                     </div>
-                                )
-                            ) : (
-                                <div className="absolute top-5 left-5 bg-zinc-800 text-zinc-400 text-[10px] font-black px-4 py-1.5 rounded-sm uppercase tracking-widest border border-zinc-700 shadow-lg">
-                                    Off Grid
-                                </div>
-                            )}
+                                )}
 
-                            {/* Category HUD */}
-                            <div className={`absolute bottom-5 left-5 right-5 flex justify-between items-end transition-transform duration-500
-                                ${is_available ? "translate-y-2 group-hover:translate-y-0" : "translate-y-0 opacity-50"}`}>
-                                <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-md border border-white/10">
-                                    <Fingerprint size={12} className="text-[var(--product-primary-color)]" />
-                                    <span className="text-[9px] font-black text-white uppercase tracking-[0.2em]">{p.category}</span>
-                                </div>
+                                {/* Hover Action Icon */}
+                                {is_available && (
+                                    <div className="w-8 h-8 rounded-full bg-white/90 backdrop-blur-md text-slate-900 flex items-center justify-center opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 shadow-sm">
+                                        <ArrowRight size={14} />
+                                    </div>
+                                )}
                             </div>
                         </div>
 
-                        {/* Tactical Ticket Perforation Area */}
-                        <div className="relative h-8 flex items-center px-4 overflow-hidden">
-                            {/* Kutub Lingkaran Kiri & Kanan meminjam warna background utama halaman agar terlihat bolong */}
-                            <div className={`absolute -left-4 w-8 h-8 rounded-full border-r-2 z-10 
-                                ${isDarkMode ? 'bg-black border-zinc-800' : 'bg-slate-50 border-slate-200'}`} />
-                            <div className={`absolute -right-4 w-8 h-8 rounded-full border-l-2 z-10 
-                                ${isDarkMode ? 'bg-black border-zinc-800' : 'bg-slate-50 border-slate-200'}`} />
+                        {/* Content Section - Clean Typography */}
+                        <div className="px-2 pb-2 flex-1 flex flex-col">
+                            <div className="flex items-center gap-1.5 mb-2">
+                                <Tag size={12} className={isDarkMode ? "text-zinc-500" : "text-slate-400"} />
+                                <span className={`text-[10px] font-medium tracking-widest uppercase
+                                    ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`}>
+                                    {p.category || 'Product'}
+                                </span>
+                            </div>
 
-                            <div className={`w-full border-t-[3px] border-dashed 
-                                ${is_available
-                                    ? (isDarkMode ? "border-zinc-800" : "border-slate-300")
-                                    : (isDarkMode ? "border-zinc-900" : "border-slate-200")}`}
-                            />
-                        </div>
-
-                        {/* Content Section */}
-                        <div className={`p-6 sm:p-8 pt-2 space-y-5 transition-opacity ${!is_available ? "opacity-50" : ""}`}>
-
-                            <h3 className={`font-black text-xl leading-none uppercase italic tracking-tighter line-clamp-2 transition-colors duration-300
-                                ${is_available && isDarkMode ? "group-hover:text-zinc-300" : is_available && !isDarkMode ? "group-hover:text-slate-600" : ""}`}>
+                            <h3 className={`font-semibold text-lg leading-snug tracking-tight line-clamp-2 transition-colors duration-300 mb-4
+                                ${is_available ? "group-hover:text-[var(--product-primary-color)]" : ""}`}>
                                 {p.name}
                             </h3>
 
-                            <div className="flex items-center justify-between gap-4 mt-auto">
+                            <div className="mt-auto flex items-end justify-between">
                                 <div className="flex flex-col">
                                     {label && is_available && (
-                                        <span className={`text-[10px] line-through font-black tracking-widest uppercase mb-0.5
+                                        <span className={`text-[11px] line-through font-medium mb-0.5
                                             ${isDarkMode ? 'text-zinc-600' : 'text-slate-400'}`}>
                                             {formatIDR(p.price)}
                                         </span>
                                     )}
-                                    <p className={`text-2xl font-black italic tracking-tighter leading-none 
-                                        ${is_available ? "text-[var(--product-primary-color)]" : isDarkMode ? "text-zinc-600" : "text-slate-500"}`}>
+                                    <p className="text-xl font-bold tracking-tight">
                                         {formatIDR(finalPrice)}
                                     </p>
-                                </div>
-
-                                {/* Tactical Action Button */}
-                                <div className={`h-12 w-12 rounded-xl flex items-center justify-center transition-all duration-300 shadow-lg border
-                                    ${is_available
-                                        ? `${isDarkMode ? "bg-white text-black border-white" : "bg-zinc-900 text-white border-zinc-900"} -skew-x-12 group-hover:skew-x-0 group-hover:scale-110`
-                                        : `${isDarkMode ? "bg-zinc-900 text-zinc-600 border-zinc-800" : "bg-slate-200 text-slate-400 border-slate-300"} skew-x-0 shadow-none`}`}>
-                                    {is_available ? <Plus size={20} strokeWidth={3} /> : <Minus size={20} strokeWidth={3} />}
                                 </div>
                             </div>
                         </div>
@@ -175,68 +138,82 @@ const Fourteen = ({ products, isDarkMode, handleCart }: Props) => {
                 );
             })}
 
-            {/* Modal - Techwear / Cyber Layout (Scroll Fixed) */}
+            {/* Modal - Luxury Editorial Layout */}
             <ModalWrapper
                 activeModal={!!product}
                 closeModal={() => { setProduct(null); setSelectedVariant(null); setQuantity(1); }}
                 isDarkMode={isDarkMode}
             >
-                <div className={`w-full flex flex-col lg:flex-row min-h-full font-sans
-                    ${isDarkMode ? 'bg-[#0f0f11] text-zinc-100' : 'bg-slate-50 text-slate-900'}`}>
+                <div className={`w-full flex flex-col md:flex-row min-h-full font-sans selection:bg-[var(--product-primary-color)] selection:text-white
+                    ${isDarkMode ? 'bg-[#0a0a0a] text-zinc-100' : 'bg-white text-slate-800'}`}>
 
-                    {/* Visual Lab Section (Sticky on Desktop) */}
-                    <div className={`w-full lg:w-[45%] h-[45vh] sm:h-[55vh] lg:h-auto lg:min-h-[100dvh] lg:sticky lg:top-0 relative shrink-0 group border-b lg:border-b-0
-                        ${isDarkMode ? "bg-[#18181b] lg:border-r border-zinc-800" : "bg-slate-200 lg:border-r border-slate-300"}`}>
+                    {/* Visual Section - Edge to Edge on Mobile, Padded on Desktop */}
+                    <div className={`w-full md:w-[45%] lg:w-[50%] h-[50vh] md:h-auto md:min-h-[100dvh] md:sticky md:top-0 relative flex items-center justify-center overflow-hidden
+                        ${isDarkMode ? "bg-[#121212]" : "bg-slate-50"}`}>
 
-                        <img
-                            src={selectedVariant?.image ?? product?.image}
-                            className='absolute inset-0 w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-1000'
-                            alt={product?.name}
+                        {/* Background Blur Effect */}
+                        <div
+                            className="absolute inset-0 bg-cover bg-center opacity-30 blur-3xl scale-110"
+                            style={{ backgroundImage: `url(${selectedVariant?.image ?? product?.image})` }}
                         />
 
-                        {/* Tech Grid Background / Overlay */}
-                        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none opacity-50" />
+                        {/* Main Image */}
+                        <div className="relative w-full h-full p-0 md:p-8 lg:p-12">
+                            <img
+                                src={selectedVariant?.image ?? product?.image}
+                                className="w-full h-full object-cover md:object-contain md:rounded-[2rem] shadow-2xl transition-all duration-700"
+                                alt={product?.name}
+                            />
 
-                        {/* Floating Tech Badges */}
-                        <div className="absolute top-6 left-6 flex flex-col gap-3">
-
+                            {/* Floating Discount Badge */}
                             {product?.discount_price ? (
-                                <div className="bg-[var(--product-primary-color)] text-white px-5 py-2 rounded-sm font-black text-xl italic skew-x-[-12deg] shadow-xl w-fit">
-                                    -{Promo(product, selectedVariant)}
+                                <div className="absolute top-4 left-4 md:top-12 md:left-12 bg-white/90 backdrop-blur-md text-slate-900 px-4 py-2 rounded-full font-semibold text-xs tracking-wide shadow-xl flex items-center gap-2 border border-slate-100">
+                                    <span className="w-2 h-2 rounded-full bg-[var(--product-primary-color)] animate-pulse" />
+                                    Save {Promo(product, selectedVariant)}
                                 </div>
                             ) : ''}
                         </div>
                     </div>
 
-                    {/* Urban Control Panel (Scrollable Content) */}
-                    <div className="w-full lg:w-[55%] flex flex-col z-10">
-                        <div className="p-6 sm:p-10 lg:p-14 flex-grow space-y-10">
+                    {/* Info Section - Lots of Whitespace & Soft Borders */}
+                    <div className="w-full md:w-[55%] lg:w-[50%] flex flex-col z-10">
+                        <div className="p-8 sm:p-12 lg:p-16 flex-grow space-y-12">
 
-                            {/* Product Title HUD */}
+                            {/* Header */}
                             <div className="space-y-4">
-                                <div className="flex items-center gap-3 text-[var(--product-primary-color)]">
-                                    <Fingerprint size={16} strokeWidth={2.5} />
-                                    <span className="text-[10px] font-black uppercase tracking-[0.3em]">
-                                        {product?.category || 'SYS.OBJ'}
-                                    </span>
-                                </div>
-                                <h2 className="text-4xl sm:text-5xl md:text-6xl font-black italic leading-[0.85] uppercase tracking-tighter">
+                                <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-semibold tracking-widest uppercase
+                                    ${isDarkMode ? 'bg-white/10 text-zinc-300' : 'bg-slate-100 text-slate-600'}`}>
+                                    {product?.category || 'Collection'}
+                                </span>
+                                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.1]">
                                     {product?.name}
                                 </h2>
+
+                                <div className="flex items-baseline gap-4 pt-2">
+                                    <span className="text-3xl font-light tracking-tight">
+                                        {formatIDR(currentFinalPrice)}
+                                    </span>
+                                    {currentDiscount > 0 ? (
+                                        <span className="text-lg opacity-40 line-through font-light">
+                                            {formatIDR(currentPrice)}
+                                        </span>
+                                    ) : ''}
+                                </div>
                             </div>
 
-                            {/* Description Terminal */}
-                            <div className={`border-l-4 pl-6 italic opacity-80
-                                ${isDarkMode ? "border-zinc-800" : "border-slate-300"}`}>
-                                <ExpandableHTML htmlContent={product?.description} className="text-sm leading-relaxed" />
+                            {/* Description */}
+                            <div className={`text-sm leading-relaxed font-light
+                                ${isDarkMode ? "text-zinc-400" : "text-slate-500"}`}>
+                                <ExpandableHTML htmlContent={product?.description} />
                             </div>
 
-                            {/* System Options & Interactions */}
-                            <div className="space-y-8 pt-6">
+                            {/* Options Area */}
+                            <div className="space-y-10 pt-4">
                                 {product?.variants && product?.variants?.length > 0 ? (
                                     <div className="space-y-4">
-                                        <p className={`text-[10px] font-black uppercase tracking-widest 
-                                        ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>Pilih Varian</p>
+                                        <div className="flex items-center justify-between">
+                                            <p className="text-xs font-medium tracking-wide">Select Variant</p>
+                                        </div>
                                         <VariantPicker
                                             variants={product?.variants}
                                             selectedVariant={selectedVariant}
@@ -246,42 +223,33 @@ const Fourteen = ({ products, isDarkMode, handleCart }: Props) => {
                                     </div>
                                 ) : ''}
 
-                                {/* Price Matrix Box */}
-                                <div className={`p-6 rounded-[2rem] border-2 space-y-6
-                                    ${isDarkMode ? "bg-white/5 border-white/10" : "bg-white border-slate-200 shadow-sm"}`}>
-
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Price Matrix</p>
-                                        <div className="flex items-baseline gap-4">
-                                            <span className="text-4xl sm:text-5xl font-black tracking-tighter italic text-[var(--product-primary-color)]">
-                                                {formatIDR(currentFinalPrice)}
-                                            </span>
-                                            {currentDiscount > 0 ? (
-                                                <span className="text-lg opacity-30 line-through font-bold italic">
-                                                    {formatIDR(currentPrice)}
-                                                </span>
-                                            ) : ''}
+                                {product?.is_qty ? (
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <p className="text-xs font-medium tracking-wide">Quantity</p>
+                                            <p className={`text-xs ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`}>
+                                                {selectedVariant?.product_variant_stock ?? product?.stock} Available
+                                            </p>
                                         </div>
+                                        <QtySelector
+                                            product={product}
+                                            selectedVariant={selectedVariant}
+                                            quantity={quantity}
+                                            setQuantity={setQuantity}
+                                            isDarkMode={isDarkMode}
+                                        />
                                     </div>
-
-                                    {product?.is_qty ? (
-                                        <div className={`pt-6 border-t border-dashed flex flex-col sm:flex-row sm:items-center justify-between gap-4
-                                            ${isDarkMode ? "border-white/10" : "border-slate-200"}`}>
-                                            <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Output Quantity</span>
-                                            <QtySelector product={product} selectedVariant={selectedVariant} quantity={quantity} setQuantity={setQuantity} isDarkMode={isDarkMode} />
-                                        </div>
-                                    ) : ''}
-                                </div>
+                                ) : ''}
                             </div>
                         </div>
 
-                        {/* Checkout Sector (Sticky Footer) */}
-                        <div className={`p-6 sm:p-10 lg:p-14 pt-6 mt-auto border-t flex flex-col gap-6
-                            ${isDarkMode ? "bg-[#0f0f11] border-white/10" : "bg-slate-50 border-slate-200"}`}>
+                        {/* Checkout Footer - Fixed to bottom */}
+                        <div className={`p-8 sm:p-12 lg:p-16 pt-8 mt-auto border-t flex flex-col gap-6
+                            ${isDarkMode ? "bg-[#0a0a0a] border-white/5" : "bg-white border-slate-100"}`}>
 
-                            <div className="flex justify-between items-center px-2">
-                                <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50">Settlement Total</span>
-                                <span className="text-3xl font-black italic tracking-tighter">
+                            <div className="flex justify-between items-end">
+                                <span className={`text-xs font-medium ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`}>Subtotal</span>
+                                <span className="text-2xl font-bold tracking-tight">
                                     {formatIDR(currentFinalPrice * quantity)}
                                 </span>
                             </div>
@@ -289,14 +257,13 @@ const Fourteen = ({ products, isDarkMode, handleCart }: Props) => {
                             <button
                                 disabled={disableButton}
                                 onClick={addCart}
-                                className={`w-full py-6 rounded-xl font-black uppercase italic text-sm tracking-[0.2em] shadow-2xl hover:-translate-y-1 transition-all active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-4 group border-2
+                                className={`w-full py-5 rounded-full font-semibold text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg
                                     ${isDarkMode
-                                        ? "bg-white text-black border-white hover:bg-[var(--product-primary-color)] hover:border-[var(--product-primary-color)] hover:text-white"
-                                        : "bg-black text-white border-black hover:bg-[var(--product-primary-color)] hover:border-[var(--product-primary-color)]"}`}
+                                        ? "bg-white text-black hover:bg-zinc-200"
+                                        : "bg-slate-900 text-white hover:bg-[var(--product-primary-color)]"}`}
                             >
                                 <ShoppingBag size={18} />
-                                Add to Registry
-                                <Plus size={18} className="group-hover:rotate-90 transition-transform" />
+                                Add to Cart
                             </button>
                         </div>
                     </div>
