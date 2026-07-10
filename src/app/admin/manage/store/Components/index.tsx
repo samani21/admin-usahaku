@@ -516,7 +516,7 @@ export default function BusinessProfile() {
                                     )}
 
                                     {outlets?.find((a) => a?.lat != 0 && a?.lng != 0) ? (
-                                        <div className="h-48 w-full">
+                                        <div className="relative z-10 h-48 w-full">
                                             <MapPreview addresses={outlets} />
                                         </div>
                                     ) : (
