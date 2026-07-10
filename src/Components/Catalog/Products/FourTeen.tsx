@@ -9,6 +9,7 @@ import { ProductsType, Variants } from '@/types/Admin/ProductsType';
 import { formatIDR } from '@/types/FormtRupiah';
 import ExpandableHTML from './ExpandableHTML';
 import { getPromoDetails, Promo } from './PromoType';
+import { Icon } from '@iconify/react';
 
 type Props = {
     products: ProductsType[];
@@ -54,7 +55,7 @@ const Fourteen = ({ products, isDarkMode, handleCart }: Props) => {
 
             {products?.map((p, i) => {
                 const { finalPrice, label } = getPromoDetails(p);
-                const is_available = (p?.product_stock ?? 0) > 0;
+                const is_available = p?.is_stock === false ? true : (p?.product_stock ?? 0) > 0;
 
                 return (
                     <div
@@ -72,12 +73,23 @@ const Fourteen = ({ products, isDarkMode, handleCart }: Props) => {
                         <div className={`relative aspect-square rounded-[1.5rem] overflow-hidden mb-5
                             ${isDarkMode ? 'bg-[#0f0f11]' : 'bg-slate-100/50'}`}>
 
-                            <img
-                                src={p.image}
-                                className={`w-full h-full object-cover transition-transform duration-[2s] ease-[cubic-bezier(0.2,0.8,0.2,1)] 
-                                    ${is_available ? "group-hover:scale-110" : ""}`}
-                                alt={p.name}
-                            />
+                            {/* Kondisi Gambar Card */}
+                            {!p?.image ? (
+                                <div className={`w-full h-full flex items-center justify-center transition-transform duration-[2s] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${is_available ? "group-hover:scale-110" : ""}`}>
+                                    <Icon icon="mynaui:image" className={`w-16 h-16 opacity-30 ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`} />
+                                </div>
+                            ) : p.image.startsWith('https') ? (
+                                <img
+                                    src={p.image}
+                                    className={`w-full h-full object-cover transition-transform duration-[2s] ease-[cubic-bezier(0.2,0.8,0.2,1)] 
+                                        ${is_available ? "group-hover:scale-110" : ""}`}
+                                    alt={p.name}
+                                />
+                            ) : (
+                                <div className={`w-full h-full flex items-center justify-center transition-transform duration-[2s] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${is_available ? "group-hover:scale-110" : ""}`}>
+                                    <Icon icon={p.image} className={`w-16 h-16 opacity-30 ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`} />
+                                </div>
+                            )}
 
                             {/* Elegant Gradient Overlay for Text Visibility */}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -152,18 +164,31 @@ const Fourteen = ({ products, isDarkMode, handleCart }: Props) => {
                         ${isDarkMode ? "bg-[#121212]" : "bg-slate-50"}`}>
 
                         {/* Background Blur Effect */}
-                        <div
-                            className="absolute inset-0 bg-cover bg-center opacity-30 blur-3xl scale-110"
-                            style={{ backgroundImage: `url(${selectedVariant?.image ?? product?.image})` }}
-                        />
+                        {(selectedVariant?.image ?? product?.image)?.startsWith('https') && (
+                            <div
+                                className="absolute inset-0 bg-cover bg-center opacity-30 blur-3xl scale-110"
+                                style={{ backgroundImage: `url(${selectedVariant?.image ?? product?.image})` }}
+                            />
+                        )}
 
                         {/* Main Image */}
                         <div className="relative w-full h-full p-0 md:p-8 lg:p-12">
-                            <img
-                                src={selectedVariant?.image ?? product?.image}
-                                className="w-full h-full object-cover md:object-contain md:rounded-[2rem] shadow-2xl transition-all duration-700"
-                                alt={product?.name}
-                            />
+                            {/* Kondisi Gambar Modal */}
+                            {!(selectedVariant?.image ?? product?.image) ? (
+                                <div className={`w-full h-full flex items-center justify-center md:rounded-[2rem] shadow-2xl transition-all duration-700 ${isDarkMode ? 'bg-[#18181b]' : 'bg-slate-200'}`}>
+                                    <Icon icon="mynaui:image" className={`w-32 h-32 opacity-30 ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`} />
+                                </div>
+                            ) : (selectedVariant?.image ?? product?.image ?? '').startsWith('https') ? (
+                                <img
+                                    src={selectedVariant?.image ?? product?.image}
+                                    className="w-full h-full object-cover md:object-contain md:rounded-[2rem] shadow-2xl transition-all duration-700"
+                                    alt={product?.name}
+                                />
+                            ) : (
+                                <div className={`w-full h-full flex items-center justify-center md:rounded-[2rem] shadow-2xl transition-all duration-700 ${isDarkMode ? 'bg-[#18181b]' : 'bg-slate-200'}`}>
+                                    <Icon icon={selectedVariant?.image ?? product?.image ?? 'mynaui:image'} className={`w-32 h-32 opacity-30 ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`} />
+                                </div>
+                            )}
 
                             {/* Floating Discount Badge */}
                             {product?.discount_price ? (
@@ -215,6 +240,7 @@ const Fourteen = ({ products, isDarkMode, handleCart }: Props) => {
                                             <p className="text-xs font-medium tracking-wide">Select Variant</p>
                                         </div>
                                         <VariantPicker
+                                            isStock={product?.is_stock}
                                             variants={product?.variants}
                                             selectedVariant={selectedVariant}
                                             setSelectedVariant={setSelectedVariant}
@@ -267,7 +293,6 @@ const Fourteen = ({ products, isDarkMode, handleCart }: Props) => {
                             </button>
                         </div>
                     </div>
-
                 </div>
             </ModalWrapper>
         </div>

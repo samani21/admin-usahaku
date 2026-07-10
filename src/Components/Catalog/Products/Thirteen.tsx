@@ -10,12 +10,12 @@ import { formatIDR } from '@/types/FormtRupiah';
 import ExpandableHTML from './ExpandableHTML';
 import { getPromoDetails, Promo } from './PromoType';
 import { OutletsType } from '@/types/Admin/OutletType';
+import { Icon } from '@iconify/react';
 
 type Props = {
     products: ProductsType[];
     isDarkMode: boolean;
     handleCart?: (p: ProductsType | null, v: Variants | null, qty: number) => void;
-
 }
 
 const Thirteen = ({ products, isDarkMode, handleCart }: Props) => {
@@ -27,6 +27,7 @@ const Thirteen = ({ products, isDarkMode, handleCart }: Props) => {
         if (!product) return true;
         return product?.variants?.length > 0 && !selectedVariant;
     }, [product, selectedVariant]);
+
     useEffect(() => {
         if (product) {
             document.body.style.overflow = 'hidden';
@@ -61,7 +62,7 @@ const Thirteen = ({ products, isDarkMode, handleCart }: Props) => {
 
             {products?.map((p, i) => {
                 const { finalPrice, label } = getPromoDetails(p);
-                const is_available = (p?.product_stock ?? 0) > 0;
+                const is_available = p?.is_stock === false ? true : (p?.product_stock ?? 0) > 0;
 
                 return (
                     <div
@@ -75,14 +76,23 @@ const Thirteen = ({ products, isDarkMode, handleCart }: Props) => {
                             ${isDarkMode ? "bg-[#121214]" : "bg-slate-50"} 
                             ${is_available ? "group-hover:shadow-2xl" : ""}`}>
 
-                            <img
-                                src={p.image}
-                                className={`w-full h-full object-cover transition-transform duration-[2s] ease-[cubic-bezier(0.25,1,0.5,1)] 
-                                    ${is_available
-                                        ? "group-hover:scale-105"
-                                        : "opacity-30 grayscale"}`}
-                                alt={p.name}
-                            />
+                            {/* Kondisi Gambar Card */}
+                            {!p?.image ? (
+                                <div className={`w-full h-full flex items-center justify-center transition-transform duration-[2s] ease-[cubic-bezier(0.25,1,0.5,1)] ${is_available ? "group-hover:scale-105" : "opacity-30 grayscale"}`}>
+                                    <Icon icon="mynaui:image" className={`w-16 h-16 opacity-30 ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`} />
+                                </div>
+                            ) : p.image.startsWith('https') ? (
+                                <img
+                                    src={p.image}
+                                    className={`w-full h-full object-cover transition-transform duration-[2s] ease-[cubic-bezier(0.25,1,0.5,1)] 
+                                        ${is_available ? "group-hover:scale-105" : "opacity-30 grayscale"}`}
+                                    alt={p.name}
+                                />
+                            ) : (
+                                <div className={`w-full h-full flex items-center justify-center transition-transform duration-[2s] ease-[cubic-bezier(0.25,1,0.5,1)] ${is_available ? "group-hover:scale-105" : "opacity-30 grayscale"}`}>
+                                    <Icon icon={p.image} className={`w-16 h-16 opacity-30 ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`} />
+                                </div>
+                            )}
 
                             {/* Decorative Border Frame (Muncul saat hover) */}
                             {is_available && (
@@ -158,11 +168,24 @@ const Thirteen = ({ products, isDarkMode, handleCart }: Props) => {
                     {/* Bagian Kanan: Visual Frame (Sticky di Desktop) */}
                     <div className={`w-full md:w-1/2 h-[50vh] md:h-auto md:min-h-[100dvh] md:sticky md:top-0 relative shrink-0 overflow-hidden
                         ${isDarkMode ? "bg-[#18181b]" : "bg-zinc-100"}`}>
-                        <img
-                            src={selectedVariant?.image ?? product?.image}
-                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-[2s] ease-out hover:scale-105"
-                            alt={product?.name}
-                        />
+
+                        {/* Kondisi Gambar Modal */}
+                        {!(selectedVariant?.image ?? product?.image) ? (
+                            <div className="absolute inset-0 w-full h-full flex items-center justify-center">
+                                <Icon icon="mynaui:image" className={`w-32 h-32 opacity-30 ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`} />
+                            </div>
+                        ) : (selectedVariant?.image ?? product?.image ?? '').startsWith('https') ? (
+                            <img
+                                src={selectedVariant?.image ?? product?.image}
+                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-[2s] ease-out hover:scale-105"
+                                alt={product?.name}
+                            />
+                        ) : (
+                            <div className="absolute inset-0 w-full h-full flex items-center justify-center">
+                                <Icon icon={selectedVariant?.image ?? product?.image ?? 'mynaui:image'} className={`w-32 h-32 opacity-30 ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`} />
+                            </div>
+                        )}
+
                         {/* Kategori yang dioverlay asimetris seperti desain majalah */}
                         {product?.category ? (
                             <div className={`hidden md:block absolute top-16 left-0 -ml-1 px-8 py-3 shadow-xl tracking-[0.3em] text-xs font-light uppercase border-y
@@ -236,6 +259,7 @@ const Thirteen = ({ products, isDarkMode, handleCart }: Props) => {
                                     <div className="space-y-6">
                                         <h4 className="text-[10px] font-medium uppercase tracking-[0.3em] opacity-40 text-center md:text-left">Variants</h4>
                                         <VariantPicker
+                                            isStock={product?.is_stock}
                                             variants={product?.variants}
                                             selectedVariant={selectedVariant}
                                             setSelectedVariant={setSelectedVariant}

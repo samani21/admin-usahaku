@@ -10,6 +10,7 @@ import { formatIDR } from '@/types/FormtRupiah';
 import ExpandableHTML from './ExpandableHTML';
 import { getPromoDetails, Promo } from './PromoType';
 import { OutletsType } from '@/types/Admin/OutletType';
+import { Icon } from '@iconify/react';
 
 type Props = {
     products: ProductsType[];
@@ -63,7 +64,7 @@ const Eleven = ({ products, isDarkMode, handleCart }: Props) => {
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 p-4 md:p-8'>
             {products?.map((p, i) => {
                 const { finalPrice, label } = getPromoDetails(p);
-                const is_available = (p?.product_stock ?? 0) > 0;
+                const is_available = p?.is_stock === false ? true : (p?.product_stock ?? 0) > 0;
 
                 return (
                     <div
@@ -101,12 +102,23 @@ const Eleven = ({ products, isDarkMode, handleCart }: Props) => {
                             <div className={`relative w-full h-44 sm:h-48 shrink-0 rounded-[1.5rem] overflow-hidden transition-all duration-500 shadow-inner
                                 ${is_available ? (isDarkMode ? "bg-zinc-800" : "bg-slate-100") : "bg-slate-200"}`}>
 
-                                <img
-                                    src={p?.image}
-                                    className={`w-full h-full object-cover transition-transform duration-[1.5s] ease-out
-                                        ${is_available ? 'group-hover:scale-110' : 'opacity-50'}`}
-                                    alt={p.name}
-                                />
+                                {/* Kondisi Gambar Card */}
+                                {!p?.image ? (
+                                    <div className={`w-full h-full flex items-center justify-center transition-transform duration-[1.5s] ease-out ${is_available ? 'group-hover:scale-110' : 'opacity-50'}`}>
+                                        <Icon icon="mynaui:image" className={`w-16 h-16 opacity-30 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`} />
+                                    </div>
+                                ) : p.image.startsWith('https') ? (
+                                    <img
+                                        src={p.image}
+                                        className={`w-full h-full object-cover transition-transform duration-[1.5s] ease-out
+                                            ${is_available ? 'group-hover:scale-110' : 'opacity-50'}`}
+                                        alt={p.name}
+                                    />
+                                ) : (
+                                    <div className={`w-full h-full flex items-center justify-center transition-transform duration-[1.5s] ease-out ${is_available ? 'group-hover:scale-110' : 'opacity-50'}`}>
+                                        <Icon icon={p.image} className={`w-16 h-16 opacity-30 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`} />
+                                    </div>
+                                )}
 
                                 {/* Internal Quick Action Icon */}
                                 {is_available && (
@@ -176,19 +188,32 @@ const Eleven = ({ products, isDarkMode, handleCart }: Props) => {
                     {/* Visual Section - Sticky Desktop, Flow Mobile */}
                     <div className={`w-full md:w-[50%] lg:w-[45%] h-[40vh] md:h-auto md:min-h-[100dvh] md:sticky md:top-0 relative shrink-0 overflow-hidden
                         ${isDarkMode ? "bg-zinc-900" : "bg-slate-100"}`}>
-                        <img
-                            src={selectedVariant?.image ?? product?.image}
-                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-                            alt=""
-                        />
+
+                        {/* Kondisi Gambar Modal */}
+                        {!(selectedVariant?.image ?? product?.image) ? (
+                            <div className="absolute inset-0 w-full h-full flex items-center justify-center">
+                                <Icon icon="mynaui:image" className={`w-32 h-32 opacity-30 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`} />
+                            </div>
+                        ) : (selectedVariant?.image ?? product?.image ?? '').startsWith('https') ? (
+                            <img
+                                src={selectedVariant?.image ?? product?.image}
+                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                                alt=""
+                            />
+                        ) : (
+                            <div className="absolute inset-0 w-full h-full flex items-center justify-center">
+                                <Icon icon={selectedVariant?.image ?? product?.image ?? 'mynaui:image'} className={`w-32 h-32 opacity-30 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`} />
+                            </div>
+                        )}
+
                         {/* Decorative Gradient Overlay */}
                         <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 via-transparent to-pink-500/20 mix-blend-overlay pointer-events-none" />
 
-                        {product?.discount_price && (
+                        {product?.discount_price ? (
                             <div className="absolute top-6 left-6 bg-gradient-to-r from-pink-500 to-amber-400 text-white px-5 py-2 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl border border-white/20">
                                 Hemat {Promo(product, selectedVariant)}
                             </div>
-                        )}
+                        ) : ''}
                     </div>
 
                     {/* Content Section - Flow natural & Scrollable */}
@@ -229,15 +254,18 @@ const Eleven = ({ products, isDarkMode, handleCart }: Props) => {
                                         </div>
                                     ) : ""}
                                 </div>
-                                <div className={`p-5 rounded-[2rem] border transition-colors ${isDarkMode ? "bg-white/5 border-white/10 hover:bg-white/10" : "bg-slate-50 border-slate-200 hover:bg-slate-100"}`}>
-                                    <span className={`text-[10px] font-black uppercase tracking-widest block mb-1.5 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                                        Stok
-                                    </span>
-                                    <div className="text-2xl sm:text-3xl font-black tracking-tighter flex items-center gap-2">
-                                        <Check size={24} className="text-emerald-500 shrink-0" strokeWidth={3} />
-                                        <span className="truncate">{selectedVariant?.product_variant_stock ?? product?.stock}</span>
-                                    </div>
-                                </div>
+                                {
+                                    product?.is_stock ?
+                                        <div className={`p-5 rounded-[2rem] border transition-colors ${isDarkMode ? "bg-white/5 border-white/10 hover:bg-white/10" : "bg-slate-50 border-slate-200 hover:bg-slate-100"}`}>
+                                            <span className={`text-[10px] font-black uppercase tracking-widest block mb-1.5 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                                Stok
+                                            </span>
+                                            <div className="text-2xl sm:text-3xl font-black tracking-tighter flex items-center gap-2">
+                                                <Check size={24} className="text-emerald-500 shrink-0" strokeWidth={3} />
+                                                <span className="truncate">{selectedVariant?.product_variant_stock ?? product?.stock}</span>
+                                            </div>
+                                        </div> : ''
+                                }
                             </div>
 
                             {/* Selectors Area */}
@@ -247,18 +275,18 @@ const Eleven = ({ products, isDarkMode, handleCart }: Props) => {
                                         <p className={`text-[10px] font-black uppercase tracking-[0.3em] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                             Pilihan Variasi
                                         </p>
-                                        <VariantPicker variants={product?.variants} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} isDarkMode={isDarkMode} />
+                                        <VariantPicker isStock={product?.is_stock} variants={product?.variants} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} isDarkMode={isDarkMode} />
                                     </div>
                                 )}
 
-                                {product && product?.is_qty && (
+                                {product && product?.is_qty ? (
                                     <div className="space-y-4">
                                         <p className={`text-[10px] font-black uppercase tracking-[0.3em] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                             Tentukan Jumlah
                                         </p>
                                         <QtySelector product={product} selectedVariant={selectedVariant} quantity={quantity} setQuantity={setQuantity} isDarkMode={isDarkMode} />
                                     </div>
-                                )}
+                                ) : ''}
                             </div>
                         </div>
 

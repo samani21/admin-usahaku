@@ -10,12 +10,12 @@ import { formatIDR } from '@/types/FormtRupiah';
 import ExpandableHTML from './ExpandableHTML';
 import { getPromoDetails } from './PromoType';
 import { OutletsType } from '@/types/Admin/OutletType';
+import { Icon } from '@iconify/react';
 
 type Props = {
     products: ProductsType[];
     isDarkMode: boolean;
     handleCart?: (p: ProductsType | null, v: Variants | null, qty: number) => void;
-
 }
 
 const Two = ({ products, isDarkMode, handleCart }: Props) => {
@@ -51,7 +51,7 @@ const Two = ({ products, isDarkMode, handleCart }: Props) => {
         <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-10 h-full'>
             {products?.map((p, i) => {
                 const { finalPrice, label } = getPromoDetails(p);
-                const is_available = (p?.product_stock ?? 0) > 0;
+                const is_available = p?.is_stock === false ? true : (p?.product_stock ?? 0) > 0;
 
                 return (
                     <div
@@ -88,12 +88,23 @@ const Two = ({ products, isDarkMode, handleCart }: Props) => {
                                 </div>
                             )}
 
-                            <img
-                                src={p?.image}
-                                className={`w-full h-full object-cover transition-transform duration-[1.5s] ease-out 
-                                    ${is_available ? "scale-100 group-hover:scale-110" : "scale-100"}`}
-                                alt={p.name}
-                            />
+                            {/* Card Image Handling */}
+                            {!p?.image ? (
+                                <div className={`w-full h-full flex items-center justify-center transition-transform duration-[1.5s] ease-out ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'} ${is_available ? "scale-100 group-hover:scale-110" : "scale-100"}`}>
+                                    <Icon icon="mynaui:image" className={`w-16 h-16 opacity-30 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`} />
+                                </div>
+                            ) : p.image.startsWith('https') ? (
+                                <img
+                                    src={p.image}
+                                    className={`w-full h-full object-cover transition-transform duration-[1.5s] ease-out 
+                                        ${is_available ? "scale-100 group-hover:scale-110" : "scale-100"}`}
+                                    alt={p.name}
+                                />
+                            ) : (
+                                <div className={`w-full h-full flex items-center justify-center transition-transform duration-[1.5s] ease-out ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'} ${is_available ? "scale-100 group-hover:scale-110" : "scale-100"}`}>
+                                    <Icon icon={p.image} className={`w-16 h-16 opacity-30 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`} />
+                                </div>
+                            )}
 
                             {/* Floating Quick Action */}
                             {is_available && (
@@ -146,7 +157,13 @@ const Two = ({ products, isDarkMode, handleCart }: Props) => {
             >
                 {/* Dynamic Background Blur */}
                 <div className={`absolute inset-0 pointer-events-none overflow-hidden transition-opacity duration-700 ${isDarkMode ? 'opacity-20' : 'opacity-[0.07]'}`}>
-                    <img src={selectedVariant?.image ?? product?.image} className="w-full h-full object-cover scale-[1.2] blur-[80px]" alt="" />
+                    {!(selectedVariant?.image ?? product?.image) ? (
+                        <div className="w-full h-full scale-[1.2] blur-[80px] bg-slate-500" />
+                    ) : (selectedVariant?.image ?? product?.image ?? '').startsWith('https') ? (
+                        <img src={selectedVariant?.image ?? product?.image} className="w-full h-full object-cover scale-[1.2] blur-[80px]" alt="" />
+                    ) : (
+                        <div className="w-full h-full scale-[1.2] blur-[80px] bg-slate-500" />
+                    )}
                 </div>
 
                 <div className="relative w-full h-full p-6 sm:p-12 flex flex-col items-center text-center max-w-5xl mx-auto space-y-12 overflow-y-auto no-scrollbar">
@@ -154,8 +171,21 @@ const Two = ({ products, isDarkMode, handleCart }: Props) => {
                     {/* Hero Image Section */}
                     <div className="relative mt-4">
                         <div className={`w-56 h-56 sm:w-72 sm:h-72 rounded-[2rem] overflow-hidden shadow-2xl rotate-2 hover:rotate-0 hover:scale-105 transition-all duration-700 ease-out border-[6px] 
-                            ${isDarkMode ? "border-slate-800 shadow-black/50" : "border-white shadow-slate-200/50"}`}>
-                            <img src={selectedVariant?.image ?? product?.image} className="w-full h-full object-cover" alt="" />
+                            ${isDarkMode ? "border-slate-800 shadow-black/50 bg-slate-800" : "border-white shadow-slate-200/50 bg-slate-50"}`}>
+
+                            {/* Modal Hero Image Handling */}
+                            {!(selectedVariant?.image ?? product?.image) ? (
+                                <div className="w-full h-full flex items-center justify-center">
+                                    <Icon icon="mynaui:image" className={`w-24 h-24 opacity-30 ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`} />
+                                </div>
+                            ) : (selectedVariant?.image ?? product?.image ?? '').startsWith('https') ? (
+                                <img src={selectedVariant?.image ?? product?.image} className="w-full h-full object-cover" alt="" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                    <Icon icon={selectedVariant?.image ?? product?.image ?? 'mynaui:image'} className={`w-24 h-24 opacity-30 ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`} />
+                                </div>
+                            )}
+
                         </div>
                         {/* Decorative Badge */}
                         <div className="absolute -bottom-5 -right-5 bg-[var(--product-primary-color)] text-white w-20 h-20 rounded-full flex items-center justify-center -rotate-12 font-black text-[11px] leading-tight shadow-xl uppercase tracking-wider border-4 border-transparent backdrop-blur-sm">
@@ -192,7 +222,7 @@ const Two = ({ products, isDarkMode, handleCart }: Props) => {
                             {product?.variants && product?.variants?.length > 0 ? (
                                 <div className="text-left">
                                     <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-4 block text-center md:text-left">Pilih Gaya</span>
-                                    <VariantPicker variants={product?.variants} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} isDarkMode={isDarkMode} />
+                                    <VariantPicker isStock={product?.is_stock} variants={product?.variants} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} isDarkMode={isDarkMode} />
                                 </div>
                             ) : ''}
 

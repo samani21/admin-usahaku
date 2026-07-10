@@ -7,10 +7,11 @@ type Props = {
     selectedVariant: Variants | null;
     setSelectedVariant: (val: Variants) => void;
     isDarkMode: boolean;
+    isStock: boolean;
     color?: string;
 }
 
-const VariantPicker = ({ variants, selectedVariant, setSelectedVariant, isDarkMode, color }: Props) => {
+const VariantPicker = ({ variants, selectedVariant, setSelectedVariant, isDarkMode, color, isStock }: Props) => {
     const activeBorder = color ? `border-[${color}] bg-[${color}]` : 'border-[var(--product-primary-color)] bg-[var(--product-primary-color)]';
 
     return (
@@ -20,7 +21,7 @@ const VariantPicker = ({ variants, selectedVariant, setSelectedVariant, isDarkMo
             </span>
             <div className="flex flex-wrap gap-2">
                 {variants.map((v, i) => {
-                    const isStockOut = (v.product_variant_stock ?? 0) <= 0;
+                    const isStockOut = isStock && (v.product_variant_stock ?? 0) <= 0;
                     const isSelected = selectedVariant?.id === v.id;
 
                     return (

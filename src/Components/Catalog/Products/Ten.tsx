@@ -8,6 +8,7 @@ import { ProductsType, Variants } from '@/types/Admin/ProductsType';
 import { formatIDR } from '@/types/FormtRupiah';
 import ExpandableHTML from './ExpandableHTML';
 import { getPromoDetails, Promo } from './PromoType';
+import { Icon } from '@iconify/react';
 
 type Props = {
     products: ProductsType[];
@@ -47,7 +48,7 @@ const Ten = ({ products, isDarkMode, handleCart }: Props) => {
         <div className='grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-4 md:p-8 max-w-7xl mx-auto auto-rows-[220px] md:auto-rows-[260px]'>
             {products?.map((p, i) => {
                 const { finalPrice, label } = getPromoDetails(p);
-                const is_available = (p?.product_stock ?? 0) > 0;
+                const is_available = p?.is_stock === false ? true : (p?.product_stock ?? 0) > 0;
 
                 // Pola Bento Box: Kartu pertama dari setiap kelipatan 5 akan membesar
                 const isLarge = i % 5 === 0;
@@ -65,12 +66,23 @@ const Ten = ({ products, isDarkMode, handleCart }: Props) => {
                     >
                         {/* Background Image (Absolute Full Bleed) */}
                         <div className={`absolute inset-0 overflow-hidden ${isDarkMode ? "bg-slate-900" : "bg-slate-100"}`}>
-                            <img
-                                src={p?.image}
-                                className={`w-full h-full object-cover transition-transform duration-700 ease-out 
-                                    ${is_available ? "group-hover:scale-105" : "grayscale opacity-75"}`}
-                                alt={p.name}
-                            />
+                            {/* Kondisi Gambar Card */}
+                            {!p?.image ? (
+                                <div className={`w-full h-full flex items-center justify-center transition-transform duration-700 ease-out ${is_available ? "group-hover:scale-105" : "grayscale opacity-75"}`}>
+                                    <Icon icon="mynaui:image" className={`w-24 h-24 opacity-30 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`} />
+                                </div>
+                            ) : p.image.startsWith('https') ? (
+                                <img
+                                    src={p.image}
+                                    className={`w-full h-full object-cover transition-transform duration-700 ease-out 
+                                        ${is_available ? "group-hover:scale-105" : "grayscale opacity-75"}`}
+                                    alt={p.name}
+                                />
+                            ) : (
+                                <div className={`w-full h-full flex items-center justify-center transition-transform duration-700 ease-out ${is_available ? "group-hover:scale-105" : "grayscale opacity-75"}`}>
+                                    <Icon icon={p.image} className={`w-24 h-24 opacity-30 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`} />
+                                </div>
+                            )}
                         </div>
 
                         {/* Smooth Gradient Overlay for Readability */}
@@ -156,11 +168,23 @@ const Ten = ({ products, isDarkMode, handleCart }: Props) => {
                     {/* Visual Section - Sticky on Desktop, naturally on top for Mobile */}
                     <div className={`w-full md:w-[45%] h-[40vh] md:h-auto md:min-h-screen md:sticky md:top-0 shrink-0 relative overflow-hidden
                         ${isDarkMode ? "bg-slate-800" : "bg-slate-100"}`}>
-                        <img
-                            src={selectedVariant?.image ?? product?.image}
-                            className="absolute inset-0 w-full h-full object-cover"
-                            alt={product?.name}
-                        />
+
+                        {/* Kondisi Gambar Modal */}
+                        {!(selectedVariant?.image ?? product?.image) ? (
+                            <div className="absolute inset-0 w-full h-full flex items-center justify-center">
+                                <Icon icon="mynaui:image" className={`w-32 h-32 opacity-30 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`} />
+                            </div>
+                        ) : (selectedVariant?.image ?? product?.image ?? '').startsWith('https') ? (
+                            <img
+                                src={selectedVariant?.image ?? product?.image}
+                                className="absolute inset-0 w-full h-full object-cover"
+                                alt={product?.name}
+                            />
+                        ) : (
+                            <div className="absolute inset-0 w-full h-full flex items-center justify-center">
+                                <Icon icon={selectedVariant?.image ?? product?.image ?? 'mynaui:image'} className={`w-32 h-32 opacity-30 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`} />
+                            </div>
+                        )}
                     </div>
 
                     {/* Content Section - Flows natively, scrollable on Desktop */}
@@ -206,14 +230,17 @@ const Ten = ({ products, isDarkMode, handleCart }: Props) => {
                                         </div>
                                     ) : ''}
                                 </div>
-                                <div className={`p-4 rounded-2xl ${isDarkMode ? 'bg-slate-800/50' : 'bg-slate-50'}`}>
-                                    <span className={`text-xs font-bold uppercase tracking-wider block mb-2
+                                {
+                                    product?.is_stock &&
+                                    <div className={`p-4 rounded-2xl ${isDarkMode ? 'bg-slate-800/50' : 'bg-slate-50'}`}>
+                                        <span className={`text-xs font-bold uppercase tracking-wider block mb-2
                                         ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Ketersediaan</span>
-                                    <div className="text-xl font-black tracking-tight flex items-center gap-2">
-                                        <Check size={18} className="text-emerald-500" strokeWidth={3} />
-                                        {selectedVariant?.product_variant_stock ?? product?.stock} <span className="text-xs font-bold opacity-50">Unit</span>
+                                        <div className="text-xl font-black tracking-tight flex items-center gap-2">
+                                            <Check size={18} className="text-emerald-500" strokeWidth={3} />
+                                            {selectedVariant?.product_variant_stock ?? product?.stock} <span className="text-xs font-bold opacity-50">Unit</span>
+                                        </div>
                                     </div>
-                                </div>
+                                }
                             </div>
 
                             {/* Selectors Area */}
@@ -221,7 +248,7 @@ const Ten = ({ products, isDarkMode, handleCart }: Props) => {
                                 {product?.variants && product?.variants?.length > 0 ? (
                                     <div className="space-y-3">
                                         <p className={`text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Varian Pilihan</p>
-                                        <VariantPicker variants={product?.variants} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} isDarkMode={isDarkMode} />
+                                        <VariantPicker isStock={product?.is_stock} variants={product?.variants} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} isDarkMode={isDarkMode} />
                                     </div>
                                 ) : ''}
 

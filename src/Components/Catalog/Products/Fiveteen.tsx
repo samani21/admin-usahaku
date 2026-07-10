@@ -10,6 +10,7 @@ import { formatIDR } from '@/types/FormtRupiah';
 import ExpandableHTML from './ExpandableHTML';
 import { getPromoDetails, Promo } from './PromoType';
 import { OutletsType } from '@/types/Admin/OutletType';
+import { Icon } from '@iconify/react';
 
 type Props = {
     products: ProductsType[];
@@ -51,7 +52,7 @@ const Fiveteen = ({ products, isDarkMode, handleCart }: Props) => {
 
             {products?.map((p, i) => {
                 const { finalPrice, label } = getPromoDetails(p);
-                const is_available = (p?.product_stock ?? 0) > 0;
+                const is_available = p?.is_stock === false ? true : (p?.product_stock ?? 0) > 0;
 
                 return (
                     <div
@@ -89,13 +90,20 @@ const Fiveteen = ({ products, isDarkMode, handleCart }: Props) => {
                                 ${is_available ? "group-hover:scale-95 group-hover:shadow-[0_0_40px_rgba(var(--product-primary-rgb),0.3)]" : ""}`}>
 
                                 {/* Actual Image Canvas */}
-                                <div className={`w-full h-full rounded-full overflow-hidden shadow-2xl transition-transform duration-1000 bg-white
+                                <div className={`w-full h-full rounded-full overflow-hidden shadow-2xl transition-transform duration-1000 bg-white flex items-center justify-center
                                     ${!is_available ? "grayscale" : "group-hover:scale-105"}`}>
-                                    <img
-                                        src={p?.image}
-                                        className="w-full h-full object-cover"
-                                        alt={p.name}
-                                    />
+                                    {/* Kondisi Gambar Card */}
+                                    {!p?.image ? (
+                                        <Icon icon="mynaui:image" className={`w-1/2 h-1/2 opacity-30 ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`} />
+                                    ) : p.image.startsWith('https') ? (
+                                        <img
+                                            src={p?.image}
+                                            className="w-full h-full object-cover"
+                                            alt={p.name}
+                                        />
+                                    ) : (
+                                        <Icon icon={p.image} className={`w-1/2 h-1/2 opacity-30 ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`} />
+                                    )}
                                 </div>
                             </div>
 
@@ -160,12 +168,23 @@ const Fiveteen = ({ products, isDarkMode, handleCart }: Props) => {
                         </div>
 
                         <div className={`relative w-full max-w-md aspect-square rounded-full border-8 shadow-2xl z-10 overflow-hidden
-                            ${isDarkMode ? "border-zinc-800" : "border-white"}`}>
-                            <img
-                                src={selectedVariant?.image ?? product?.image}
-                                className="w-full h-full object-cover transition-transform duration-1000 hover:scale-110"
-                                alt={product?.name}
-                            />
+                            ${isDarkMode ? "border-zinc-800 bg-[#121212]" : "border-white bg-slate-100"}`}>
+                            {/* Kondisi Gambar Modal */}
+                            {!(selectedVariant?.image ?? product?.image) ? (
+                                <div className="w-full h-full flex items-center justify-center transition-transform duration-1000 hover:scale-110">
+                                    <Icon icon="mynaui:image" className={`w-32 h-32 opacity-30 ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`} />
+                                </div>
+                            ) : (selectedVariant?.image ?? product?.image ?? '').startsWith('https') ? (
+                                <img
+                                    src={selectedVariant?.image ?? product?.image}
+                                    className="w-full h-full object-cover transition-transform duration-1000 hover:scale-110"
+                                    alt={product?.name}
+                                />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center transition-transform duration-1000 hover:scale-110">
+                                    <Icon icon={selectedVariant?.image ?? product?.image ?? 'mynaui:image'} className={`w-32 h-32 opacity-30 ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`} />
+                                </div>
+                            )}
                         </div>
 
                         {product?.discount_price ? (
@@ -226,7 +245,7 @@ const Fiveteen = ({ products, isDarkMode, handleCart }: Props) => {
                                         <p className={`text-[10px] font-black uppercase tracking-[0.3em] ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`}>
                                             Pilih Konfigurasi
                                         </p>
-                                        <VariantPicker variants={product?.variants} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} isDarkMode={isDarkMode} />
+                                        <VariantPicker isStock={product?.is_stock} variants={product?.variants} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} isDarkMode={isDarkMode} />
                                     </div>
                                 ) : ''}
 

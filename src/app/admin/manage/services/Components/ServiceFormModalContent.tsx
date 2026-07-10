@@ -300,11 +300,6 @@ const ServiceFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
         // if (!productData.image && !productData.imagePreviewUrl) { newErrors.image = 'Upload gambar produk'; hasError = true; }
 
         if (productData.has_variant === 1) {
-            if (productData.is_shared_stock === '' || productData.is_shared_stock === null) {
-                newErrors.is_shared_stock = 'Pilih sistem manajemen stok varian';
-                hasError = true;
-            }
-
             const variantErrors: any[] = [];
             productData.variants.forEach((v, i) => {
                 const vErr: any = {};
@@ -332,8 +327,7 @@ const ServiceFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
         formData.append('is_qty', productData.is_qty ? "1" : "0");
         formData.append('qrcode', productData.qrcode ?? '');
 
-        const finalSharedStock = productData.has_variant === 1 ? (productData.is_shared_stock || "0") : "0";
-        formData.append('is_shared_stock', finalSharedStock);
+        formData.append('is_shared_stock', String(1));
 
         if (productData.image) {
             formData.append('image', productData.image, productData.image.name);
@@ -496,7 +490,7 @@ const ServiceFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
                             />
 
                             {/* MANAJEMEN STOK PINDAH KE SINI: Hanya muncul jika ada varian */}
-                            {productData.has_variant === 1 && (
+                            {/* {productData.has_variant === 1 && (
                                 <div className="pt-4 border-t border-slate-200">
                                     <FormInput
                                         type="radio"
@@ -510,7 +504,7 @@ const ServiceFormModalContent = ({ isOpen, onClose, onSubmit, dataUpdate, loadin
                                         information="Pilih 'Stok Induk' jika semua varian memotong stok dari satu sumber yang sama (misal: jualan kopi, beda level gula tapi kopinya sama). Pilih 'Stok Terpisah' jika tiap varian punya sisa stok barang fisik yang berbeda-beda."
                                     />
                                 </div>
-                            )}
+                            )} */}
                         </div>
                     </section>
 

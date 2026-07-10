@@ -9,6 +9,7 @@ import { ProductsType, Variants } from '@/types/Admin/ProductsType';
 import { formatIDR } from '@/types/FormtRupiah';
 import ExpandableHTML from './ExpandableHTML';
 import { getPromoDetails, Promo } from './PromoType';
+import { Icon } from '@iconify/react';
 
 type Props = {
     products: ProductsType[];
@@ -56,7 +57,7 @@ const Three = ({ products, isDarkMode, handleCart }: Props) => {
 
             {products?.map((p, i) => {
                 const { finalPrice, label } = getPromoDetails(p);
-                const is_available = (p?.product_stock ?? 0) > 0;
+                const is_available = p?.is_stock === false ? true : (p?.product_stock ?? 0) > 0;
 
                 return (
                     <div
@@ -80,12 +81,23 @@ const Three = ({ products, isDarkMode, handleCart }: Props) => {
                                     ? "border-slate-800 bg-slate-900 group-hover:border-slate-700"
                                     : "border-white bg-slate-50 group-hover:border-slate-100"}`}
                             >
-                                <img
-                                    src={p?.image}
-                                    className={`w-full h-full object-cover transition-transform duration-700 
-                                        ${is_available ? "scale-105 group-hover:scale-110" : "scale-100"}`}
-                                    alt={p.name}
-                                />
+                                {/* Kondisi Gambar Lingkaran */}
+                                {!p?.image ? (
+                                    <div className={`w-full h-full flex items-center justify-center rounded-full transition-transform duration-700 ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'} ${is_available ? "scale-105 group-hover:scale-110" : "scale-100"}`}>
+                                        <Icon icon="mynaui:image" className={`w-16 h-16 sm:w-20 sm:h-20 opacity-30 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`} />
+                                    </div>
+                                ) : p.image.startsWith('https') ? (
+                                    <img
+                                        src={p.image}
+                                        className={`w-full h-full object-cover transition-transform duration-700 
+                                            ${is_available ? "scale-105 group-hover:scale-110" : "scale-100"}`}
+                                        alt={p.name}
+                                    />
+                                ) : (
+                                    <div className={`w-full h-full flex items-center justify-center rounded-full transition-transform duration-700 ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'} ${is_available ? "scale-105 group-hover:scale-110" : "scale-100"}`}>
+                                        <Icon icon={p.image} className={`w-16 h-16 sm:w-20 sm:h-20 opacity-30 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`} />
+                                    </div>
+                                )}
 
                                 {/* Badge Diskon Bubbly */}
                                 {label && is_available && (
@@ -173,12 +185,24 @@ const Three = ({ products, isDarkMode, handleCart }: Props) => {
                             <div className={`absolute inset-4 rounded-full border animate-[spin_15s_linear_infinite_reverse]
                                 ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`} />
 
-                            <img
-                                src={selectedVariant?.image ?? product?.image}
-                                className={`w-[85%] h-[85%] rounded-full object-cover shadow-[0_20px_50px_-10px_rgba(0,0,0,0.3)] border-[8px] transition-all duration-500 
-                                    ${isDarkMode ? "border-slate-800" : "border-white"}`}
-                                alt={product?.name}
-                            />
+                            {/* Kondisi Gambar Modal Lingkaran */}
+                            {!(selectedVariant?.image ?? product?.image) ? (
+                                <div className={`w-[85%] h-[85%] rounded-full flex items-center justify-center shadow-[0_20px_50px_-10px_rgba(0,0,0,0.3)] border-[8px] transition-all duration-500 ${isDarkMode ? "border-slate-800 bg-slate-800" : "border-white bg-slate-100"}`}>
+                                    <Icon icon="mynaui:image" className={`w-24 h-24 opacity-30 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`} />
+                                </div>
+                            ) : (selectedVariant?.image ?? product?.image ?? '').startsWith('https') ? (
+                                <img
+                                    src={selectedVariant?.image ?? product?.image}
+                                    className={`w-[85%] h-[85%] rounded-full object-cover shadow-[0_20px_50px_-10px_rgba(0,0,0,0.3)] border-[8px] transition-all duration-500 
+                                        ${isDarkMode ? "border-slate-800" : "border-white"}`}
+                                    alt={product?.name}
+                                />
+                            ) : (
+                                <div className={`w-[85%] h-[85%] rounded-full flex items-center justify-center shadow-[0_20px_50px_-10px_rgba(0,0,0,0.3)] border-[8px] transition-all duration-500 ${isDarkMode ? "border-slate-800 bg-slate-800" : "border-white bg-slate-100"}`}>
+                                    <Icon icon={selectedVariant?.image ?? product?.image ?? 'mynaui:image'} className={`w-24 h-24 opacity-30 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`} />
+                                </div>
+                            )}
+
                         </div>
 
                         {/* Service List Pill-style */}
@@ -229,11 +253,11 @@ const Three = ({ products, isDarkMode, handleCart }: Props) => {
                                         Harga Satuan
                                     </span>
                                     <div className='flex items-end gap-3'>
-                                        {product?.discount_price && (
+                                        {product?.discount_price ? (
                                             <p className={`text-sm font-bold line-through mb-1 ${isDarkMode ? "text-slate-500" : "text-slate-400"}`}>
                                                 {formatIDR(selectedVariant?.price ?? product?.price ?? 0)}
                                             </p>
-                                        )}
+                                        ) : ''}
                                         <p className="text-3xl font-black text-[var(--product-primary-color)]">
                                             {formatIDR(selectedVariant?.final_price ?? product?.final_price ?? 0)}
                                         </p>
@@ -254,11 +278,11 @@ const Three = ({ products, isDarkMode, handleCart }: Props) => {
                                 {product?.variants && product?.variants?.length > 0 && (
                                     <div className="space-y-4">
                                         <p className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Pilih Varian</p>
-                                        <VariantPicker variants={product?.variants} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} isDarkMode={isDarkMode} />
+                                        <VariantPicker isStock={product?.is_stock} variants={product?.variants} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} isDarkMode={isDarkMode} />
                                     </div>
                                 )}
 
-                                {product?.is_qty && (
+                                {product?.is_qty ? (
                                     <div className="space-y-4">
                                         <div className="flex items-center justify-between">
                                             <p className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Atur Jumlah</p>
@@ -266,7 +290,7 @@ const Three = ({ products, isDarkMode, handleCart }: Props) => {
                                         </div>
                                         <QtySelector quantity={quantity} product={product} selectedVariant={selectedVariant} setQuantity={setQuantity} isDarkMode={isDarkMode} />
                                     </div>
-                                )}
+                                ) : ''}
                             </div>
                         </div>
 

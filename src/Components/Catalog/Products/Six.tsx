@@ -1,3 +1,4 @@
+"use client"
 import ModalWrapper from './ModalWrapper';
 import { useEffect, useMemo, useState } from 'react';
 import { Minus, Plus, ShoppingBag, X, ArrowUpRight, Maximize2 } from 'lucide-react';
@@ -9,12 +10,12 @@ import { getPromoDetails, Promo } from './PromoType';
 import QtySelector from './QtySelector';
 import VariantPicker from './VariantPicker';
 import { OutletsType } from '@/types/Admin/OutletType';
+import { Icon } from '@iconify/react';
 
 type Props = {
     products: ProductsType[];
     isDarkMode: boolean;
     handleCart?: (p: ProductsType | null, v: Variants | null, qty: number) => void;
-
 }
 
 const Six = ({ products, isDarkMode, handleCart }: Props) => {
@@ -27,6 +28,7 @@ const Six = ({ products, isDarkMode, handleCart }: Props) => {
         if (!product) return true;
         return product?.variants?.length > 0 && !selectedVariant;
     }, [product, selectedVariant]);
+
     useEffect(() => {
         document.body.style.overflow = product ? 'hidden' : 'unset';
         return () => { document.body.style.overflow = 'unset'; };
@@ -49,7 +51,7 @@ const Six = ({ products, isDarkMode, handleCart }: Props) => {
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16 p-4 md:p-8'>
             {products?.map((p, i) => {
                 const { finalPrice, label } = getPromoDetails(p);
-                const is_available = (p?.product_stock ?? 0) > 0;
+                const is_available = p?.is_stock === false ? true : (p?.product_stock ?? 0) > 0;
 
                 return (
                     <div
@@ -72,12 +74,23 @@ const Six = ({ products, isDarkMode, handleCart }: Props) => {
                             )}
 
                             <div className="relative aspect-[4/5] overflow-hidden">
-                                <img
-                                    src={p.image}
-                                    className={`w-full h-full object-cover transition-transform duration-[1.2s] ease-out
-                                        ${is_available ? "group-hover:scale-105" : ""}`}
-                                    alt={p.name}
-                                />
+                                {/* Kondisi Gambar Card */}
+                                {!p?.image ? (
+                                    <div className={`w-full h-full flex items-center justify-center transition-transform duration-[1.2s] ease-out ${isDarkMode ? 'bg-zinc-900' : 'bg-zinc-100'} ${is_available ? "group-hover:scale-105" : ""}`}>
+                                        <Icon icon="mynaui:image" className={`w-16 h-16 opacity-30 ${isDarkMode ? 'text-zinc-600' : 'text-zinc-400'}`} />
+                                    </div>
+                                ) : p.image.startsWith('https') ? (
+                                    <img
+                                        src={p.image}
+                                        className={`w-full h-full object-cover transition-transform duration-[1.2s] ease-out
+                                            ${is_available ? "group-hover:scale-105" : ""}`}
+                                        alt={p.name}
+                                    />
+                                ) : (
+                                    <div className={`w-full h-full flex items-center justify-center transition-transform duration-[1.2s] ease-out ${isDarkMode ? 'bg-zinc-900' : 'bg-zinc-100'} ${is_available ? "group-hover:scale-105" : ""}`}>
+                                        <Icon icon={p.image} className={`w-16 h-16 opacity-30 ${isDarkMode ? 'text-zinc-600' : 'text-zinc-400'}`} />
+                                    </div>
+                                )}
 
                                 {/* Overlay / Quick Action */}
                                 <div
@@ -152,11 +165,22 @@ const Six = ({ products, isDarkMode, handleCart }: Props) => {
 
                     {/* Left: Image (Sticky on Desktop) */}
                     <div className={`w-full md:w-[50%] h-[45vh] md:h-[85vh] md:sticky md:top-0 relative shrink-0 ${isDarkMode ? "bg-zinc-900" : "bg-zinc-100"}`}>
-                        <img
-                            src={selectedVariant?.image ?? product?.image}
-                            className="absolute inset-0 w-full h-full object-cover"
-                            alt={product?.name}
-                        />
+                        {/* Kondisi Gambar Modal */}
+                        {!(selectedVariant?.image ?? product?.image) ? (
+                            <div className="absolute inset-0 w-full h-full flex items-center justify-center">
+                                <Icon icon="mynaui:image" className={`w-32 h-32 opacity-30 ${isDarkMode ? 'text-zinc-700' : 'text-zinc-300'}`} />
+                            </div>
+                        ) : (selectedVariant?.image ?? product?.image ?? '').startsWith('https') ? (
+                            <img
+                                src={selectedVariant?.image ?? product?.image}
+                                className="absolute inset-0 w-full h-full object-cover"
+                                alt={product?.name}
+                            />
+                        ) : (
+                            <div className="absolute inset-0 w-full h-full flex items-center justify-center">
+                                <Icon icon={selectedVariant?.image ?? product?.image ?? 'mynaui:image'} className={`w-32 h-32 opacity-30 ${isDarkMode ? 'text-zinc-700' : 'text-zinc-300'}`} />
+                            </div>
+                        )}
                     </div>
 
                     {/* Right: Info Panel (Flows naturally, allowing ModalWrapper to scroll it) */}
@@ -206,7 +230,7 @@ const Six = ({ products, isDarkMode, handleCart }: Props) => {
                                 <div className="space-y-4">
                                     <span className={`text-[9px] font-black uppercase tracking-[0.3em]
                                         ${isDarkMode ? "text-zinc-500" : "text-zinc-400"}`}>Select Variant</span>
-                                    <VariantPicker variants={product?.variants} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} isDarkMode={isDarkMode} />
+                                    <VariantPicker isStock={product?.is_stock} variants={product?.variants} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} isDarkMode={isDarkMode} />
                                 </div>
                             ) : ''}
 

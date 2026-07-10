@@ -10,12 +10,12 @@ import { formatIDR } from '@/types/FormtRupiah';
 import ExpandableHTML from './ExpandableHTML';
 import { getPromoDetails, Promo } from './PromoType';
 import { OutletsType } from '@/types/Admin/OutletType';
+import { Icon } from '@iconify/react';
 
 type Props = {
     products: ProductsType[];
     isDarkMode: boolean;
     handleCart?: (p: ProductsType | null, v: Variants | null, qty: number) => void;
-
 }
 
 const Five = ({ products, isDarkMode, handleCart }: Props) => {
@@ -56,7 +56,7 @@ const Five = ({ products, isDarkMode, handleCart }: Props) => {
         <div className='grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-10 py-4 sm:py-8'>
             {products?.map((p, i) => {
                 const { finalPrice, label } = getPromoDetails(p);
-                const is_available = (p?.product_stock ?? 0) > 0;
+                const is_available = p?.is_stock === false ? true : (p?.product_stock ?? 0) > 0;
 
                 // Efek Grid Staggered (Naik Turun)
                 const staggerClass = i % 2 === 0 ? 'md:translate-y-6' : 'md:-translate-y-6';
@@ -80,12 +80,23 @@ const Five = ({ products, isDarkMode, handleCart }: Props) => {
                             ${!is_available ? 'opacity-80' : ''}
                             ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
 
-                            <img
-                                src={p.image}
-                                className={`w-full h-full object-cover transition-transform duration-[1.5s] ease-out
-                                    ${is_available ? 'group-hover:scale-110' : 'grayscale sepia-[0.3]'}`}
-                                alt={p.name}
-                            />
+                            {/* Kondisi Gambar Card */}
+                            {!p?.image ? (
+                                <div className={`w-full h-full flex items-center justify-center transition-transform duration-[1.5s] ease-out ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'} ${is_available ? 'group-hover:scale-110' : 'grayscale sepia-[0.3]'}`}>
+                                    <Icon icon="mynaui:image" className={`w-16 h-16 opacity-30 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`} />
+                                </div>
+                            ) : p.image.startsWith('https') ? (
+                                <img
+                                    src={p.image}
+                                    className={`w-full h-full object-cover transition-transform duration-[1.5s] ease-out
+                                        ${is_available ? 'group-hover:scale-110' : 'grayscale sepia-[0.3]'}`}
+                                    alt={p.name}
+                                />
+                            ) : (
+                                <div className={`w-full h-full flex items-center justify-center transition-transform duration-[1.5s] ease-out ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'} ${is_available ? 'group-hover:scale-110' : 'grayscale sepia-[0.3]'}`}>
+                                    <Icon icon={p.image} className={`w-16 h-16 opacity-30 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`} />
+                                </div>
+                            )}
 
                             {/* Hover Action Overlay */}
                             <div className={`absolute inset-0 transition-all duration-500 flex items-center justify-center
@@ -161,11 +172,23 @@ const Five = ({ products, isDarkMode, handleCart }: Props) => {
 
                     {/* Hero Image Overlay Layout */}
                     <div className="relative w-full h-[45vh] md:h-[55vh] flex-shrink-0">
-                        <img
-                            src={selectedVariant?.image ?? product?.image}
-                            className="w-full h-full object-cover"
-                            alt={product?.name}
-                        />
+                        {/* Kondisi Gambar Modal */}
+                        {!(selectedVariant?.image ?? product?.image) ? (
+                            <div className="w-full h-full flex items-center justify-center">
+                                <Icon icon="mynaui:image" className={`w-32 h-32 opacity-30 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`} />
+                            </div>
+                        ) : (selectedVariant?.image ?? product?.image ?? '').startsWith('https') ? (
+                            <img
+                                src={selectedVariant?.image ?? product?.image}
+                                className="w-full h-full object-cover"
+                                alt={product?.name}
+                            />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                                <Icon icon={selectedVariant?.image ?? product?.image ?? 'mynaui:image'} className={`w-32 h-32 opacity-30 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`} />
+                            </div>
+                        )}
+
                         {/* Gradient penutup bawah agar lebih smooth menyatu dengan konten */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
                     </div>
@@ -209,7 +232,7 @@ const Five = ({ products, isDarkMode, handleCart }: Props) => {
                                     <span className={`text-[10px] font-bold uppercase tracking-[0.3em] mb-5 ${isDarkMode ? "text-slate-500" : "text-slate-400"}`}>
                                         Pilih Edisi Varian
                                     </span>
-                                    <VariantPicker variants={product?.variants} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} isDarkMode={isDarkMode} />
+                                    <VariantPicker isStock={product?.is_stock} variants={product?.variants} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} isDarkMode={isDarkMode} />
                                 </div>
                             ) : ''}
 

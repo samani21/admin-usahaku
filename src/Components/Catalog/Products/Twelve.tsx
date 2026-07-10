@@ -1,3 +1,4 @@
+"use client"
 import ModalWrapper from './ModalWrapper';
 import { useEffect, useMemo, useState } from 'react';
 import QtySelector from './QtySelector';
@@ -9,22 +10,24 @@ import { formatIDR } from '@/types/FormtRupiah';
 import ExpandableHTML from './ExpandableHTML';
 import { getPromoDetails } from './PromoType';
 import { OutletsType } from '@/types/Admin/OutletType';
+import { Icon } from '@iconify/react';
 
 type Props = {
     products: ProductsType[];
     isDarkMode: boolean;
     handleCart?: (p: ProductsType | null, v: Variants | null, qty: number) => void;
-
 }
 
 const Twelve = ({ products, isDarkMode, handleCart }: Props) => {
     const [product, setProduct] = useState<ProductsType | null>(null);
     const [selectedVariant, setSelectedVariant] = useState<Variants | null>(null);
     const [quantity, setQuantity] = useState<number>(1);
+
     const disableButton = useMemo(() => {
         if (!product) return true;
         return product?.variants?.length > 0 && !selectedVariant;
     }, [product, selectedVariant]);
+
     useEffect(() => {
         if (product) {
             // Jika modal aktif (product tidak null), kunci scroll
@@ -46,6 +49,7 @@ const Twelve = ({ products, isDarkMode, handleCart }: Props) => {
         setSelectedVariant(null);
         setQuantity(1);
     };
+
     const currentPrice = selectedVariant?.price ?? product?.price ?? 0;
     const currentFinalPrice = selectedVariant?.final_price ?? product?.final_price ?? 0;
     const currentDiscount = currentPrice - currentFinalPrice;
@@ -55,13 +59,13 @@ const Twelve = ({ products, isDarkMode, handleCart }: Props) => {
         if (selectedVariant?.product_variant_stock && selectedVariant?.product_variant_stock < quantity) {
             setQuantity(selectedVariant?.product_variant_stock);
         }
-    }, [selectedVariant])
+    }, [selectedVariant, quantity])
 
     return (
         <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4  h-full'>
             {products?.map((p, i) => {
                 const { finalPrice, label } = getPromoDetails(p);
-                const is_available = (p?.product_stock ?? 0) > 0;
+                const is_available = p?.is_stock === false ? true : (p?.product_stock ?? 0) > 0;
 
                 return (
                     <div
@@ -100,11 +104,22 @@ const Twelve = ({ products, isDarkMode, handleCart }: Props) => {
                                 </div>
                             )}
 
-                            <img
-                                src={p.image}
-                                className={`w-full h-3/5 object-cover ${!is_available ? "opacity-50" : ""}`}
-                                alt={p.name}
-                            />
+                            {/* Kondisi Gambar Card */}
+                            {!p?.image ? (
+                                <div className={`w-full h-3/5 flex items-center justify-center ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'} ${!is_available ? "opacity-50" : ""}`}>
+                                    <Icon icon="mynaui:image" className={`w-16 h-16 opacity-30 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`} />
+                                </div>
+                            ) : p.image.startsWith('https') ? (
+                                <img
+                                    src={p.image}
+                                    className={`w-full h-3/5 object-cover ${!is_available ? "opacity-50" : ""}`}
+                                    alt={p.name}
+                                />
+                            ) : (
+                                <div className={`w-full h-3/5 flex items-center justify-center ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'} ${!is_available ? "opacity-50" : ""}`}>
+                                    <Icon icon={p.image} className={`w-16 h-16 opacity-30 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`} />
+                                </div>
+                            )}
 
                             <div className="p-4 text-center">
                                 <div className={!is_available ? "opacity-40" : ""}>
@@ -171,7 +186,23 @@ const Twelve = ({ products, isDarkMode, handleCart }: Props) => {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
                         {/* Kolom Gambar */}
                         <div className="relative rounded-[2.5rem] overflow-hidden shadow-2xl group aspect-[4/3] md:aspect-video lg:aspect-square">
-                            <img src={selectedVariant?.image ?? product?.image} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
+                            {/* Kondisi Gambar Modal */}
+                            {!(selectedVariant?.image ?? product?.image) ? (
+                                <div className={`w-full h-full flex items-center justify-center transition-transform duration-700 group-hover:scale-110 ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                                    <Icon icon="mynaui:image" className={`w-32 h-32 opacity-30 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`} />
+                                </div>
+                            ) : (selectedVariant?.image ?? product?.image ?? '').startsWith('https') ? (
+                                <img
+                                    src={selectedVariant?.image ?? product?.image}
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                    alt=""
+                                />
+                            ) : (
+                                <div className={`w-full h-full flex items-center justify-center transition-transform duration-700 group-hover:scale-110 ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                                    <Icon icon={selectedVariant?.image ?? product?.image??'mynaui:image'} className={`w-32 h-32 opacity-30 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`} />
+                                </div>
+                            )}
+
                             {currentDiscount > 0 ? (
                                 <div className="absolute top-6 text-[10px] left-6 bg-rose-600 text-white px-5 py-2 rounded-2xl font-black italic shadow-xl flex items-center gap-2">
                                     <Tag size={16} /> HEMAT {formatIDR(currentDiscount)}
@@ -200,6 +231,7 @@ const Twelve = ({ products, isDarkMode, handleCart }: Props) => {
                             <div className={`p-8 rounded-[2.5rem] border ${isDarkMode ? "border-slate-800 bg-slate-900/50" : "border-slate-200 bg-white shadow-sm"} space-y-8`}>
                                 {product?.variants && product?.variants?.length > 0 ? (
                                     <VariantPicker
+                                        isStock={product?.is_stock}
                                         variants={product?.variants}
                                         selectedVariant={selectedVariant}
                                         setSelectedVariant={setSelectedVariant}

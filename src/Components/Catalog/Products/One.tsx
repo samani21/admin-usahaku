@@ -10,12 +10,12 @@ import { formatIDR } from '@/types/FormtRupiah';
 import ExpandableHTML from './ExpandableHTML';
 import { getPromoDetails, Promo } from './PromoType';
 import { OutletsType } from '@/types/Admin/OutletType';
+import { Icon } from '@iconify/react';
 
 type Props = {
     products: ProductsType[];
     isDarkMode: boolean;
     handleCart?: (p: ProductsType | null, v: Variants | null, qty: number) => void;
-
 }
 
 const One = ({ products, isDarkMode, handleCart }: Props) => {
@@ -53,7 +53,7 @@ const One = ({ products, isDarkMode, handleCart }: Props) => {
         <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 md:gap-8'>
             {products?.map((p, i) => {
                 const { finalPrice, label } = getPromoDetails(p);
-                const is_available = (p?.product_stock ?? 0) > 0;
+                const is_available = p?.is_stock === false ? true : (p?.product_stock ?? 0) > 0;
 
                 return (
                     <div
@@ -101,12 +101,23 @@ const One = ({ products, isDarkMode, handleCart }: Props) => {
                                 </div>
                             )}
 
-                            <img
-                                src={p?.image}
-                                className={`w-full h-full object-cover transform transition-transform duration-700 ease-out
-                                    ${is_available ? 'group-hover:scale-105' : 'grayscale-[0.8] brightness-90'}`}
-                                alt={p.name}
-                            />
+                            {/* FIX: Kondisi Gambar Sesuai Request Baru */}
+                            {!p?.image ? (
+                                <div className={`w-full h-full flex items-center justify-center transform transition-transform duration-700 ease-out ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'} ${is_available ? 'group-hover:scale-105' : 'grayscale-[0.8] brightness-90'}`}>
+                                    <Icon icon="mynaui:image" className={`w-16 h-16 opacity-30 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`} />
+                                </div>
+                            ) : p.image.startsWith('https') ? (
+                                <img
+                                    src={p.image}
+                                    className={`w-full h-full object-cover transform transition-transform duration-700 ease-out
+                                        ${is_available ? 'group-hover:scale-105' : 'grayscale-[0.8] brightness-90'}`}
+                                    alt={p.name}
+                                />
+                            ) : (
+                                <div className={`w-full h-full flex items-center justify-center transform transition-transform duration-700 ease-out ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'} ${is_available ? 'group-hover:scale-105' : 'grayscale-[0.8] brightness-90'}`}>
+                                    <Icon icon={p.image} className={`w-16 h-16 opacity-30 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`} />
+                                </div>
+                            )}
                         </div>
 
                         {/* 2. Content Container */}
@@ -168,11 +179,24 @@ const One = ({ products, isDarkMode, handleCart }: Props) => {
                 <div className='flex flex-col md:flex-row h-full md:min-h-[600px] overflow-y-auto no-scrollbar'>
                     {/* Gallery Section */}
                     <div className={`md:w-1/2 relative ${isDarkMode ? "bg-[#0F172A]" : "bg-slate-50"}`}>
-                        <img
-                            src={selectedVariant?.image ?? product?.image}
-                            className="w-full h-full object-cover max-h-[450px] md:max-h-full"
-                            alt={product?.name}
-                        />
+
+                        {/* FIX: Kondisi Gambar Modal Sesuai Request Baru */}
+                        {!(selectedVariant?.image ?? product?.image) ? (
+                            <div className="w-full h-full min-h-[300px] flex items-center justify-center">
+                                <Icon icon="mynaui:image" className={`w-32 h-32 opacity-20 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`} />
+                            </div>
+                        ) : (selectedVariant?.image ?? product?.image ?? '').startsWith('https') ? (
+                            <img
+                                src={selectedVariant?.image ?? product?.image}
+                                className="w-full h-full object-cover max-h-[450px] md:max-h-full"
+                                alt={product?.name}
+                            />
+                        ) : (
+                            <div className="w-full h-full min-h-[300px] flex items-center justify-center">
+                                <Icon icon={selectedVariant?.image ?? product?.image ?? 'mynaui:image'} className={`w-32 h-32 opacity-20 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`} />
+                            </div>
+                        )}
+
                         {/* Gradient atas untuk tombol close mobile */}
                         <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/30 to-transparent md:hidden" />
                     </div>
@@ -199,7 +223,7 @@ const One = ({ products, isDarkMode, handleCart }: Props) => {
                             <p className="text-3xl md:text-4xl font-extrabold text-[var(--product-primary-color)] leading-none tracking-tighter">
                                 {formatIDR(selectedVariant?.final_price ?? product?.final_price ?? 0)}
                             </p>
-                            {(product?.discount_price || selectedVariant?.price) ? (
+                            {(product?.discount_price || selectedVariant?.discount_price) ? (
                                 <p className={`text-lg md:text-xl font-medium ${isDarkMode ? "text-slate-500 " : " text-slate-400 "}line-through`}>
                                     {formatIDR(selectedVariant?.price ?? product?.price ?? 0)}
                                 </p>
@@ -209,7 +233,7 @@ const One = ({ products, isDarkMode, handleCart }: Props) => {
                         <div className="space-y-8 flex-grow">
                             {product?.variants && product.variants.length > 0 && (
                                 <div>
-                                    <VariantPicker variants={product.variants} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} isDarkMode={isDarkMode} />
+                                    <VariantPicker isStock={product?.is_stock} variants={product.variants} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} isDarkMode={isDarkMode} />
                                 </div>
                             )}
 
