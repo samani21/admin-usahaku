@@ -152,7 +152,7 @@ export default function CatalogPage() {
                 }`}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <button onClick={() => window.history.back()} className={`p-2.5 rounded-xl transition-all ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:text-white' : 'bg-white text-slate-600 hover:bg-slate-50 shadow-sm border border-slate-100'
+                        <button onClick={() => window.location.href = getCorrectPath('manage/store')} className={`p-2.5 rounded-xl transition-all ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:text-white' : 'bg-white text-slate-600 hover:bg-slate-50 shadow-sm border border-slate-100'
                             }`}>
                             <ChevronLeft size={20} />
                         </button>

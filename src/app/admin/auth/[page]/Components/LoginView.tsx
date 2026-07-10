@@ -123,7 +123,7 @@ function LoginView({ themeStyles, showToast, activeScheme, theme }: Props) {
                         }}
                         className={`font-black underline underline-offset-4 decoration-2 ${activeScheme.text}`}
                     >
-                        Daftar Outlet Baru
+                        Daftar Tenant Baru
                     </button>
                 </p>
             </div>

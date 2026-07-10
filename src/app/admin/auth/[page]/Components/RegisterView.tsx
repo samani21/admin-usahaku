@@ -102,7 +102,7 @@ function RegisterView({ themeStyles, showToast, activeScheme, theme, setShowOtpM
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
+        setIsLoading(true)
         // Validasi Slug
         if (slugStatus === 'taken') {
             showToast('URL Katalog sudah digunakan, mohon cari yang lain.', 'error');
@@ -128,7 +128,9 @@ function RegisterView({ themeStyles, showToast, activeScheme, theme, setShowOtpM
             setShowOtpModal(res?.user);
         } catch (e: any) {
             showToast(e?.message, 'error');
-        } finally { }
+        } finally {
+            setIsLoading(false)
+        }
     }
 
     return (
@@ -337,7 +339,7 @@ function RegisterView({ themeStyles, showToast, activeScheme, theme, setShowOtpM
             </form>
             <div className="mt-6 text-center">
                 <p className="text-xs text-slate-400 font-semibold">
-                    Belum memiliki lisensi tenant?
+                    Sudah memiliki lisensi tenant?
                     <button
                         type="button"
                         onClick={() => {
@@ -346,7 +348,7 @@ function RegisterView({ themeStyles, showToast, activeScheme, theme, setShowOtpM
                         }}
                         className={`font-black underline underline-offset-4 decoration-2 ${activeScheme.text} ml-1`}
                     >
-                        Daftar Outlet Baru
+                        Login
                     </button>
                 </p>
             </div>

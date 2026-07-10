@@ -113,7 +113,7 @@ export default function HeaderView({ themeDark, setThemeDark, headerData, getCal
     const [frameType, setFrameType] = useState<string>("none"); // circle, square, none
     const [frameTheme, setFrameTheme] = useState<string>("dark"); // dark, light
     const [spanOne, setSpanOne] = useState<string>("NAMA");
-    const [spanTwo, setSpanTwo] = useState<string>("USAHA");
+    const [spanTwo, setSpanTwo] = useState<string>("");
     const [isDeleteLogo, setIsDeleteLogo] = useState<boolean>(false);
 
     const [imageToCrop, setImageToCrop] = useState<string | null>(null);

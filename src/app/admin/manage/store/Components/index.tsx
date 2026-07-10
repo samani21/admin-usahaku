@@ -9,7 +9,6 @@ import {
 import { motion } from "framer-motion";
 import { Get } from "@/utils/Get";
 import { Post } from "@/utils/Post";
-import { BusinessType } from "@/types/Admin/BusinessType";
 import Cropper from "react-easy-crop";
 import { AlertType } from "@/types/Alert";
 import SlugInput from "./SlugInput";
@@ -22,6 +21,9 @@ import Alert from "@/Components/Alert";
 import ModalSubscription from "@/Components/Layout/ModalSubscription";
 import { useCorrectPath } from "@/utils/useCorrectPath";
 import { formatImage } from "@/utils/formatImage";
+import { BusinessType } from "@/types/Admin/BusinessType";
+import { CategoriesType } from "@/types/CategoriesType";
+
 
 export default function BusinessProfile() {
     const [loadingButton, setLoadingButton] = useState<boolean>(false);
@@ -49,13 +51,13 @@ export default function BusinessProfile() {
     const [planStatus, setPlanStatus] = useState<'active' | 'expired' | 'canceled'>('active');
     const [daysRemaining, setDaysRemaining] = useState<number>(0);
     const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
+    const [categories, setCategories] = useState<CategoriesType[]>([]);
     const { getCorrectPath } = useCorrectPath();
     const handleChange = (key: any, value: string) => setForm((s) => ({ ...s, [key]: value }));
 
     useEffect(() => {
         getBusiness()
     }, [])
-
     const onLogoChange = async (
         e: React.ChangeEvent<HTMLInputElement>
     ) => {
@@ -106,29 +108,30 @@ export default function BusinessProfile() {
 
     const getBusiness = async () => {
         try {
-            const data = await Get<{ success: boolean; data: any }>("/business/show");
-            if (data?.success) {
+            const res = await Get<{ success: boolean; data: { business: BusinessType, master_categories: CategoriesType[] } }>("/business/show");
+            if (res?.success) {
                 const business = {
-                    name: data?.data?.name,
-                    slug: data?.data?.slug,
-                    description: data?.data?.description,
-                    category: data?.data?.category,
-                    verified: data?.data?.verified_status,
+                    name: res?.data?.business?.name,
+                    slug: res?.data?.business?.slug,
+                    description: res?.data?.business?.description,
+                    category: res?.data?.business?.category,
+                    verified: res?.data?.business?.verified_status,
                 }
-                setOutlets(data?.data?.outlet)
+                setOutlets(res?.data?.business?.outlet)
                 setForm(business)
                 setIsBusiness(true)
-                setLogoPreview(data?.data?.logo_url)
-                if (data?.data?.end_time) {
-                    const endDate = new Date(data?.data?.end_time);
+                setLogoPreview(res?.data?.business?.logo_url)
+                if (res?.data?.business?.end_time) {
+                    const endDate = new Date(res?.data?.business?.end_time);
                     const now = new Date();
                     const diffTime = endDate.getTime() - now.getTime();
                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                     setDaysRemaining(diffDays > 0 ? diffDays : 0);
                 }
                 // MENGAMBIL DUA DATA TERPISAH DARI API
-                setPlanType(data?.data?.plan || 'trial');
-                setPlanStatus(data?.data?.subscription_status || 'active');
+                setPlanType(res?.data?.business?.plan || 'trial');
+                setPlanStatus(res?.data?.business?.subscription_status || 'active');
+                setCategories(res?.data?.master_categories)
             }
         } catch (err: any) {
             console.log(err.message || "Gagal mengambil data");
@@ -348,11 +351,11 @@ export default function BusinessProfile() {
                                                 onChange={(e) => handleChange("category", e.target.value)}
                                                 className="w-full pl-11 pr-10 py-3.5 bg-white rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none appearance-none cursor-pointer text-sm font-semibold text-slate-700 transition-all shadow-sm"
                                             >
-                                                <option value="Lainnya">Lainnya</option>
-                                                <option value="Fashion & Sepatu">Fashion & Sepatu</option>
-                                                <option value="Produk Digital">Produk Digital</option>
-                                                <option value="Makanan & Minuman">Makanan & Minuman</option>
-                                                <option value="Minimarket">Minimarket</option>
+                                                {
+                                                    categories?.map((c, i) => (
+                                                        <option value={c?.name} key={i}>{c?.name}</option>
+                                                    ))
+                                                }
                                             </select>
                                             <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 rotate-90 pointer-events-none" size={18} />
                                         </div>
