@@ -100,6 +100,7 @@ export interface ProductsType {
     description: string,
     slug: string,
     image: string,
+    color_icon?: string,
     qrcode: string,
     slug_business?: string,
     has_variant: boolean,

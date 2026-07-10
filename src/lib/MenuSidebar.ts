@@ -49,6 +49,10 @@ export const menuSidebar: menuSide[] = [
                 href: '/products'
             },
             {
+                label: 'Jasa',
+                href: '/services'
+            },
+            {
                 label: 'Stok',
                 href: '/product-stock'
             },
